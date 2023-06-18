@@ -3,5 +3,10 @@ credentials.json
 token.json
 test.csv
 test.r
+cleaned-response.csv
+response-diagnostics.csv
+response-validated.csv
+test-format
+test-payload
 .DS_Store
 __pycache__
