@@ -1,5 +1,7 @@
 .venv
 credentials.json
 token.json
+test.csv
+test.r
 .DS_Store
 __pycache__
