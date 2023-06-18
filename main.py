@@ -17,11 +17,10 @@ df = unnest_learned_words(df)
 # Export to manually validate
 # df.to_csv('test.csv', index=False)
 
-#print(df.describe())
-
 # (display the column of 'words to learn' in the GUI, and possibly make it editable from the GUI?)
 
 # Ask GPT to generate some new sentences
+
 
 
 # GPT 3.5 doesn't do great at meeting the criteria. Call some functions to filter the GPT response
