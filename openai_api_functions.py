@@ -3,16 +3,12 @@ import openai
 import pandas as pd
 import numpy as np
 
-def gpt__generate_new_sentences(df, n_sentences): 
+def gpt__generate_new_sentences(known_words, new_words, n_sentences): 
 
   openai.api_key = os.getenv("OPENAI_API_KEY")
 
-  # Convert the DataFrame's columns into lists, and filter out None values
-  learned_words = [x for x in df['learned_unique'].dropna().tolist() if pd.notnull(x)]
-  new_words = [x for x in df['to_learn'].dropna().tolist() if pd.notnull(x)]
-
-  # Join the list into a single string, with words separated by comma
-  learned_words_str = ", ".join(learned_words)
+  # Join each list into a single string, with words separated by comma
+  known_words_str = ", ".join(known_words)
   new_words_str = ", ".join(new_words)
   
   # Define the prompts for GPT
@@ -24,21 +20,21 @@ def gpt__generate_new_sentences(df, n_sentences):
     Your output must be only a .csv file, with absolutely no other content. 
     
     Imagine you are a Hindi teacher, helping a native English speaker who has just started learning Hindi. 
-    So far the student has learned the following words, which we can call the 'learned words':
+    So far the student has learned the following words, which we can call the 'learned words', and are as follows:
     
-    {learned_words_str}
+    {known_words_str}
     
-    Today the student is trying to learn the following words, which we can call the 'new words':
+    Today the student is trying to learn the following words, which we can call the 'new words', and are as follows;
     
     {new_words_str}
        
-    Please generate {n_sentences} new Hindi sentences and return them as csv file with one column titled 'sentence'. Each sentence must meet all of the following criteria:
-    - Each sentence includes _exactly one_ of the 'new words';
-    - All of the other words in each sentence (besides the one 'new word') must already appear in the 'learned words';
+    Please generate {n_sentences} new Hindi sentences and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
+    - Each sentence includes _exactly one_ of the 'new words' -- you are NOT ALLOWED to include more than one word from the list of 'new words';
+    - All of the other words in each sentence (besides the exactly one 'new word') must already appear in the list of 'learned words';
     - Each sentence must include a subject, a verb, and an object.
     
     Please use correct grammar and formal sentence structure when writing the sentences.
-    Include as many of the learned words as you can in each sentence while still respecting the rules I mentioned above.
+    Include as many of the words from the list of 'learned words' as you can in each sentence while still respecting the rules I mentioned above.
     Always respect Hindi's standard subject-object-verb structure. 
 
     The output format of the new sentences you generate should be a .csv with a column for the Hindi sentence, 
