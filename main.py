@@ -2,6 +2,7 @@ from google_api_functions import *
 from openai_api_functions import * 
 from anki_connect_functions import * 
 from data_cleaning_functions import * 
+from sqlite_functions import * 
 
 # Get the creds I stored in .venv/bin/activate
 my_id = os.getenv('HINDI_SHEET_ID')
@@ -43,19 +44,29 @@ gpt_payload = ast.literal_eval(test_payload)
 
 ### /END SCRATCH ###
 
-# GPT 3.5 doesn't do great at meeting the criteria. Call some functions to count the number 
-# of old, want-to-learn, and 'rogue' words in each sentence, so we can filter later.
+# GPT doesn't do great at meeting the criteria. Call some functions to count the number 
+# of known, want-to-learn, and 'rogue' words in each sentence, so we can filter later.
 gpt_payload_enhanced = evaluate_gpt_response(gpt_payload, known_vocab, new_vocab)
 
-# Filter out sentences that don't meet the N+1 rule, or any other rule you might prefer
-output_sentences = flag_bad_sentences(gpt_payload_enhanced, "n+1 with rogue")
+# Flag sentences that don't meet the N+1 rule, or any other rule you might prefer
+gpt_payload_enhanced = flag_bad_sentences(gpt_payload_enhanced, "n+1 with rogue")
 
 # Output for scratch diagnostics
-output_sentences.to_csv('cleaned_response.csv', index=False)
+gpt_payload_enhanced.to_csv('cleaned_response.csv', index=False)
 
 # Should I now call Anki and delete any cards in the 'to learn' deck that are included a word that I just generated and that meets criteria?
 
-# Write the output to a SQLite database?
+# Update the database
+append_to_database("database.db", gpt_payload_enhanced) 
+
+# Specify your query
+query = "SELECT * FROM gpt_responses;"
+
+# Call the function with the name of your database and your query
+df = query_db('database.db', query)
+
+# Print the resulting DataFrame
+print(df)
 
 # Call the audio-generating API
 
@@ -64,5 +75,3 @@ output_sentences.to_csv('cleaned_response.csv', index=False)
 # Call AnkiConnect to add the new cards to the existing Hindi deck https://foosoft.net/projects/anki-connect/
 # Be sure to use an existing card format I've cleaned in the load_known_vocab() function
 
-
-# Tokenize the new sentenes and  

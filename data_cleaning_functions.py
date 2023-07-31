@@ -31,6 +31,9 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
     except pd.errors.ParserError:
         raise ValueError("The GPT response string does not match the format of a CSV file.")
     
+    # Count the total number of sentences in the payload
+    gpt_payload['n_sentences'] = len(gpt_payload)
+    
     # Convert the vocab lists to sets, as a way of removing duplicates and enabling efficient operations
     known_vocab_set = set(known_vocab.dropna())
     new_vocab_set = set(new_vocab.dropna())
@@ -51,13 +54,16 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
 
     # Apply the function and assign results to new columns
     gpt_payload[['n_words', 'n_known_words', 'n_new_words', 'n_rogue_words']] = gpt_payload['sentence'].apply(count_word_types)
-    
+
     return(gpt_payload)
     
 # The function checks if the sentence meets two criteria:
 # 1. It contains exactly one word found in df['to_learn']
 # 2. All other words already exist in df['learned_unique']
 def flag_bad_sentences(df, condition):
+    
+    # Add the condition to the table, for recordkeeping purposes
+    df['filter_condition'] = condition
     
     # Option 1: Only keep sentences that have exactly 1 word from the new sentences Anki deck
     if condition == "n+1 no rogue":
@@ -70,5 +76,3 @@ def flag_bad_sentences(df, condition):
         df['meets_criteria'] = ((df['n_new_words'] == 1) & (df['n_rogue_words'] == 0)) ^ ((df['n_new_words'] == 0) & (df['n_rogue_words'] == 1))        
     
     return(df)
-  
-    
