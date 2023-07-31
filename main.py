@@ -18,8 +18,11 @@ new_vocab = new_vocab[~new_vocab.isin(known_vocab)]
 
 # (display the column of 'words to learn' in the GUI, and possibly make it editable from the GUI?)
 
+
 # Ask GPT to generate some new sentences
-gpt_payload = gpt__generate_new_sentences(known_vocab, new_vocab, 10)
+# gpt_payload = gpt__generate_new_sentences(known_vocab, new_vocab, 10)
+
+### SCRATCH ###
 
 # # Export raw payload for debugging
 # with open("test-payload", 'w') as file:
@@ -27,35 +30,39 @@ gpt_payload = gpt__generate_new_sentences(known_vocab, new_vocab, 10)
 #         file.write(f"{item}\n")
 # 
 
-# # GPT 3.5 doesn't do great at meeting the criteria. Call some functions to filter the GPT response
-# # to only include sentences that meet the n+1 criterion. Put those into a dataframe
-outputs = evaluate_gpt_response(known_vocab, new_vocab, gpt_payload)
 
-outputs[0].to_csv('cleaned_response.csv', index=False)
+# Save a test version so we don't spend money to debug
+#with open('test-payload.txt', 'w') as f:
+#    f.write(repr(gpt_payload))
+import ast
+# Open the file in read mode ('r')
+with open('test-payload.txt', 'r') as f:
+    # Read the entire file to a string
+    test_payload = f.read()
+gpt_payload = ast.literal_eval(test_payload)
 
-# Should I call Anki and delete any cards that include a word i just learned/
-# # Need to fix up the 'to learn' column so it still includes words that didn't 
-# # get included in new sentences this round.
-# 
-# # Is the end-game that I'd like to be pulling everything directly from anki?
-# # What would that look like, like new words would have to exist in their own deck?
-# # I think that would be most convenient. 
-# 
-# # Export cleaned payload for debugging
-# cleaned_response[0].to_csv('cleaned-response.csv', index=False)
-# cleaned_response[1].to_csv('response-diagnostics.csv', index=False)
-# cleaned_response[2].to_csv('response-validated.csv', index=False)
+### /END SCRATCH ###
 
+# GPT 3.5 doesn't do great at meeting the criteria. Call some functions to count the number 
+# of old, want-to-learn, and 'rogue' words in each sentence, so we can filter later.
+gpt_payload_enhanced = evaluate_gpt_response(gpt_payload, known_vocab, new_vocab)
 
+# Filter out sentences that don't meet the N+1 rule, or any other rule you might prefer
+output_sentences = flag_bad_sentences(gpt_payload_enhanced, "n+1 with rogue")
 
+# Output for scratch diagnostics
+output_sentences.to_csv('cleaned_response.csv', index=False)
 
+# Should I now call Anki and delete any cards in the 'to learn' deck that are included a word that I just generated and that meets criteria?
 
+# Write the output to a SQLite database?
 
 # Call the audio-generating API
 
 # Pack the Hindi, English, and Audio into a shared df 
 
 # Call AnkiConnect to add the new cards to the existing Hindi deck https://foosoft.net/projects/anki-connect/
+# Be sure to use an existing card format I've cleaned in the load_known_vocab() function
 
-# Append the new cards to the Google Sheet in the 'vocab' column
 
+# Tokenize the new sentenes and  
