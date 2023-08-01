@@ -12,10 +12,8 @@ my_range = os.getenv('SHEET_RANGE')
 #   - The deck with words or phrases I've learned or know 'known vocab'
 #   - The deck with words or phrases I haven't learned yet (and aren't yet contextualized in a sentence) 'new vocab'
 known_vocab = load_known_vocab()
-new_vocab = load_new_vocab()
+new_vocab = load_new_vocab(known_vocab)
 
-# Remove any words that found their way into new_vocab despite already being in known_vocab
-new_vocab = new_vocab[~new_vocab.isin(known_vocab)]
 
 # (display the column of 'words to learn' in the GUI, and possibly make it editable from the GUI?)
 
@@ -51,24 +49,21 @@ gpt_payload_enhanced = evaluate_gpt_response(gpt_payload, known_vocab, new_vocab
 # Flag sentences that don't meet the N+1 rule, or any other rule you might prefer
 gpt_payload_enhanced = flag_bad_sentences(gpt_payload_enhanced, "n+1 with rogue")
 
-# Output for scratch diagnostics
+# SCRATCH Output for scratch diagnostics
 gpt_payload_enhanced.to_csv('cleaned_response.csv', index=False)
-
-# Should I now call Anki and delete any cards in the 'to learn' deck that are included a word that I just generated and that meets criteria?
 
 # Update the database
 append_to_database("database.db", gpt_payload_enhanced) 
 
-# Specify your query
-query = "SELECT * FROM gpt_responses;"
-
-# Call the function with the name of your database and your query
-df = query_db('database.db', query)
+# Subset only the sentences that fit the criteria
+keepers = gpt_payload_enhanced[gpt_payload_enhanced['meets_criteria'] == True]
 
 # Print the resulting DataFrame
-print(df)
+
 
 # Call the audio-generating API
+
+# Should I now call Anki and delete any cards in the 'to learn' deck that are included a word that I just generated and that meets criteria?
 
 # Pack the Hindi, English, and Audio into a shared df 
 

@@ -2,6 +2,7 @@ import sqlite3
 import pandas as pd
 from datetime import datetime
 
+# Function to call the other functions below
 def append_to_database(db_name, dat):
     
     # Create the tables if they don't yet exist
