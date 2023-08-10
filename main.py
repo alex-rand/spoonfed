@@ -2,7 +2,9 @@ from google_api_functions import *
 from openai_api_functions import * 
 from anki_connect_functions import * 
 from data_cleaning_functions import * 
+from narakeet_functions import * 
 from sqlite_functions import * 
+
 
 # Get the creds I stored in .venv/bin/activate
 my_id = os.getenv('HINDI_SHEET_ID')
@@ -12,7 +14,8 @@ my_range = os.getenv('SHEET_RANGE')
 #   - The deck with words or phrases I've learned or know 'known vocab'
 #   - The deck with words or phrases I haven't learned yet (and aren't yet contextualized in a sentence) 'new vocab'
 known_vocab = load_known_vocab()
-new_vocab = load_new_vocab(known_vocab)
+new_vocab = load_new_vocab()
+
 
 
 # (display the column of 'words to learn' in the GUI, and possibly make it editable from the GUI?)
@@ -53,15 +56,20 @@ gpt_payload_enhanced = flag_bad_sentences(gpt_payload_enhanced, "n+1 with rogue"
 gpt_payload_enhanced.to_csv('cleaned_response.csv', index=False)
 
 # Update the database
-append_to_database("database.db", gpt_payload_enhanced) 
+save_to_database("database.db", gpt_payload_enhanced) 
 
 # Subset only the sentences that fit the criteria
 keepers = gpt_payload_enhanced[gpt_payload_enhanced['meets_criteria'] == True]
 
+# Call the audio-generating API
+keepers_with_audio = generate_audio(keepers, language="Hindi", anki_profile_name="Alex")
+
+# Write to Anki
+
+print(keepers.columns.tolist())
 # Print the resulting DataFrame
 
-
-# Call the audio-generating API
+print(keepers_with_audio['audio'])
 
 # Should I now call Anki and delete any cards in the 'to learn' deck that are included a word that I just generated and that meets criteria?
 
