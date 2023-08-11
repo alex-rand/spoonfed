@@ -30,7 +30,7 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
         gpt_payload = pd.read_csv(io.StringIO(gpt_payload[0]))
     except pd.errors.ParserError:
         raise ValueError("The GPT response string does not match the format of a CSV file.")
-    
+
     # Count the total number of sentences in the payload
     gpt_payload['n_sentences'] = len(gpt_payload)
     

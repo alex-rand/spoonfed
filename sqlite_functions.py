@@ -3,13 +3,13 @@ import pandas as pd
 from datetime import datetime
 
 # Function to call the other functions below
-def save_to_database(db_name, dat):
+def save_to_database(db_name, dat, gpt_model, audio_provider):
     
     # Create the tables if they don't yet exist
     create_tables(db_name)
 
     # Append metadata to the database and return the run_id
-    run_id = append_run_entry(db_name, datetime.now().isoformat())
+    run_id = append_run_entry(db_name, datetime.now().isoformat(), gpt_model, audio_provider)
 
     # Append the enhanced gpt outputs to the database
     append_sentences(dat, run_id, db_name)
@@ -21,7 +21,9 @@ def create_tables(db_name):
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS runs
                      (run_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      timestamp TEXT NOT NULL);''')
+                      timestamp TEXT NOT NULL,
+                      gpt_model TEXT,
+                      audio_provider TEXT);''')
                       
         c.execute('''CREATE TABLE IF NOT EXISTS gpt_responses
                      (run_id INTEGER,
@@ -44,14 +46,15 @@ def create_tables(db_name):
             conn.close()
             
 # Append a few things to a 'metadata' table
-def append_run_entry(db_file, timestamp):
+def append_run_entry(db_file, timestamp, gpt_model, audio_provider):
     try:
         conn = sqlite3.connect(db_file)
         c = conn.cursor()
-        c.execute('''INSERT INTO runs(timestamp)
-                     VALUES(?);''', (timestamp,))
+        c.execute('''INSERT INTO runs(timestamp, gpt_model, audio_provider)
+                     VALUES(?, ?, ?);''', (timestamp, gpt_model, audio_provider))
+        conn.commit()
         run_id = c.lastrowid
-    except Error as e:
+    except sqlite3.Error as e:
         print(e)
     finally:
         if conn:

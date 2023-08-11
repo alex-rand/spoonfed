@@ -9,5 +9,6 @@ response-diagnostics.csv
 response-validated.csv
 test-format
 test-payload
+database.db
 .DS_Store
 __pycache__

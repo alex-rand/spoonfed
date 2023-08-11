@@ -7,7 +7,6 @@ import re
 def request(action, **params):
     return {'action': action, 'params': params, 'version': 6}
 
-
 def ankiconnect_invoke(action, **params):
     requestJson = json.dumps(request(action, **params)).encode('utf-8')
     try:
@@ -92,44 +91,36 @@ def load_new_vocab():
     
     return(combined)
     
+def remove_non_devanagari(text):
+    pattern = "[^\u0900-\u097F \n]"
+    return re.sub(pattern, '', text)
+
+def create_new_card(dat, gpt_model, audio_provider):
     
+    # The AnkiConnect API needs a particular nestest structure to create a new note, 
+    # as documented under 'addNote' here: https://github.com/FooSoft/anki-connect 
+    
+    # Define the fields for the Anki card
+    fields = {
+        'Front': dat['sentence'],
+        'Back': dat['translation'],
+        'Definition': dat['audio']
+    }
+
+    # Structure the note according to AnkiConnect's requirements
+    note = {
+        'deckName': "देवनागरी::मैंने सीखा",
+        'modelName': "Basic-10b04",
+        'fields': fields,
+        'tags': ["spoonfed", gpt_model, audio_provider]
+    }
+ 
+    # Call
+    ankiconnect_invoke('addNote', note=note)
+
     
     
         
     
     
-    
-
-
-    # Remove duplicate words from the new 'learned' DataFrame
-    learned_unique_words = learned_unique_words.drop_duplicates(subset=['learned_unique'], keep='first')
-    note_content_basic.to_csv('basic-test.csv', index=False)
-    note_content_memrise.to_csv('memrise-test.csv', index=False)
-    
-    # Extract the hindi content from all notes
-
-def remove_non_devanagari(text):
-    pattern = "[^\u0900-\u097F \n]"
-    return re.sub(pattern, '', text)
-
-   # return(note_content_basic)
-   # note_content = 
-    
-#invoke('createDeck', deck='test1')
-#result = invoke('deckNames')
-#print('got list of decks: {}'.format(result))
- 
-
-# It's gonnaa be like:
-# - # findCards() based on deck name
-# {
-#     "action": "findCards",
-#     "version": 6,
-#     "params": {
-#         "query": "deck:current"
-#     }
-# }
-# - # cardsInfo() on the cardIDs from the previous step?
- 
-# Then to write you use addNote()
- 
+   

@@ -3,7 +3,7 @@ import openai
 import pandas as pd
 import numpy as np
 
-def gpt__generate_new_sentences(known_words, new_words, n_sentences): 
+def gpt__generate_new_sentences(known_words, new_words, n_sentences, model): 
 
   openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -53,7 +53,7 @@ def gpt__generate_new_sentences(known_words, new_words, n_sentences):
 
   response = openai.ChatCompletion.create(
    # model="gpt-3.5-turbo-0613",
-    model="gpt-4",
+    model=model,
     messages=messages,
     temperature=0.1,
     top_p=1.0,
