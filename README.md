@@ -18,6 +18,8 @@ This application tries to fill that gap by using generative AI to do the followi
 2. Load all the words from sentences I have _not_ learned yet in that language from my Anki account (or alternatively, generate high-frequency words I haven't seen yet);
 3. Use an LLM API to generate sentences that include exactly 1 word I haven't learned yet, and otherwise only words I've already learned;
 4. Use a TTS API to generate audio for those sentences;
-5. Export the resulting sentences, along with English translation and audio, to my Anki deck for that language. 
+5. Export the resulting sentences, along with English translation and audio, to my Anki deck for that language.
+
+This is all inspired by the Anki deck [Spoonfed Chinese](https://promagma.gumroad.com/l/IEmpwF), which I used daily for a few years to learn Mandarin. 
 
 ## Usage
