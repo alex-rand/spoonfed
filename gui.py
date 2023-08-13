@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox, filedialog, ttk
 import json
 import os
-from anki_connect_functions import * 
 
 CONFIGURATIONS_FILE = "configurations.json"
 
@@ -10,87 +9,199 @@ class MainApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Main App")
+  
 
-        # Dropdown for configurations
-        tk.Label(root, text="Select Configuration").pack(pady=10)
-        self.configuration_var = tk.StringVar(root)
-        self.dropdown = ttk.Combobox(root, textvariable=self.configuration_var)
-        self.load_configurations_to_dropdown()
-        self.dropdown.pack(pady=10)
+        # Create the user config frame and pack it immediately
+        self.create_user_config_frame()
+        self.user_config_frame.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
 
-        # Configurations buttons
-        tk.Button(root, text="Add New Configuration", command=self.add_new_configuration).pack(pady=10)
-        tk.Button(root, text="Delete Configuration", command=self.delete_configuration).pack(pady=5)
+        # Load the user configuration
+        self.load_user_configuration()
 
-        # Execute Button
-        tk.Button(root, text="Execute", command=self.execute_load_vocab).pack(pady=10)
+        # Create the language config frame but don't pack it yet
+        self.create_language_config_frame()
 
-        # Text areas for displaying the vocab lists
-        self.known_vocab_text = tk.Text(root, width=50, height=15)
-        self.known_vocab_text.pack(padx=10, pady=10, side=tk.LEFT)
+    def create_user_config_frame(self):
+        self.user_config_frame = tk.Frame(self.root)
+        
+        # Let the row and column of the main frame expand
+        self.user_config_frame.grid_rowconfigure(0, weight=1)
+        self.user_config_frame.grid_columnconfigure(0, weight=1)
+        
+        tk.Label(self.user_config_frame, text="User Configuration", font=("Arial", 16)).grid(row=0, column=0, columnspan=2, pady=10)
+        
+        self.anki_profile_label = tk.Label(self.user_config_frame, text="Anki Profile:")
+        self.anki_profile_label.grid(row=1, column=0, sticky='w', padx=10, pady=5)
+                
+        # Dropdown for saved user profiles
+        self.saved_users_var = tk.StringVar(self.root)
+        self.saved_users_dropdown = ttk.Combobox(self.user_config_frame, textvariable=self.saved_users_var)
+        self.saved_users_dropdown.grid(row=1, column=1, padx=10, pady=5)
 
-        self.new_vocab_text = tk.Text(root, width=50, height=15)
-        self.new_vocab_text.pack(padx=10, pady=10, side=tk.RIGHT)
 
-    ### CONFIGURATIONS FUNCTIONS
-    def load_configurations_to_dropdown(self):
+        # Button to select the user and proceed
+        tk.Button(self.user_config_frame, text="Select User and Proceed", command=self.proceed_with_selected_user).grid(row=3, column=0, columnspan=2, pady=10)
+
+        # Button to add a new user
+        tk.Button(self.user_config_frame, text="Add New User", command=self.add_new_user).grid(row=4, column=0, columnspan=2, pady=10)
+        
+    def load_all_saved_users(self):
         if os.path.exists(CONFIGURATIONS_FILE):
             with open(CONFIGURATIONS_FILE, 'r') as f:
-                self.configurations = json.load(f)
-            self.dropdown["values"] = list(self.configurations.keys())
+                all_configurations = json.load(f)
+                user_profiles = list(all_configurations.get('user_configuration', {}).keys())
+                self.saved_users_dropdown["values"] = user_profiles
+
+    def proceed_with_selected_user(self):
+        selected_user = self.saved_users_var.get()
+        if selected_user:
+            # Set the user configuration and proceed to the language config screen
+            self.set_user_configuration(selected_user)
+            self.user_config_frame.pack_forget()
+            self.language_config_frame.pack(pady=10, fill=tk.BOTH, expand=True)
+
+    def add_new_user(self):
+        new_user = simpledialog.askstring("Input", "Enter new user profile name:")
+        if new_user:
+            # Update the configurations file immediately
+            self.set_user_configuration(new_user)
+            # Refresh the dropdown with the updated users list
+            self.load_all_saved_users()
+
+    def set_user_configuration(self, user_name):
+        if os.path.exists(CONFIGURATIONS_FILE):
+            with open(CONFIGURATIONS_FILE, 'r') as f:
+                all_configurations = json.load(f)
         else:
-            self.configurations = {}
+            all_configurations = {}
+
+        # Update the user configuration
+        user_config = all_configurations.get('user_configuration', {})
+        user_config[user_name] = {' ': user_name}
+        all_configurations['user_configuration'] = user_config
+
+        with open(CONFIGURATIONS_FILE, 'w') as f:
+            json.dump(all_configurations, f)
+        
+    def create_language_config_frame(self):
+        self.language_config_frame = tk.Frame(self.root)
+        
+        # Configure the language_config_frame's rows and columns
+        for i in range(5):  # Assuming 5 rows
+            self.language_config_frame.rowconfigure(i, weight=1)
+        self.language_config_frame.columnconfigure(0, weight=1)
+        self.language_config_frame.columnconfigure(1, weight=1)
+
+        tk.Label(self.language_config_frame, text="Language Configuration", font=("Arial", 16)).grid(row=0, column=0, columnspan=2, pady=10)
+
+        self.configuration_var = tk.StringVar(self.root)
+        self.dropdown = ttk.Combobox(self.language_config_frame, textvariable=self.configuration_var)
+        self.load_language_configurations_to_dropdown()
+        self.dropdown.grid(row=1, column=0, columnspan=2, pady=10, sticky="ew")
+
+        tk.Button(self.language_config_frame, text="Add New Configuration", command=self.add_new_configuration).grid(row=2, column=0, pady=10)
+        tk.Button(self.language_config_frame, text="Delete Configuration", command=self.delete_configuration).grid(row=2, column=1, pady=10)
+        tk.Button(self.language_config_frame, text="Execute", command=self.execute_load_vocab).grid(row=3, columnspan=2, pady=10)
+        
+        # Back button to return to the user config screen
+        tk.Button(self.language_config_frame, text="Back", command=self.back_to_user_config).grid(row=4, columnspan=2, pady=10)
+
+    def back_to_user_config(self):
+        self.language_config_frame.pack_forget()
+        self.user_config_frame.pack(pady=10, fill=tk.BOTH, expand=True)
+
+    def load_user_configuration(self):
+        if os.path.exists(CONFIGURATIONS_FILE):
+            with open(CONFIGURATIONS_FILE, 'r') as f:
+                all_configurations = json.load(f)
+                user_configuration = all_configurations.get('user_configuration', {})
+                anki_profile_name = user_configuration.get('anki_profile_name', "")
+                self.saved_users_var.set(anki_profile_name)
+
+    def save_user_configuration(self):
+        if os.path.exists(CONFIGURATIONS_FILE):
+            with open(CONFIGURATIONS_FILE, 'r') as f:
+                all_configurations = json.load(f)
+        else:
+            all_configurations = {}
+        
+        # Use the saved_users_var value instead of the anki_profile_entry
+        all_configurations['user_configuration'] = {
+            'anki_profile_name': self.saved_users_var.get()
+        }
+
+        with open(CONFIGURATIONS_FILE, 'w') as f:
+            json.dump(all_configurations, f)
+            
+        self.user_config_frame.pack_forget()  # Hide user configuration frame   
+        self.user_config_frame.pack_forget()
+        self.language_config_frame.pack(pady=10, fill=tk.BOTH, expand=True)
+
+
+    def load_language_configurations_to_dropdown(self):
+        if os.path.exists(CONFIGURATIONS_FILE):
+            with open(CONFIGURATIONS_FILE, 'r') as f:
+                all_configurations = json.load(f)
+                self.language_configurations = all_configurations.get("language_configurations", {})
+            self.dropdown["values"] = list(self.language_configurations.keys())
+        else:
+            self.language_configurations = {}
 
     def add_new_configuration(self):
         self.new_window = tk.Toplevel(self.root)
         VocabApp(self.new_window, self)
         
-    ### ANKI LOADING FUNCTIONS
+    def load_language_configuration_screen(self):
+        language_config_frame = tk.Frame(self.root)
+        language_config_frame.pack(pady=10, fill=tk.BOTH, expand=True)
+
+        tk.Label(language_config_frame, text="Language Configuration", font=("Arial", 16)).grid(row=0, column=0, columnspan=2, pady=10)
+
+        self.configuration_var = tk.StringVar(self.root)
+        self.dropdown = ttk.Combobox(language_config_frame, textvariable=self.configuration_var)
+        self.load_language_configurations_to_dropdown()
+        self.dropdown.grid(row=1, column=0, columnspan=2, pady=10)
+
+        tk.Button(language_config_frame, text="Add New Configuration", command=self.add_new_configuration).grid(row=2, column=0, pady=10)
+        tk.Button(language_config_frame, text="Delete Configuration", command=self.delete_configuration).grid(row=2, column=1, pady=10)
+        tk.Button(language_config_frame, text="Execute", command=self.execute_load_vocab).grid(row=3, columnspan=2, pady=10)
+
     def execute_load_vocab(self):
-        # Extract the selected configuration details
-        selected_configuration = self.configurations[self.configuration_var.get()]
-        known_deck_details = selected_configuration["learned_deck"]
-        new_deck_details = selected_configuration["new_deck"]
-
-        known_vocab_deck = known_deck_details["deck_name"]
-        known_card_types_and_fields = known_deck_details["card_types_and_fields"]
-
-        new_vocab_deck = new_deck_details["deck_name"]
-        new_card_types_and_fields = new_deck_details["card_types_and_fields"]
-
-        print(known_card_types_and_fields)
-        # Call the load_vocab_from_deck function
-        known_vocab = load_vocab_from_deck(known_vocab_deck, known_card_types_and_fields)
-        new_vocab = load_vocab_from_deck(new_vocab_deck, new_card_types_and_fields)
+        # This function can be used to execute some operation based on the selected language configuration
+        selected_language_configuration = self.language_configurations[self.configuration_var.get()]
         
-        # Make sure there's no overlap between the known and new vocab lists by mistake
-        new_vocab = new_vocab[~new_vocab.isin(known_vocab)]
+        # Extract details and process them as needed
+        # For example:
+        known_deck_details = selected_language_configuration["learned_deck"]
+        new_deck_details = selected_language_configuration["new_deck"]
 
-        # Display the number of words and vocab lists in the text areas
-        self.known_vocab_text.delete(1.0, tk.END)  # Clear previous content
-        self.known_vocab_text.insert(tk.END, f"Number of Words in Learned Vocab: {len(known_vocab)}\n\n")
-        self.known_vocab_text.insert(tk.END, "\n".join(known_vocab))
-
-        self.new_vocab_text.delete(1.0, tk.END)  # Clear previous content
-        self.new_vocab_text.insert(tk.END, f"Number of Words in New Vocab: {len(new_vocab)}\n\n")
-        self.new_vocab_text.insert(tk.END, "\n".join(new_vocab))
-
+        # You can continue with the rest of the operations you had in the original function
+        
     def edit_configuration(self):
-        # Get the selected configuration
-        selected_configuration = self.configurations[self.configuration_var.get()]
-        if selected_configuration:
+        # Get the selected language configuration
+        selected_language_configuration = self.language_configurations[self.configuration_var.get()]
+        if selected_language_configuration:
             # Open the VocabApp window with prefilled values
             edit_window = tk.Toplevel(self.root)
-            edit_app = VocabApp(edit_window, self, selected_configuration)
+            edit_app = VocabApp(edit_window, self, selected_language_configuration)
 
     def delete_configuration(self):
         # Confirm the deletion
-        answer = tk.messagebox.askyesno("Delete Configuration", "Are you sure you want to delete this configuration?")
+        answer = tk.messagebox.askyesno("Delete Configuration", "Are you sure you want to delete this language configuration?")
         if answer:
-            del self.configurations[self.configuration_var.get()]
-            with open(CONFIGURATIONS_FILE, 'w') as f:
-                json.dump(self.configurations, f)
-            self.load_configurations_to_dropdown()
+            del self.language_configurations[self.configuration_var.get()]
+            
+            # Update the configurations file
+            if os.path.exists(CONFIGURATIONS_FILE):
+                with open(CONFIGURATIONS_FILE, 'r') as f:
+                    all_configurations = json.load(f)
+                all_configurations["language_configurations"] = self.language_configurations
+                
+                with open(CONFIGURATIONS_FILE, 'w') as f:
+                    json.dump(all_configurations, f)
+            
+            self.load_language_configurations_to_dropdown()
+            
 class VocabApp:
     def __init__(self, root, main_app):
         self.root = root
@@ -159,8 +270,8 @@ class VocabApp:
     def save_configuration(self):
         configuration_name = simpledialog.askstring("Input", "Enter name for this configuration:")
         if configuration_name:
-            learned_card_types_and_fields = {card.get(): field.get().split(",") for card, field in zip(self.learned_card_entries, self.learned_field_entries)}
-            new_card_types_and_fields = {card.get(): field.get().split(",") for card, field in zip(self.new_card_entries, self.new_field_entries)}
+            learned_card_types_and_fields = {card.get(): field.get().split(", ") for card, field in zip(self.learned_card_entries, self.learned_field_entries)}
+            new_card_types_and_fields = {card.get(): field.get().split(", ") for card, field in zip(self.new_card_entries, self.new_field_entries)}
 
             self.main_app.configurations[configuration_name] = {
                 "learned_deck": {
@@ -177,6 +288,7 @@ class VocabApp:
                 json.dump(self.main_app.configurations, f)
             self.main_app.load_configurations_to_dropdown()
             self.root.destroy()
+
 
 root = tk.Tk()
 app = MainApp(root)

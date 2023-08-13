@@ -7,6 +7,7 @@ import re
 def request(action, **params):
     return {'action': action, 'params': params, 'version': 6}
 
+# Function to send requests to Ankiconnect
 def ankiconnect_invoke(action, **params):
     requestJson = json.dumps(request(action, **params)).encode('utf-8')
     try:
@@ -23,8 +24,6 @@ def ankiconnect_invoke(action, **params):
         raise Exception(response['error'])
     return response['result']
 
-# Function to return your known and want-to-learn vocab
-# def load_vocab_lists()
 
 def load_vocab_from_deck(deck, card_types_and_fields):
     """

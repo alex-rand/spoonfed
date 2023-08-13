@@ -29,7 +29,7 @@ def main(gpt_model, audio_provider):
     new_vocab = new_vocab[~new_vocab.isin(known_vocab)]
 
     print(len(known_vocab))
-    return(0)
+    #return(0)
     # Ask GPT to generate some new sentences
     # gpt_payload = gpt__generate_new_sentences(known_vocab, new_vocab, 10, "gpt-4")
 
@@ -62,7 +62,7 @@ def main(gpt_model, audio_provider):
     gpt_payload_enhanced = flag_bad_sentences(gpt_payload_enhanced, "n+1 with rogue")
     
     # SCRATCH Output for scratch diagnostics
-    gpt_payload_enhanced.to_csv('cleaned_response.csv', index=False)
+  #  gpt_payload_enhanced.to_csv('cleaned_response.csv', index=False)
 
     # Update the database
     save_to_database("database.db", gpt_payload_enhanced, gpt_model, audio_provider) 
