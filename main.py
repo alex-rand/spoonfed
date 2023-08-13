@@ -9,12 +9,27 @@ def main(gpt_model, audio_provider):
     # Load the anki cards from two decks:
     #   - The deck with words or phrases I've learned or know 'known vocab'
     #   - The deck with words or phrases I haven't learned yet (and aren't yet contextualized in a sentence) 'new vocab'
-    known_vocab = load_known_vocab()
-    new_vocab = load_new_vocab()
+
+    # Declare 
+    known_vocab_deck = "देवनागरी::मैंने सीखा"
+    known_card_types_and_fields = {
+        "Basic-10b04": ["Front", "Back"],
+        "Memrise - ! Hindi Alphabet (Devanagri) (audio) ! - Hindi": ["Hindi", "English"]
+    }
+    
+    new_vocab_deck = "देवनागरी::मैं सीखना चाहता हूँ"
+    new_card_types_and_fields = {
+        "Basic-10b04": ["Front", "Back"]
+    }
+
+    known_vocab = load_vocab_from_deck(known_vocab_deck, known_card_types_and_fields)
+    new_vocab = load_vocab_from_deck(new_vocab_deck, new_card_types_and_fields)
 
     # Make sure there's no overlap between the known and new vocab lists by mistake
     new_vocab = new_vocab[~new_vocab.isin(known_vocab)]
 
+    print(len(known_vocab))
+    return(0)
     # Ask GPT to generate some new sentences
     # gpt_payload = gpt__generate_new_sentences(known_vocab, new_vocab, 10, "gpt-4")
 

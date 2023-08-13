@@ -23,73 +23,52 @@ def ankiconnect_invoke(action, **params):
         raise Exception(response['error'])
     return response['result']
 
+# Function to return your known and want-to-learn vocab
+# def load_vocab_lists()
 
-def load_known_vocab():
+def load_vocab_from_deck(deck, card_types_and_fields):
+    """
+    Load vocabulary words from Anki cards based on specified deck, card types, and fields.
     
-    ### Need to load and clean different note types separately. 
-    ### I'll be using standardized Basic-10b04 from now on,
-    ### but what follows is ad-hoc cleaning for older cards
+    Parameters:
+    - deck (str): The name of the Anki deck.
+    - card_types_and_fields (dict): A dictionary where keys are card types and values are lists of fields.
     
-    # Load the note content for the two note types
-    note_ids_basic = ankiconnect_invoke('findNotes', query='''"deck:देवनागरी::मैंने सीखा" "note:Basic-10b04"''')
-    note_ids_memrise = ankiconnect_invoke('findNotes', query='''"deck:देवनागरी::मैंने सीखा" "note:Memrise - ! Hindi Alphabet (Devanagri) (audio) ! - Hindi"''')
-    note_content_basic = pd.json_normalize(ankiconnect_invoke('notesInfo', notes = note_ids_basic))
-    note_content_memrise = pd.json_normalize(ankiconnect_invoke('notesInfo', notes = note_ids_memrise))
-
-    # Remove non-Devanagari text for both sets of notes
-    for col in note_content_basic.columns:
-        note_content_basic[col] = note_content_basic[col].astype(str).apply(remove_non_devanagari)
+    Returns:
+    - pd.Series: A series of unique vocabulary words.
+    """
+    
+    all_words = []
+    
+    for card_type, fields in card_types_and_fields.items():
+        # Construct the query for the card type
+        query = f'"deck:{deck}" "note:{card_type}"'
         
-    for col in note_content_memrise.columns:
-        note_content_memrise[col] = note_content_memrise[col].astype(str).apply(remove_non_devanagari)
+        # Retrieve note IDs for the card type
+        note_ids = ankiconnect_invoke('findNotes', query=query)
         
-    # Unpack all hindi values words in the columns corresponding to 'front' and 'back' for each note type
-    memrise_unique_words_1 = (note_content_memrise['fields.Hindi.value'].str.split(expand=True)
-                        .stack()
-                        .reset_index(level=1, drop=True))
-    memrise_unique_words_2 = (note_content_memrise['fields.English.value'].str.split(expand=True)
-                    .stack()
-                    .reset_index(level=1, drop=True))
+        # Retrieve note content for the card type
+        note_content = pd.json_normalize(ankiconnect_invoke('notesInfo', notes=note_ids))
+        
+        # Remove non-Devanagari text for all specified fields
+        for field in fields:
+            col_name = f"fields.{field}.value"
+            if col_name in note_content.columns:
+                note_content[col_name] = note_content[col_name].astype(str).apply(remove_non_devanagari)
+        
+        # Extract words from all specified fields
+        for field in fields:
+            col_name = f"fields.{field}.value"
+            if col_name in note_content.columns:
+                words = (note_content[col_name].str.split(expand=True)
+                         .stack()
+                         .reset_index(level=1, drop=True))
+                all_words.append(words)
     
-    basic_unique_words_1 = (note_content_basic['fields.Front.value'].str.split(expand=True)
-                        .stack()
-                        .reset_index(level=1, drop=True))
-    basic_unique_words_2 = (note_content_basic['fields.Back.value'].str.split(expand=True)
-                    .stack()
-                    .reset_index(level=1, drop=True))
-    
-    # Combine all unique hindi words across the two note types
-    combined = pd.concat([memrise_unique_words_1, memrise_unique_words_2, basic_unique_words_1, basic_unique_words_2], ignore_index=True)
-    
-    # Remove duplicates
-    combined = combined.drop_duplicates(keep='first')
+    # Combine all words and remove duplicates
+    combined = pd.concat(all_words, ignore_index=True).drop_duplicates(keep='first')
     
     return combined
-    
-def load_new_vocab():
-    
-    note_ids = ankiconnect_invoke('findNotes', query='''"deck:देवनागरी::मैं सीखना चाहता हूँ" "note:Basic-10b04"''')
-    note_content = pd.json_normalize(ankiconnect_invoke('notesInfo', notes = note_ids))
-    
-    # Remove non-Devanagari text 
-    for col in note_content.columns:
-        note_content[col] = note_content[col].astype(str).apply(remove_non_devanagari)
-        
-    # Unpack all hindi values words in the columns corresponding to 'front' and 'back' 
-    unique_words_1 = (note_content['fields.Front.value'].str.split(expand=True)
-                        .stack()
-                        .reset_index(level=1, drop=True))
-    unique_words_2 = (note_content['fields.Back.value'].str.split(expand=True)
-                    .stack()
-                    .reset_index(level=1, drop=True))
-    
-    # Combine all unique hindi words across the two note types
-    combined = pd.concat([unique_words_1, unique_words_2], ignore_index=True)
-
-    # Remove duplicates
-    combined = combined.drop_duplicates(keep='first')
-    
-    return(combined)
     
 def remove_non_devanagari(text):
     pattern = "[^\u0900-\u097F \n]"

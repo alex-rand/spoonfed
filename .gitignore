@@ -10,5 +10,6 @@ response-validated.csv
 test-format
 test-payload
 database.db
+configurations.json
 .DS_Store
 __pycache__
