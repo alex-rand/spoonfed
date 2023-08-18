@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox, filedialog, ttk
 import json
 import os
+import sqlite3
+
 
 CONFIGURATIONS_FILE = "configurations.json"
 
@@ -9,17 +11,72 @@ class MainApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Main App")
-  
+        
+        # Initialize the SQLite database and tables if they don't exist
+        self.setup_database()
+        
+        self.selected_user_id = None  # This will store the ID of the selected user
 
         # Create the user config frame and pack it immediately
         self.create_user_config_frame()
+        self.load_all_saved_users()  # Call the function here
         self.user_config_frame.pack(pady=10, padx=10, fill=tk.BOTH, expand=True)
-
+    
         # Load the user configuration
         self.load_user_configuration()
-
+    
         # Create the language config frame but don't pack it yet
         self.create_language_config_frame()
+        
+    def setup_database(self):
+        db_name = 'database.db'
+
+        # Check if the database already exists
+        if os.path.exists(db_name):
+            return
+
+        conn = sqlite3.connect(db_name)
+        c = conn.cursor()
+
+        # Create table for user configurations
+        c.execute('''CREATE TABLE IF NOT EXISTS users
+                     (id INTEGER PRIMARY KEY, profile_name TEXT UNIQUE)''')
+
+        # Create table for language configurations
+        c.execute('''CREATE TABLE IF NOT EXISTS languages
+                     (id INTEGER PRIMARY KEY, user_id INTEGER, configuration_name TEXT,
+                     learned_deck TEXT, new_deck TEXT,
+                     FOREIGN KEY(user_id) REFERENCES users(id))''')
+
+        # Create table for runs
+        c.execute('''CREATE TABLE IF NOT EXISTS runs
+                     (run_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      timestamp TEXT NOT NULL,
+                      gpt_model TEXT,
+                      audio_provider TEXT,
+                      language_id INTEGER,
+                      FOREIGN KEY(language_id) REFERENCES languages(id))''')
+
+        # Create table for gpt_responses
+        c.execute('''CREATE TABLE IF NOT EXISTS gpt_responses
+                     (run_id INTEGER,
+                      n_sentences INTEGER,
+                      sentence_order INTEGER,
+                      sentence TEXT,
+                      translation TEXT,
+                      new_word TEXT,
+                      n_words INTEGER,
+                      n_known_words INTEGER,
+                      n_new_words INTEGER,
+                      n_rogue_words INTEGER,
+                      filter_condition TEXT,
+                      meets_criteria BOOLEAN,
+                      FOREIGN KEY(run_id) REFERENCES runs(run_id))''')
+
+        conn.commit()
+        conn.close()
+
+
 
     def create_user_config_frame(self):
         self.user_config_frame = tk.Frame(self.root)
@@ -46,12 +103,16 @@ class MainApp:
         tk.Button(self.user_config_frame, text="Add New User", command=self.add_new_user).grid(row=4, column=0, columnspan=2, pady=10)
         
     def load_all_saved_users(self):
-        if os.path.exists(CONFIGURATIONS_FILE):
-            with open(CONFIGURATIONS_FILE, 'r') as f:
-                all_configurations = json.load(f)
-                user_profiles = list(all_configurations.get('user_configuration', {}).keys())
-                self.saved_users_dropdown["values"] = user_profiles
+        
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
 
+        c.execute("SELECT profile_name FROM users")
+        user_profiles = [row[0] for row in c.fetchall()]
+
+        self.saved_users_dropdown["values"] = user_profiles    
+        conn.close()
+            
     def proceed_with_selected_user(self):
         selected_user = self.saved_users_var.get()
         if selected_user:
@@ -59,6 +120,9 @@ class MainApp:
             self.set_user_configuration(selected_user)
             self.user_config_frame.pack_forget()
             self.language_config_frame.pack(pady=10, fill=tk.BOTH, expand=True)
+            
+            # Load the configurations into the dropdown
+            self.load_language_configurations_to_dropdown()
 
     def add_new_user(self):
         new_user = simpledialog.askstring("Input", "Enter new user profile name:")
@@ -69,42 +133,49 @@ class MainApp:
             self.load_all_saved_users()
 
     def set_user_configuration(self, user_name):
-        if os.path.exists(CONFIGURATIONS_FILE):
-            with open(CONFIGURATIONS_FILE, 'r') as f:
-                all_configurations = json.load(f)
-        else:
-            all_configurations = {}
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
 
-        # Update the user configuration
-        user_config = all_configurations.get('user_configuration', {})
-        user_config[user_name] = {' ': user_name}
-        all_configurations['user_configuration'] = user_config
+        # Insert or ignore (in case of duplicate profile_name)
+        c.execute("INSERT OR IGNORE INTO users (profile_name) VALUES (?)", (user_name,))
+        conn.commit()
 
-        with open(CONFIGURATIONS_FILE, 'w') as f:
-            json.dump(all_configurations, f)
+        # Get the user ID of the selected/added user
+        c.execute("SELECT id FROM users WHERE profile_name=?", (user_name,))
+        self.selected_user_id = c.fetchone()[0]
+
+        conn.close()
         
     def create_language_config_frame(self):
-        self.language_config_frame = tk.Frame(self.root)
         
-        # Configure the language_config_frame's rows and columns
-        for i in range(5):  # Assuming 5 rows
-            self.language_config_frame.rowconfigure(i, weight=1)
+        self.language_config_frame = tk.Frame(self.root)
+
+        # Configure the outer rows and columns to absorb extra space
+        self.language_config_frame.rowconfigure(0, weight=1)
+        self.language_config_frame.rowconfigure(6, weight=1)
         self.language_config_frame.columnconfigure(0, weight=1)
-        self.language_config_frame.columnconfigure(1, weight=1)
+        self.language_config_frame.columnconfigure(3, weight=1)
 
-        tk.Label(self.language_config_frame, text="Language Configuration", font=("Arial", 16)).grid(row=0, column=0, columnspan=2, pady=10)
+        # Create the label for "Language Configuration" in the center rows/columns
+        tk.Label(self.language_config_frame, text="Language Configuration", font=("Arial", 16)).grid(row=1, column=1, columnspan=2, pady=10)
 
+        # Create the dropdown (combobox) for language configurations
         self.configuration_var = tk.StringVar(self.root)
         self.dropdown = ttk.Combobox(self.language_config_frame, textvariable=self.configuration_var)
         self.load_language_configurations_to_dropdown()
-        self.dropdown.grid(row=1, column=0, columnspan=2, pady=10, sticky="ew")
+        self.dropdown.grid(row=2, column=1, columnspan=2, pady=10, sticky="ew")
 
-        tk.Button(self.language_config_frame, text="Add New Configuration", command=self.add_new_configuration).grid(row=2, column=0, pady=10)
-        tk.Button(self.language_config_frame, text="Delete Configuration", command=self.delete_configuration).grid(row=2, column=1, pady=10)
-        tk.Button(self.language_config_frame, text="Execute", command=self.execute_load_vocab).grid(row=3, columnspan=2, pady=10)
-        
-        # Back button to return to the user config screen
-        tk.Button(self.language_config_frame, text="Back", command=self.back_to_user_config).grid(row=4, columnspan=2, pady=10)
+        # Create the "Add New Configuration" button
+        tk.Button(self.language_config_frame, text="Add New Configuration", command=self.add_new_configuration).grid(row=3, column=1, pady=10)
+
+        # Create the "Delete Configuration" button
+        tk.Button(self.language_config_frame, text="Delete Configuration", command=self.delete_language_configuration).grid(row=3, column=2, pady=10)
+
+        # Create the "Execute" button
+        tk.Button(self.language_config_frame, text="Execute", command=self.execute_load_vocab).grid(row=4, column=1, columnspan=2, pady=10)
+
+        # Create the "Back" button to return to the user config screen
+        tk.Button(self.language_config_frame, text="Back", command=self.back_to_user_config).grid(row=5, column=1, columnspan=2, pady=10)
 
     def back_to_user_config(self):
         self.language_config_frame.pack_forget()
@@ -117,6 +188,8 @@ class MainApp:
                 user_configuration = all_configurations.get('user_configuration', {})
                 anki_profile_name = user_configuration.get('anki_profile_name', "")
                 self.saved_users_var.set(anki_profile_name)
+        
+
 
     def save_user_configuration(self):
         if os.path.exists(CONFIGURATIONS_FILE):
@@ -134,18 +207,26 @@ class MainApp:
             json.dump(all_configurations, f)
             
         self.user_config_frame.pack_forget()  # Hide user configuration frame   
-        self.user_config_frame.pack_forget()
         self.language_config_frame.pack(pady=10, fill=tk.BOTH, expand=True)
 
 
     def load_language_configurations_to_dropdown(self):
-        if os.path.exists(CONFIGURATIONS_FILE):
-            with open(CONFIGURATIONS_FILE, 'r') as f:
-                all_configurations = json.load(f)
-                self.language_configurations = all_configurations.get("language_configurations", {})
-            self.dropdown["values"] = list(self.language_configurations.keys())
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+
+        # Fetch language configurations specific to the selected user
+        c.execute("SELECT configuration_name FROM languages WHERE user_id=?", (self.selected_user_id,))
+        configurations = [row[0] for row in c.fetchall()]
+        self.dropdown["values"] = configurations
+        
+        # Set the selected value of the dropdown to the next available value
+        if self.dropdown["values"]:
+            self.configuration_var.set(self.dropdown["values"][0])
         else:
-            self.language_configurations = {}
+            self.configuration_var.set('')
+
+        conn.close()
+
 
     def add_new_configuration(self):
         self.new_window = tk.Toplevel(self.root)
@@ -163,7 +244,7 @@ class MainApp:
         self.dropdown.grid(row=1, column=0, columnspan=2, pady=10)
 
         tk.Button(language_config_frame, text="Add New Configuration", command=self.add_new_configuration).grid(row=2, column=0, pady=10)
-        tk.Button(language_config_frame, text="Delete Configuration", command=self.delete_configuration).grid(row=2, column=1, pady=10)
+        tk.Button(language_config_frame, text="Delete Configuration", command=self.delete_language_configuration).grid(row=2, column=1, pady=10)
         tk.Button(language_config_frame, text="Execute", command=self.execute_load_vocab).grid(row=3, columnspan=2, pady=10)
 
     def execute_load_vocab(self):
@@ -185,22 +266,32 @@ class MainApp:
             edit_window = tk.Toplevel(self.root)
             edit_app = VocabApp(edit_window, self, selected_language_configuration)
 
-    def delete_configuration(self):
+    def delete_language_configuration(self):
         # Confirm the deletion
         answer = tk.messagebox.askyesno("Delete Configuration", "Are you sure you want to delete this language configuration?")
         if answer:
-            del self.language_configurations[self.configuration_var.get()]
-            
-            # Update the configurations file
-            if os.path.exists(CONFIGURATIONS_FILE):
-                with open(CONFIGURATIONS_FILE, 'r') as f:
-                    all_configurations = json.load(f)
-                all_configurations["language_configurations"] = self.language_configurations
-                
-                with open(CONFIGURATIONS_FILE, 'w') as f:
-                    json.dump(all_configurations, f)
-            
-            self.load_language_configurations_to_dropdown()
+            configuration_name = self.configuration_var.get()
+            conn = sqlite3.connect('database.db')
+            c = conn.cursor()
+    
+            try:
+                # Delete the selected language configuration from the database
+                c.execute("DELETE FROM languages WHERE configuration_name=? AND user_id=?", (configuration_name, self.selected_user_id))
+                conn.commit()
+            except sqlite3.Error as e:
+                print(f"Error deleting configuration from database: {e}")
+            finally:
+                conn.close()
+        
+        # Refresh the dropdown to reflect the change
+        self.load_language_configurations_to_dropdown()
+
+        # Set the selected value of the dropdown to the next available value
+        if self.dropdown["values"]:
+            self.configuration_var.set(self.dropdown["values"][0])
+        else:
+            self.configuration_var.set('')
+        
             
 class VocabApp:
     def __init__(self, root, main_app):
@@ -237,7 +328,7 @@ class VocabApp:
         self.add_new_card_button.pack(pady=10)
 
         # Save Button
-        tk.Button(root, text="Save Configuration", command=self.save_configuration).grid(row=1, columnspan=2, pady=20)
+        tk.Button(root, text="Save Configuration", command=self.save_language_configuration).grid(row=1, columnspan=2, pady=20)
 
     def add_learned_card_field(self):
         frame = tk.Frame(self.learned_frame)
@@ -267,28 +358,30 @@ class VocabApp:
         field_entry.grid(row=1, column=1, padx=5, pady=5)
         self.new_field_entries.append(field_entry)
 
-    def save_configuration(self):
+    def save_language_configuration(self):
         configuration_name = simpledialog.askstring("Input", "Enter name for this configuration:")
         if configuration_name:
-            learned_card_types_and_fields = {card.get(): field.get().split(", ") for card, field in zip(self.learned_card_entries, self.learned_field_entries)}
-            new_card_types_and_fields = {card.get(): field.get().split(", ") for card, field in zip(self.new_card_entries, self.new_field_entries)}
+            learned_deck = self.learned_deck_entry.get()
+            new_deck = self.new_deck_entry.get()
 
-            self.main_app.configurations[configuration_name] = {
-                "learned_deck": {
-                    "deck_name": self.learned_deck_entry.get(),
-                    "card_types_and_fields": learned_card_types_and_fields
-                },
-                "new_deck": {
-                    "deck_name": self.new_deck_entry.get(),
-                    "card_types_and_fields": new_card_types_and_fields
-                }
-            }
+            conn = sqlite3.connect('database.db')
+            c = conn.cursor()
 
-            with open(CONFIGURATIONS_FILE, 'w') as f:
-                json.dump(self.main_app.configurations, f)
-            self.main_app.load_configurations_to_dropdown()
-            self.root.destroy()
+            try:
+                # Insert new language configuration
+                c.execute("INSERT INTO languages (user_id, configuration_name, learned_deck, new_deck) VALUES (?, ?, ?, ?)",
+                          (self.main_app.selected_user_id, configuration_name, learned_deck, new_deck))
 
+                conn.commit()
+            except sqlite3.Error as e:
+                print(f"Error saving configuration to database: {e}")
+            finally:
+                conn.close()
+                
+        # After saving the new configuration, refresh the dropdown in the main app
+        self.main_app.load_language_configurations_to_dropdown()
+
+        self.root.destroy()
 
 root = tk.Tk()
 app = MainApp(root)
