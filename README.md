@@ -23,3 +23,4 @@ This application tries to fill that gap by using generative AI to do the followi
 5. Export the resulting sentences, along with English translation and audio, to my Anki deck for that language.
 
 ## Usage
+It's not done yet.
