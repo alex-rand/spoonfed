@@ -29,6 +29,7 @@ def main(gpt_model, audio_provider):
     new_vocab = new_vocab[~new_vocab.isin(known_vocab)]
 
     print(len(known_vocab))
+    print(known_vocab)
     #return(0)
     # Ask GPT to generate some new sentences
     # gpt_payload = gpt__generate_new_sentences(known_vocab, new_vocab, 10, "gpt-4")
@@ -71,7 +72,7 @@ def main(gpt_model, audio_provider):
     keepers = gpt_payload_enhanced[gpt_payload_enhanced['meets_criteria'] == True]
     
     # Call the audio-generating API, and add the filenames to the 'keepers' table
-    generate_audio(keepers, language="Hindi", anki_profile_name="Alex")
+  #  generate_audio(keepers, language="Hindi", anki_profile_name="Alex")
  
     # Create a new Anki card for each keeper
     keepers.apply(create_new_card, args=(gpt_model, audio_provider), axis=1)
@@ -79,6 +80,7 @@ def main(gpt_model, audio_provider):
    # Remove the keepers from the new cards deck
 
 main("gpt-4", "narakeet")
+
 
 
     # Print the resulting DataFrame
