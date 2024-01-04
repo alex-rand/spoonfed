@@ -15,8 +15,10 @@ class DecksHomepage(tk.Frame):
 
         # Fetch the configuration only if it has not been fetched yet and a user is selected
         configuration_data = self.fetch_user_configuration(self.controller.selected_user_id, self.controller.configuration_name)
-        print(configuration_data)
-        learned_deck_data = self.load_vocab_from_deck(configuration_data['learned_deck'], configuration_data['card_types_and_fields'])
+
+        # Load and tokenize the two decks from Anki
+        learned_deck_tokens = self.load_vocab_from_deck('learned_deck', configuration_data)
+        new_deck_tokens = self.load_vocab_from_deck('new_deck', configuration_data)
         
     ### CREATE THE WINDOW and ELEMENTS
     def create_deck_display_frame(self):
@@ -101,7 +103,7 @@ class DecksHomepage(tk.Frame):
                 conn.close()
 
     ### LOAD THE DATA VIA ANKICONNECT USING THE FIELDS RETRIEVED ABOVE
-    def load_vocab_from_deck(self, deck, card_types_and_fields):
+    def load_vocab_from_deck(self, deck, raw_config_data):
         """
         Load vocabulary words from Anki cards based on specified deck, card types, and fields.
 
@@ -112,6 +114,17 @@ class DecksHomepage(tk.Frame):
         Returns:
         - pd.Series: A series of unique vocabulary words.
         """
+        
+        # Extract deck and card_types_and_fields from raw_config_data
+        deck = raw_config_data.get(deck, None)
+        raw_card_types_and_fields = raw_config_data.get('card_types_and_fields', {})
+
+        # Transform card_types_and_fields into the required format
+        card_types_and_fields = {}
+        for card_type, fields in raw_card_types_and_fields.items():
+            # Split and clean the fields
+            clean_fields = [field.strip() for field in fields[0].split(',')]
+            card_types_and_fields[card_type] = clean_fields
 
         all_words = []
 
@@ -129,7 +142,7 @@ class DecksHomepage(tk.Frame):
             for field in fields:
                 col_name = f"fields.{field}.value"
                 if col_name in note_content.columns:
-                    note_content[col_name] = note_content[col_name].astype(str).apply(remove_non_devanagari)
+                    note_content[col_name] = note_content[col_name].astype(str).apply(self.remove_non_devanagari)
 
             # Extract words from all specified fields
             for field in fields:
@@ -144,6 +157,10 @@ class DecksHomepage(tk.Frame):
         combined = pd.concat(all_words, ignore_index=True).drop_duplicates(keep='first')
 
         return combined
+    
+    def remove_non_devanagari(self, text):
+        pattern = "[^\u0900-\u097F \n]"
+        return re.sub(pattern, '', text)
 #
 #
 #    # Additional code to populate the Treeview widgets in DecksHomepage
