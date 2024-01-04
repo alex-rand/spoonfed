@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import sqlite3
+import pandas as pd
 from anki_connect_functions import * 
 
 class DecksHomepage(tk.Frame):
@@ -20,17 +21,54 @@ class DecksHomepage(tk.Frame):
         learned_deck_tokens = self.load_vocab_from_deck('learned_deck', configuration_data)
         new_deck_tokens = self.load_vocab_from_deck('new_deck', configuration_data)
         
+        # Remove any tokens in learned_deck_tokens from new_deck_tokens
+        new_deck_tokens = new_deck_tokens[~new_deck_tokens.isin(learned_deck_tokens)]
+        
+        # Update the tables
+        self.insert_vocab_into_treeview(self.learned_deck_treeview, learned_deck_tokens)
+        self.insert_vocab_into_treeview(self.new_deck_treeview, new_deck_tokens)
+        
     ### CREATE THE WINDOW and ELEMENTS
     def create_deck_display_frame(self):
-        # Create two frames for the tables
-        self.learned_frame = tk.Frame(self)
-        self.new_frame = tk.Frame(self)
-        self.learned_frame.pack(side="left", fill="both", expand=True)
-        self.new_frame.pack(side="right", fill="both", expand=True)
+        # Main frame for content
+        main_frame = tk.Frame(self)
+        main_frame.pack(fill="both", expand=True)
+
+        # Upper frame for treeviews and counts
+        upper_frame = tk.Frame(main_frame)
+        upper_frame.pack(fill="both", expand=True)
+
+        # Lower frame for buttons
+        lower_frame = tk.Frame(main_frame)
+        lower_frame.pack(fill="x")
+
+        # Frames for the tables
+        self.learned_frame = tk.Frame(upper_frame)
+        self.new_frame = tk.Frame(upper_frame)
+        self.learned_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+        self.new_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
 
         # Create the Treeview widgets
         self.learned_deck_treeview = ttk.Treeview(self.learned_frame)
         self.new_deck_treeview = ttk.Treeview(self.new_frame)
+        
+        # Define columns for Treeview widgets
+        self.learned_deck_treeview['columns'] = ("learned_vocab")
+        self.new_deck_treeview['columns'] = ("new_vocab")
+    
+        # Configure column headings
+        self.learned_deck_treeview.heading("#0", text="", anchor="w")
+        self.learned_deck_treeview.heading("learned_vocab", text="Learned Vocabulary")
+    
+        self.new_deck_treeview.heading("#0", text="", anchor="w")
+        self.new_deck_treeview.heading("new_vocab", text="New Vocabulary")
+    
+        # Configure column display
+        self.learned_deck_treeview.column("#0", width=0, stretch="no")
+        self.learned_deck_treeview.column("learned_vocab", anchor="center")
+    
+        self.new_deck_treeview.column("#0", width=0, stretch="no")
+        self.new_deck_treeview.column("new_vocab", anchor="center")
 
         # Scrollbars for Treeviews
         learned_scrollbar = ttk.Scrollbar(self.learned_frame, orient="vertical", command=self.learned_deck_treeview.yview)
@@ -38,11 +76,65 @@ class DecksHomepage(tk.Frame):
         self.learned_deck_treeview.configure(yscrollcommand=learned_scrollbar.set)
         self.new_deck_treeview.configure(yscrollcommand=new_scrollbar.set)
 
+        # Labels for item counts
+        self.learned_count_label = tk.Label(self.learned_frame, text="Items: 0")
+        self.new_count_label = tk.Label(self.new_frame, text="Items: 0")
+        self.learned_count_label.pack(pady=(0, 10))
+        self.new_count_label.pack(pady=(0, 10))
+
+        # Buttons
+        add_sentence_btn = tk.Button(lower_frame, text="Add Custom Sentence", command=self.add_custom_sentence)
+        generate_iplus1_btn = tk.Button(lower_frame, text="Generate i+1", command=self.generate_iplus1)
+        generate_sentences_btn = tk.Button(lower_frame, text="Generate Sentences for Selected Token", command=self.generate_sentences_for_token)
+
+        add_sentence_btn.pack(side="left", padx=10, pady=10)
+        generate_iplus1_btn.pack(side="left", padx=10, pady=10)
+        generate_sentences_btn.pack(side="left", padx=10, pady=10)
+
         # Packing the widgets
         learned_scrollbar.pack(side="right", fill="y")
         new_scrollbar.pack(side="right", fill="y")
         self.learned_deck_treeview.pack(side="left", fill="both", expand=True)
         self.new_deck_treeview.pack(side="left", fill="both", expand=True)
+        
+        # Bind Ctrl+C to copy function for Treeviews
+        self.learned_deck_treeview.bind("<Command-c>", lambda e: self.copy_to_clipboard(e, self.learned_deck_treeview))
+        self.new_deck_treeview.bind("<Command-c>", lambda e: self.copy_to_clipboard(e, self.new_deck_treeview))
+
+            
+    def update_learned_deck_count(self):
+        # Count items in the learned deck Treeview
+        count = len(self.learned_deck_treeview.get_children())
+        self.learned_count_label.config(text=f"Items: {count}")
+
+    def update_new_deck_count(self):
+        # Count items in the new deck Treeview
+        count = len(self.new_deck_treeview.get_children())
+        self.new_count_label.config(text=f"Items: {count}")
+        
+    # Placeholder methods for button commands
+    def add_custom_sentence(self):
+        # Implement functionality here
+        pass
+    
+    def generate_iplus1(self):
+        # Implement functionality here
+        pass
+    
+    def generate_sentences_for_token(self):
+        # Implement functionality here
+        pass
+    
+    def copy_to_clipboard(self, event, treeview):
+        # Get the selected item in the Treeview
+        selected_item = treeview.focus()
+        if selected_item:
+            # Extract the value from the selected item
+            value = treeview.item(selected_item, "values")
+            if value:
+                # Copy the value to the clipboard
+                self.clipboard_clear()
+                self.clipboard_append(value[0])
     
     ### LOAD THE DB FIELDS FOR THE SELECTED LANGUAGE CONFIGURATION
     def fetch_user_configuration(self, user_id, configuration_name):
@@ -158,10 +250,23 @@ class DecksHomepage(tk.Frame):
 
         return combined
     
+    # This could be more general with conditional logic based on the 'language' field of the language configuration
     def remove_non_devanagari(self, text):
         pattern = "[^\u0900-\u097F \n]"
         return re.sub(pattern, '', text)
-#
+    
+    def insert_vocab_into_treeview(self, treeview, vocab_tokens):
+        # Clear existing content in the Treeview
+        for item in treeview.get_children():
+            treeview.delete(item)
+
+        # Insert new vocab tokens
+        for token in vocab_tokens:
+            treeview.insert('', 'end', values=(token,))
+
+        # Update the count labels
+        self.update_learned_deck_count()
+        self.update_new_deck_count()
 #
 #    # Additional code to populate the Treeview widgets in DecksHomepage
 #    # Assuming 'self.learned_deck_treeview' and 'self.new_deck_treeview' are the Treeview widgets

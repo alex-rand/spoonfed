@@ -17,7 +17,7 @@ def gpt__generate_new_sentences(known_words, new_words, n_sentences, model):
   prompt =f"""
     
     I need your help to output a .csv file containing new Hindi sentences based on a student's existing vocabulary.
-    Your output must be only a .csv file, with absolutely no other content. 
+    Your output must be only a .csv file, with no other content. 
     
     Imagine you are a Hindi teacher, helping a native English speaker who has just started learning Hindi. 
     So far the student has learned the following words, which we can call the 'learned words', and are as follows:
