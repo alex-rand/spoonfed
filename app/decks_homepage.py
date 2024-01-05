@@ -3,6 +3,7 @@ from tkinter import ttk
 import sqlite3
 import pandas as pd
 from anki_connect_functions import * 
+from iplusone import IPlusOneFrame
 
 class DecksHomepage(tk.Frame):
     def __init__(self, parent, controller):
@@ -18,15 +19,15 @@ class DecksHomepage(tk.Frame):
         configuration_data = self.fetch_user_configuration(self.controller.selected_user_id, self.controller.configuration_name)
 
         # Load and tokenize the two decks from Anki
-        learned_deck_tokens = self.load_vocab_from_deck('learned_deck', configuration_data)
-        new_deck_tokens = self.load_vocab_from_deck('new_deck', configuration_data)
+        self.controller.learned_deck_tokens = self.load_vocab_from_deck('learned_deck', configuration_data)
+        self.controller.new_deck_tokens = self.load_vocab_from_deck('new_deck', configuration_data)
         
-        # Remove any tokens in learned_deck_tokens from new_deck_tokens
-        new_deck_tokens = new_deck_tokens[~new_deck_tokens.isin(learned_deck_tokens)]
+        # Remove 'new' tokens that actually already occur in the learned tokens
+        self.controller.new_deck_tokens = self.controller.new_deck_tokens[~self.controller.new_deck_tokens.isin(self.controller.learned_deck_tokens)]
         
         # Update the tables
-        self.insert_vocab_into_treeview(self.learned_deck_treeview, learned_deck_tokens)
-        self.insert_vocab_into_treeview(self.new_deck_treeview, new_deck_tokens)
+        self.insert_vocab_into_treeview(self.learned_deck_treeview, self.controller.learned_deck_tokens)
+        self.insert_vocab_into_treeview(self.new_deck_treeview, self.controller.new_deck_tokens)
         
     ### CREATE THE WINDOW and ELEMENTS
     def create_deck_display_frame(self):
@@ -59,14 +60,12 @@ class DecksHomepage(tk.Frame):
         # Configure column headings
         self.learned_deck_treeview.heading("#0", text="", anchor="w")
         self.learned_deck_treeview.heading("learned_vocab", text="Learned Vocabulary")
-    
         self.new_deck_treeview.heading("#0", text="", anchor="w")
         self.new_deck_treeview.heading("new_vocab", text="New Vocabulary")
     
         # Configure column display
         self.learned_deck_treeview.column("#0", width=0, stretch="no")
         self.learned_deck_treeview.column("learned_vocab", anchor="center")
-    
         self.new_deck_treeview.column("#0", width=0, stretch="no")
         self.new_deck_treeview.column("new_vocab", anchor="center")
 
@@ -85,7 +84,7 @@ class DecksHomepage(tk.Frame):
         # Buttons
         add_sentence_btn = tk.Button(lower_frame, text="Add Custom Sentence", command=self.add_custom_sentence)
         generate_iplus1_btn = tk.Button(lower_frame, text="Generate i+1", command=self.generate_iplus1)
-        generate_sentences_btn = tk.Button(lower_frame, text="Generate Sentences for Selected Token", command=self.generate_sentences_for_token)
+        generate_sentences_btn = tk.Button(lower_frame, text="Generate Sentences for Selected Token", command=self.generate_sentences_for_selected_token)
 
         add_sentence_btn.pack(side="left", padx=10, pady=10)
         generate_iplus1_btn.pack(side="left", padx=10, pady=10)
@@ -118,10 +117,10 @@ class DecksHomepage(tk.Frame):
         pass
     
     def generate_iplus1(self):
-        # Implement functionality here
-        pass
+        # Move to the Language Configuration frame
+        self.controller.show_frame(IPlusOneFrame)
     
-    def generate_sentences_for_token(self):
+    def generate_sentences_for_selected_token(self):
         # Implement functionality here
         pass
     
@@ -267,14 +266,4 @@ class DecksHomepage(tk.Frame):
         # Update the count labels
         self.update_learned_deck_count()
         self.update_new_deck_count()
-#
-#    # Additional code to populate the Treeview widgets in DecksHomepage
-#    # Assuming 'self.learned_deck_treeview' and 'self.new_deck_treeview' are the Treeview widgets
-#    for field in fields:
-#        col_name = f"fields.{field}.value"
-#        if col_name in note_content.columns:
-#            # Insert each word into the appropriate Treeview
-#            for word in note_content[col_name]:
-#                self.learned_deck_treeview.insert('', 'end', text=word)
-    
-    
+

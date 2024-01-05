@@ -4,6 +4,7 @@ import sqlite3
 from user_config import UserConfigFrame
 from language_config import LanguageConfigFrame
 from decks_homepage import DecksHomepage
+from iplusone import IPlusOneFrame
 
 # Main Application Class
 class MainApp(tk.Tk):
@@ -14,16 +15,19 @@ class MainApp(tk.Tk):
         # Initialize the SQLite database
         self.setup_database()
 
+        # Initialize some 'global' variables to be made available across all frames of the app
         self.selected_user_id = None
+        self.learned_deck_tokens = [],
+        self.new_deck_tokens = []
 
         # Tell the app what frames exist. These are all classes we define below
         # representing different screens in the UX.
         self.frames = {}
-        for F in (UserConfigFrame, LanguageConfigFrame, DecksHomepage):
+        for F in (UserConfigFrame, LanguageConfigFrame, DecksHomepage, IPlusOneFrame):
             frame = F(parent=self, controller=self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
-
+            
         # Start by showing the first frame
         self.show_frame(UserConfigFrame)
 

@@ -9,13 +9,14 @@ con <- dbConnect(RSQLite::SQLite(), "database.db")
 
 # Write your SQL query
 query <- "SELECT * FROM gpt_responses;"
+query <- "SELECT * FROM runs;"
 query <- "SELECT * FROM users;"
 query <- "SELECT * FROM languages;"
 
 # Use dbGetQuery to execute the query and store the result in a data frame
 dbListTables(con)
 df <- dbGetQuery(con, query)
-df
+df |> view()
 # Convert the data frame to a tibble
 tibble_df <- as_tibble(df)
 
