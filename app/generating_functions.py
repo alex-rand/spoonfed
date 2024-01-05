@@ -18,6 +18,9 @@ def generate(controller, calling_frame):
     # Generate sentences
     gpt_payload = gpt__generate_new_sentences(learned_deck_tokens, new_deck_tokens, n_sentences, model)
     
+    print("gpt_payload:")
+    print(gpt_payload)
+    
     # Quality control and examine the generated sentences
     gpt_payload_enhanced = evaluate_gpt_response(gpt_payload, learned_deck_tokens, new_deck_tokens)
     
@@ -63,26 +66,26 @@ def gpt__generate_new_sentences(learned_deck_tokens, new_deck_tokens, n_sentence
       Include as many of the words from the list of 'learned words' as you can in each sentence while still respecting the rules I mentioned above.
       Always respect Hindi's standard subject-object-verb structure.  
       The output format of the new sentences you generate should be a .csv with a column for the Hindi sentence, 
-      a column for the English translation, and a column specifying which of the 'new words' you've included in that sentence.  
+      a column for the English translation called 'translation', and a column called 'new_word' specifying which of the new words you've included in that sentence.  
       Remember: you must include exactly _one_ of the 'new words' in each sentence, and the rest of the words must all already be present in the 'learned words', except for the exceptions I mentioned above.
       The output MUST be a .csv file with one column exactly as specified above. 
-      Do NOT say anything else, just output the raw .csv file and say nothing else. 
+      Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
       """ 
     messages = [
       {"role": "system", "content": f"You are a helpful assistant. Your response must be in .CSV format."},
       {"role": "user", "content": prompt},
     ] 
     
-    ### DELETE from here
-    import ast
-    # Open the file in read mode ('r')
-    with open('test-payload.txt', 'r') as f:
-        # Read the entire file to a string
-        test_payload = f.read()
-        
-    gpt_payload = ast.literal_eval(test_payload)
-    
-    return(gpt_payload)
+   # ### DELETE from here
+   # import ast
+   # # Open the file in read mode ('r')
+   # with open('test-payload.txt', 'r') as f:
+   #     # Read the entire file to a string
+   #     test_payload = f.read()
+   #     
+   # gpt_payload = ast.literal_eval(test_payload)
+   # 
+   # return(gpt_payload)
   
     ###  /DELETE up to here
     response = openai.ChatCompletion.create(
@@ -95,10 +98,23 @@ def gpt__generate_new_sentences(learned_deck_tokens, new_deck_tokens, n_sentence
       presence_penalty=0.0
     )
    
+   
     generated_text = [
       choice.message["content"].strip() for choice in response["choices"]
     ]
-   
+    
+    print("generated_text:")
+    print(generated_text)
+    
+  #  generated_text_string = generated_text[0]
+  #  print("generated_text_string:")
+  #  print(generated_text_string)
+  #  
+  #  generated_text_trimmed = generated_text_string.strip()
+  #  generated_text_trimmed = generated_text_trimmed[6:-3].strip()
+  #  print("generated_text_trimmed:")
+  #  print(generated_text_trimmed)
+  # 
     return generated_text
  
  # This function quality-checks the GPT payload, then it generates some diagnostics about the content of each sentence
@@ -110,6 +126,9 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
     except pd.errors.ParserError:
         raise ValueError("The GPT response string does not match the format of a CSV file.")
       
+    print("de-csv'd payload:")
+    print(gpt_payload)
+    
     # Count the total number of sentences in the payload
     gpt_payload['n_sentences'] = len(gpt_payload)
     
