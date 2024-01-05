@@ -41,7 +41,8 @@ class UserConfigFrame(tk.Frame):
         c.execute("SELECT profile_name FROM users")
         user_profiles = [row[0] for row in c.fetchall()]
 
-        self.saved_users_dropdown["values"] = user_profiles    
+        self.saved_users_dropdown["values"] = user_profiles   
+        self.saved_users_dropdown.current(0) 
         conn.close()
 
     ### Create a new user and append to the database
