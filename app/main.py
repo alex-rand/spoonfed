@@ -26,6 +26,7 @@ class MainApp(QMainWindow):
 
         # Initialize some 'global' variables to be made available across all frames of the app
         self.selected_user_id = None
+        #self.selected_language = 
         self.learned_deck_tokens = []
         self.new_deck_tokens = []
 

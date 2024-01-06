@@ -12,27 +12,6 @@ class IPlusOneFrameQt(QWidget):
     def initUI(self):
         main_layout = QVBoxLayout(self)
 
-        # Audio-related widgets sub-frame
-        self.audio_frame = QFrame(self)
-        main_layout.addWidget(self.audio_frame)
-        audio_layout = QVBoxLayout(self.audio_frame)
-
-        # Checkbox for 'with audio'
-        self.audio_checkbox = QCheckBox('with audio', self.audio_frame)
-        self.audio_checkbox.setChecked(True)
-        self.audio_checkbox.stateChanged.connect(self.toggle_audio_options)
-        audio_layout.addWidget(self.audio_checkbox)
-
-        # Label and Picklist for 'choose audio source'
-        self.audio_source_label = QLabel('Choose audio source:', self.audio_frame)
-        self.audio_source_picklist = QComboBox(self.audio_frame)
-        self.audio_source_picklist.addItems(['Narakeet', 'Fake'])
-        self.audio_source_picklist.setCurrentIndex(0)
-        self.toggle_audio_options()
-
-        audio_layout.addWidget(self.audio_source_label)
-        audio_layout.addWidget(self.audio_source_picklist)
-
         # Label and Picklist for 'choose model'
         self.model_label = QLabel('Choose model:', self)
         self.model_picklist = QComboBox(self)
@@ -70,6 +49,28 @@ class IPlusOneFrameQt(QWidget):
         table_layout.addWidget(scrollbar)
 
         main_layout.addLayout(table_layout)
+        
+        # Audio-related widgets sub-frame
+        self.audio_frame = QFrame(self)
+        main_layout.addWidget(self.audio_frame)
+        audio_layout = QVBoxLayout(self.audio_frame)
+
+        # Checkbox for 'with audio'
+        self.audio_checkbox = QCheckBox('with audio', self.audio_frame)
+        self.audio_checkbox.setChecked(True)
+        self.audio_checkbox.stateChanged.connect(self.toggle_audio_options)
+        audio_layout.addWidget(self.audio_checkbox)
+
+        # Label and Picklist for 'choose audio source'
+        self.audio_source_label = QLabel('Choose audio source:', self.audio_frame)
+        self.audio_source_picklist = QComboBox(self.audio_frame)
+        self.audio_source_picklist.addItems(['Narakeet', 'Fake'])
+        self.audio_source_picklist.setCurrentIndex(0)
+        self.toggle_audio_options()
+
+        audio_layout.addWidget(self.audio_source_label)
+        audio_layout.addWidget(self.audio_source_picklist)
+
 
     def toggle_audio_options(self):
         if self.audio_checkbox.isChecked():

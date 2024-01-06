@@ -3,14 +3,17 @@ from PyQt5.QtCore import Qt
 import sqlite3
 import pandas as pd
 from anki_connect_functions import *
-# from iplusone_qt import IPlusOneFrameQt  # Assuming you have converted IPlusOneFrame to PyQt
+from iplusone import IPlusOneFrameQt
 import re
 
 class DecksHomepageQt(QWidget):
-    def __init__(self, parent=None, controller=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.controller = controller
+        self.controller = parent
         self.create_deck_display_frame()
+        
+      # c.execute("SELECT id FROM users WHERE profile_name=?", (user_name,))
+      # self.controller.selected_user_id = c.fetchone()[0]
 
     def showEvent(self, event):
         """Override the showEvent to fetch configuration when the frame is shown."""
@@ -157,34 +160,81 @@ class DecksHomepageQt(QWidget):
             if conn:
                 conn.close()
 
+    ### LOAD THE DATA VIA ANKICONNECT USING THE FIELDS RETRIEVED ABOVE
     def load_vocab_from_deck(self, deck, raw_config_data):
         """
-        Load vocabulary words from Anki cards based on specified deck and configuration.
+        Load vocabulary words from Anki cards based on specified deck, card types, and fields.
+
+        Parameters:
+        - deck (str): The name of the Anki deck.
+        - card_types_and_fields (dict): A dictionary where keys are card types and values are lists of fields.
+
+        Returns:
+        - pd.Series: A series of unique vocabulary words.
         """
-        deck_name = raw_config_data.get(deck, None)
-        card_types_and_fields = raw_config_data.get('card_types_and_fields', {})
+        
+        # Extract deck and card_types_and_fields from raw_config_data
+        deck = raw_config_data.get(deck, None)
+        raw_card_types_and_fields = raw_config_data.get('card_types_and_fields', {})
+        configuration_language = raw_config_data.get('configuration_language', None)
+
+        # Transform card_types_and_fields into the required format
+        card_types_and_fields = {}
+        for card_type, fields in raw_card_types_and_fields.items():
+            # Split and clean the fields
+            clean_fields = [field.strip() for field in fields[0].split(',')]
+            card_types_and_fields[card_type] = clean_fields
 
         all_words = []
 
         for card_type, fields in card_types_and_fields.items():
-            query = f'"deck:{deck_name}" "note:{card_type}"'
+            # Construct the query for the card type
+            query = f'"deck:{deck}" "note:{card_type}"'
+
+            # Retrieve note IDs for the card type
             note_ids = ankiconnect_invoke('findNotes', query=query)
+
+            # Retrieve note content for the card type
             note_content = pd.json_normalize(ankiconnect_invoke('notesInfo', notes=note_ids))
 
+            # Remove non-Devanagari text for all specified fields
             for field in fields:
                 col_name = f"fields.{field}.value"
                 if col_name in note_content.columns:
-                    note_content[col_name] = note_content[col_name].astype(str).apply(self.remove_non_devanagari)
+                    note_content[col_name] = note_content[col_name].astype(str).apply(lambda text: self.remove_non_language_tokens(text, configuration_language))
+                    pass
+            # Extract words from all specified fields
+            for field in fields:
+                col_name = f"fields.{field}.value"
+                if col_name in note_content.columns:
+                    words = (note_content[col_name].str.split(expand=True)
+                             .stack()
+                             .reset_index(level=1, drop=True))
+                    all_words.append(words)
 
-                for field in fields:
-                    col_name = f"fields.{field}.value"
-                    if col_name in note_content.columns:
-                        words = (note_content[col_name].str.split(expand=True).stack().reset_index(level=1, drop=True))
-                        all_words.append(words)
-
+        # Combine all words and remove duplicates
         combined = pd.concat(all_words, ignore_index=True).drop_duplicates(keep='first')
+
         return combined
 
-    def remove_non_devanagari(self, text):
-        pattern = "[^\u0900-\u097F \n]"
+    def remove_non_language_tokens(self, text, language):
+        """
+        Removes all characters not belonging to the specified language from the given text.
+
+        Parameters:
+        - text (str): The text to be filtered.
+        - language (str): The language based on which the filtering is to be done.
+
+        Returns:
+        - str: The filtered text containing only characters of the specified language.
+        """
+        if language == 'Hindi':
+            pattern = "[^\u0900-\u097F \n]"
+        elif language == 'Arabic':
+            pattern = "[^\u0600-\u06FF \n]"
+        elif language == 'Mandarin':
+            pattern = "[^\u4e00-\u9fff \n]"
+        else:
+            raise ValueError("Unsupported language")
+
         return re.sub(pattern, '', text)

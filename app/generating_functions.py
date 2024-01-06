@@ -7,11 +7,13 @@ from datetime import datetime
 
 def generate(controller, calling_frame):
   
+    print(controller)
     # Get all the user specifications from the calling frame, or from 'global' state
-    with_audio = calling_frame.audio_checkbox_var.get()
-    audio_source = calling_frame.audio_source_picklist.get()
-    model = calling_frame.model_picklist.get()
-    n_sentences = int(calling_frame.nsentences_picklist.get())
+    # For a QCheckBox in PyQt
+    with_audio = calling_frame.audio_checkbox.isChecked()
+    audio_source = calling_frame.audio_source_picklist.currentText()
+    model = calling_frame.model_picklist.currentText()
+    n_sentences = int(calling_frame.nsentences_picklist.currentText())
     learned_deck_tokens = controller.learned_deck_tokens
     new_deck_tokens = controller.new_deck_tokens
     
