@@ -1,21 +1,18 @@
 from PyQt5.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QComboBox, QPushButton, QTreeWidget, QTreeWidgetItem, QScrollBar
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPropertyAnimation, QSequentialAnimationGroup, pyqtProperty
+from PyQt5.QtGui import QColor, QPalette
 from generating_functions import generate
-import pandas as pd
+from threading import Thread
 
 class IPlusOneFrameQt(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.controller = parent  # Set controller to parent, which is an instance of MainApp
+        self.controller = parent  # Set controller to parent, which is an instance of MainApp 
         self.initUI()
 
     def showEvent(self, event):
         """Override the showEvent"""
         super().showEvent(event)
-        
-        # Your existing logic here
-        # Example: print to test if controller is set correctly
-        print("Controller in IPlusOneFrameQt:", self.controller)
 
     def initUI(self):
         main_layout = QVBoxLayout(self)
@@ -42,6 +39,34 @@ class IPlusOneFrameQt(QWidget):
         self.generate_button = QPushButton("Generate Sentences", self)
         self.generate_button.clicked.connect(self.on_press_generate)
         main_layout.addWidget(self.generate_button)
+        
+        # Loading Indicator
+        self.loading_label = FadeLabel('Loading...', self)
+        self.loading_label.setAlignment(Qt.AlignCenter)
+        palette = self.loading_label.palette()
+        palette.setColor(QPalette.WindowText, QColor('red'))
+        self.loading_label.setPalette(palette)
+        self.loading_label.hide()
+        main_layout.addWidget(self.loading_label)
+
+        # Fade-out animation
+        fade_out = QPropertyAnimation(self.loading_label, b"opacity")
+        fade_out.setDuration(1000)
+        fade_out.setStartValue(1)
+        fade_out.setEndValue(0)
+
+        # Fade-in animation
+        fade_in = QPropertyAnimation(self.loading_label, b"opacity")
+        fade_in.setDuration(1000)
+        fade_in.setStartValue(0)
+        fade_in.setEndValue(1)
+
+        # Sequential animation group
+        self.animation = QSequentialAnimationGroup()
+        self.animation.addAnimation(fade_out)
+        self.animation.addAnimation(fade_in)
+        self.animation.setLoopCount(-1)  # Loop indefinitely
+
 
         # Scrollable table
         self.table = QTreeWidget(self)
@@ -83,7 +108,6 @@ class IPlusOneFrameQt(QWidget):
         audio_layout.addWidget(self.audio_source_label)
         audio_layout.addWidget(self.audio_source_picklist)
 
-
     def toggle_audio_options(self):
         if self.audio_checkbox.isChecked():
             self.audio_source_label.show()
@@ -93,10 +117,28 @@ class IPlusOneFrameQt(QWidget):
             self.audio_source_picklist.hide()
 
     def on_press_generate(self):
-        # Call the generate function and handle the returned data
+        self.loading_label.show()  
+        self.generate_button.setEnabled(False)
+        self.animation.start()  
+
+        # Create and start a thread for the generate function
+        thread = Thread(target=self.run_generation)
+        thread.start()
+        
+    def run_generation(self):
         generated_sentences = generate(self.controller, self)
+        self.update_ui_after_generation(generated_sentences)
+
+    def update_ui_after_generation(self, generated_sentences):
         if generated_sentences is not None:
-           self.populate_treeview(generated_sentences)
+            self.populate_treeview(generated_sentences)
+            
+        # Update UI elements back in the main thread
+        self.loading_label.hide()  
+        self.generate_button.setEnabled(True) 
+        self.animation.stop()  # Stop the animation
+        self.loading_label.hide()
+        self.generate_button.setEnabled(True)
 
     def populate_treeview(self, data_frame):
         self.table.clear()
@@ -140,5 +182,22 @@ class IPlusOneFrameQt(QWidget):
     def cancel_export(self):
         # Implement functionality to cancel export
         pass
+    
+class FadeLabel(QLabel):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self._opacity = 1
 
-    # ... rest of the class ...
+    def getOpacity(self):
+        return self._opacity
+
+    def setOpacity(self, opacity):
+        self._opacity = opacity
+        palette = self.palette()
+        color = palette.color(QPalette.WindowText)
+        color.setAlphaF(opacity)
+        palette.setColor(QPalette.WindowText, color)
+        self.setPalette(palette)
+
+    opacity = pyqtProperty(float, getOpacity, setOpacity)
+
