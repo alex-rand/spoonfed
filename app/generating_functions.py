@@ -6,16 +6,16 @@ import sqlite3
 from datetime import datetime
 
 def generate(controller, calling_frame):
-  
-    print(controller)
+    print("NOW")
+    print(calling_frame.controller)
     # Get all the user specifications from the calling frame, or from 'global' state
     # For a QCheckBox in PyQt
     with_audio = calling_frame.audio_checkbox.isChecked()
     audio_source = calling_frame.audio_source_picklist.currentText()
     model = calling_frame.model_picklist.currentText()
     n_sentences = int(calling_frame.nsentences_picklist.currentText())
-    learned_deck_tokens = controller.learned_deck_tokens
-    new_deck_tokens = controller.new_deck_tokens
+    learned_deck_tokens = calling_frame.controller.learned_deck_tokens
+    new_deck_tokens = calling_frame.controller.new_deck_tokens
     
     # Generate sentences
     gpt_payload = gpt__generate_new_sentences(learned_deck_tokens, new_deck_tokens, n_sentences, model)
@@ -63,12 +63,13 @@ def gpt__generate_new_sentences(learned_deck_tokens, new_deck_tokens, n_sentence
       - Each sentence must include a subject, a verb, and an object. 
       Please use correct grammar and formal sentence structure when writing the sentences.
       Include as many of the words from the list of 'learned words' as you can in each sentence while still respecting the rules I mentioned above.
+      Try to include a different 'new word' in each sentence.
       Always respect Hindi's standard subject-object-verb structure.  
       The output format of the new sentences you generate should be a .csv with a column for the Hindi sentence, 
-      a column for the English translation, and a column specifying which of the 'new words' you've included in that sentence.  
+      a column for the English translation called 'translation', and a column called 'new_word' specifying which of the new words you've included in that sentence.  
       Remember: you must include exactly _one_ of the 'new words' in each sentence, and the rest of the words must all already be present in the 'learned words', except for the exceptions I mentioned above.
       The output MUST be a .csv file with one column exactly as specified above. 
-      Do NOT say anything else, just output the raw .csv file and say nothing else. 
+      Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
       """ 
     messages = [
       {"role": "system", "content": f"You are a helpful assistant. Your response must be in .CSV format."},
@@ -76,15 +77,15 @@ def gpt__generate_new_sentences(learned_deck_tokens, new_deck_tokens, n_sentence
     ] 
     
     ### DELETE from here
-    import ast
-    # Open the file in read mode ('r')
-    with open('test-payload.txt', 'r') as f:
-        # Read the entire file to a string
-        test_payload = f.read()
-        
-    gpt_payload = ast.literal_eval(test_payload)
-    
-    return(gpt_payload)
+ #   import ast
+ #   # Open the file in read mode ('r')
+ #   with open('test-payload.txt', 'r') as f:
+ #       # Read the entire file to a string
+ #       test_payload = f.read()
+ #       
+ #   gpt_payload = ast.literal_eval(test_payload)
+ #   
+ #   return(gpt_payload)
   
     ###  /DELETE up to here
     response = openai.ChatCompletion.create(

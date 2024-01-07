@@ -4,10 +4,18 @@ from generating_functions import generate
 import pandas as pd
 
 class IPlusOneFrameQt(QWidget):
-    def __init__(self, parent=None, controller=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.controller = controller
+        self.controller = parent  # Set controller to parent, which is an instance of MainApp
         self.initUI()
+
+    def showEvent(self, event):
+        """Override the showEvent"""
+        super().showEvent(event)
+        
+        # Your existing logic here
+        # Example: print to test if controller is set correctly
+        print("Controller in IPlusOneFrameQt:", self.controller)
 
     def initUI(self):
         main_layout = QVBoxLayout(self)
@@ -37,8 +45,12 @@ class IPlusOneFrameQt(QWidget):
 
         # Scrollable table
         self.table = QTreeWidget(self)
-        self.table.setColumnCount(3)  # Adjust number of columns based on your data
-        self.table.setHeaderLabels(['Column1', 'Column2', 'Column3'])  # Adjust headers based on your data
+        self.table.setColumnCount(8)  # Set to 11 for the number of columns you have
+        self.table.setHeaderLabels([
+            'Sentence', 'Translation', 'New Word', 
+            'Number of Words', 'Number of Known Words', 'Number of New Words',
+            'Number of Rogue Words', 'Meets Criteria'
+        ])  
 
         table_layout = QHBoxLayout()
         table_layout.addWidget(self.table)
@@ -84,12 +96,21 @@ class IPlusOneFrameQt(QWidget):
         # Call the generate function and handle the returned data
         generated_sentences = generate(self.controller, self)
         if generated_sentences is not None:
-            self.populate_treeview(generated_sentences)
+           self.populate_treeview(generated_sentences)
 
     def populate_treeview(self, data_frame):
         self.table.clear()
         for row in data_frame.itertuples():
-            QTreeWidgetItem(self.table, [str(row.Column1), str(row.Column2), str(row.Column3)])  # Adjust based on DataFrame columns
+            QTreeWidgetItem(self.table, [
+                str(row.sentence), 
+                str(row.translation), 
+                str(row.new_word), 
+                str(row.n_words),
+                str(row.n_known_words), 
+                str(row.n_new_words), 
+                str(row.n_rogue_words), 
+                str(row.meets_criteria)
+            ])
 
     def clear_treeview(self):
         """Clear all entries in the treeview."""
