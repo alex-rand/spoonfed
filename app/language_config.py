@@ -95,7 +95,6 @@ class LanguageConfigFrameQt(QWidget):
     def execute_ankiconnect(self):
         # Assuming DecksHomepageQt is already converted
         self.controller.configuration_name = self.configuration_dropdown.currentText()
-        print(self.controller.selected_user_id) # sucessfully accesses the variable
         if self.controller.configuration_name:
             self.controller.show_frame(DecksHomepageQt)
             self.close()  # Closes the current window

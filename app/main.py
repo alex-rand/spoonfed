@@ -1,4 +1,6 @@
 import sys
+import os
+import sqlite3
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame, QVBoxLayout
 from user_config import UserConfigFrameQt
 from language_config import LanguageConfigFrameQt
@@ -49,10 +51,78 @@ class MainApp(QMainWindow):
 
     def setup_database(self):
         db_name = 'database.db'
-        # Database setup code remains mostly unchanged
 
-# Rest of the code remains unchanged
+        # Check if the database already exists
+        if os.path.exists(db_name):
+            return
 
+        conn = sqlite3.connect(db_name)
+        c = conn.cursor()
+
+        # Create table for user configurations
+        c.execute('''CREATE TABLE IF NOT EXISTS users
+                     (id INTEGER PRIMARY KEY, profile_name TEXT UNIQUE)''')
+
+        # Create tables for language configurations
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS language_configurations (
+                id INTEGER PRIMARY KEY,
+                user_id INTEGER,
+                configuration_name TEXT,
+                configuration_language TEXT,
+                learned_deck TEXT,
+                new_deck TEXT,
+                FOREIGN KEY(user_id) REFERENCES users(id)
+            )
+        ''')
+
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS card_types (
+                card_type_id INTEGER PRIMARY KEY,
+                configuration_id INTEGER,
+                card_type_name TEXT,
+                FOREIGN KEY(configuration_id) REFERENCES language_configurations(id)
+            )
+        ''')
+
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS card_fields (
+                field_id INTEGER PRIMARY KEY,
+                card_type_id INTEGER,
+                field_name TEXT,
+                FOREIGN KEY(card_type_id) REFERENCES card_types(card_type_id)
+            )
+        ''')
+        
+        
+        # Create table for runs
+        c.execute('''CREATE TABLE IF NOT EXISTS runs
+                     (run_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      timestamp TEXT NOT NULL,
+                      gpt_model TEXT,
+                      audio_provider TEXT,
+                      language_configuration_id INTEGER,
+                      FOREIGN KEY(language_configuration_id) REFERENCES language_configurations(id))''')
+
+        # Create table for gpt_responses
+        c.execute('''CREATE TABLE IF NOT EXISTS gpt_responses
+                     (run_id INTEGER,
+                      n_sentences INTEGER,
+                      sentence_order INTEGER,
+                      sentence TEXT,
+                      translation TEXT,
+                      new_word TEXT,
+                      n_words INTEGER,
+                      n_known_words INTEGER,
+                      n_new_words INTEGER,
+                      n_rogue_words INTEGER,
+                      filter_condition TEXT,
+                      meets_criteria BOOLEAN,
+                      FOREIGN KEY(run_id) REFERENCES runs(run_id))''')
+
+        conn.commit()
+        conn.close()
+        
 # Running the Application
 if __name__ == "__main__":
     app = QApplication(sys.argv)

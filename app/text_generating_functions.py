@@ -5,11 +5,9 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 
-def generate(controller, calling_frame):
-    print("NOW")
-    print(calling_frame.controller)
+def generate_text(calling_frame):
+
     # Get all the user specifications from the calling frame, or from 'global' state
-    # For a QCheckBox in PyQt
     with_audio = calling_frame.audio_checkbox.isChecked()
     audio_source = calling_frame.audio_source_picklist.currentText()
     model = calling_frame.model_picklist.currentText()
@@ -24,7 +22,7 @@ def generate(controller, calling_frame):
     gpt_payload_enhanced = evaluate_gpt_response(gpt_payload, learned_deck_tokens, new_deck_tokens)
     
     # Flag sentences that don't meet the N+1 rule, or any other rule I haven't thought of yet
-    gpt_payload_enhanced = flag_bad_sentences(gpt_payload_enhanced, "n+1 with rogue")
+    gpt_payload_enhanced = flag_bad_sentences(gpt_payload_enhanced, calling_frame.selection_criterion_picklist.currentText())
     
     # Apend to the database
     save_to_database("database.db", gpt_payload_enhanced, model, audio_source) 
@@ -149,15 +147,20 @@ def flag_bad_sentences(df, condition):
     
     # Option 1: Only keep sentences that have exactly 1 word from the new sentences Anki deck
     if condition == "n+1 no rogue":
-        
-        df['meets_criteria'] = (df['n_new_words'] + df['n_rogue_words']) == 1
+        df['meets_criteria'] = ((df['n_new_words'] == 1) & (df['n_rogue_words'] == 0))
     
     # Option 2: Only keep sentences that have exactly one new word OR exactly one rogue word, not both. 
     elif condition == "n+1 with rogue":
+        df['meets_criteria'] = (df['n_new_words'] + df['n_rogue_words'] == 1)
         
-        df['meets_criteria'] = ((df['n_new_words'] == 1) & (df['n_rogue_words'] == 0)) ^ ((df['n_new_words'] == 0) & (df['n_rogue_words'] == 1))        
+    elif condition == "n+2 no rogue":
+        df['meets_criteria'] = ((df['n_new_words'] > 0) & (df['n_new_words'] <= 2) & (df['n_rogue_words'] == 0))
+        
+    elif condition == "n+2 with rogue":
+        df['meets_criteria'] = ((df['n_new_words'] + df['n_rogue_words'] > 0) & (df['n_new_words'] + df['n_rogue_words'] <= 2))
     
-    return(df)
+    return df
+
 
 # Function to call the other functions below
 def save_to_database(db_name, dat, gpt_model, audio_provider):
