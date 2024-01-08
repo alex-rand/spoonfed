@@ -74,7 +74,7 @@ def gpt__generate_new_sentences(learned_deck_tokens, new_deck_tokens, n_sentence
       {"role": "user", "content": prompt},
     ] 
     
-    ### DELETE from here
+    ### For debugging purposes, load a cached CSV so we don't query OpenAI a zillion times
  #   import ast
  #   # Open the file in read mode ('r')
  #   with open('test-payload.txt', 'r') as f:

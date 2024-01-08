@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QComboBox, QPushButton, QTreeWidget, QTreeWidgetItem, QScrollBar
-from PyQt5.QtCore import Qt, QPropertyAnimation, QSequentialAnimationGroup, pyqtSignal, pyqtProperty, QThread
+from PyQt5.QtWidgets import QMessageBox, QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QComboBox, QPushButton, QTreeWidget, QTreeWidgetItem, QScrollBar
+from PyQt5.QtCore import Qt, QPropertyAnimation, QSequentialAnimationGroup, pyqtSignal, pyqtProperty
 from PyQt5.QtGui import QColor, QPalette
+import pandas as pd
 from text_generating_functions import generate_text
 from audio_generating_functions import generate_audio
 
@@ -11,7 +12,7 @@ class IPlusOneFrameQt(QWidget):
         super().__init__(parent)
         self.controller = parent
         self.initUI()
-
+        
     def showEvent(self, event):
         """Override the showEvent"""
         super().showEvent(event)
@@ -138,11 +139,17 @@ class IPlusOneFrameQt(QWidget):
         self.generate_button.setEnabled(False)
         self.animation.start()
 
-        # Generate sentences directly in this method
-        generated_sentences = generate_text(self)
+        try:
+            # Generate sentences directly in this method
+            generated_sentences = generate_text(self)
 
-        # Update the UI after generation
-        self.update_ui_after_generation(generated_sentences)
+            # Update the UI after generation
+            self.update_ui_after_generation(generated_sentences)
+
+        except ValueError as e:  # Catch the specific error raised in generate_text
+            QMessageBox.critical(self, "Generation Error", str(e))
+            generated_sentences = None  # Or handle this case as needed
+
 
         self.animation.stop()
         self.loading_label.hide()
@@ -206,12 +213,36 @@ class IPlusOneFrameQt(QWidget):
         self.layout().addWidget(self.export_button_frame)
 
     def export_to_anki(self):
-        # Implement the functionality to export to Anki
-        pass
+        # Create a list to hold data for rows where the 'Export' checkbox is checked
+        export_data = []
 
-    def cancel_export(self):
-        # Implement functionality to cancel export
-        pass
+        # Iterate through the tree view items
+        for index in range(self.table.topLevelItemCount()):
+            item = self.table.topLevelItem(index)
+            # Check if the checkbox in the 'Export' column is checked
+            if self.table.itemWidget(item, 0).isChecked():
+                # Append the data of the row to the export_data list
+                export_data.append({
+                    'sentence': item.text(1),
+                    'translation': item.text(2),
+                    'new_word': item.text(3),
+                    'total_words': item.text(4),
+                    'known_words': item.text(5),
+                    'new_words': item.text(6),
+                    'rogue_words': item.text(7),
+                    'meets_criteria': item.text(8),
+                })
+                
+        if not export_data:
+            QMessageBox.warning(self, "Export Error", "Please check at least one item to export.")
+            return  # Stop the function execution
+
+        # Create a DataFrame from the collected data
+        export_df = pd.DataFrame(export_data)
+        
+        # If the 'audio' checkbox is checked then generate the audio files and pack them into Anki's media folder
+        if self.audio_checkbox.isChecked(): 
+            export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
     
 class FadeLabel(QLabel):
     def __init__(self, text, parent=None):

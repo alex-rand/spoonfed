@@ -3,6 +3,17 @@ import requests
 import random
 import logging
 
+def generate_audio(df, language, anki_profile_name):
+    
+    # Generate an audio file for each row of the 'sentence' column,
+    # and return a new column to the dataset with the audio file names. 
+    df['audio'] = df['sentence'].apply(lambda x: call_narakeet_api(x, get_voice(), language, anki_profile_name))
+    
+    # Format the values in the audio column so that Anki will actually play them
+    df['audio'] = df['audio'].apply(lambda x: f"[sound:{x}]")
+    
+    return df
+
 # Randomly choose a Hindi voice from all available on Narakeet
 def get_voice():
     all_hindi_voices = ['preeti', 'mehar', 'nitesh', 'sushma', 'amitabh', 'kareena', 'aditi']
@@ -19,7 +30,7 @@ def get_anki_media_path(anki_profile_name):
 def call_narakeet_api(text, voice, language, anki_profile_name):
     
     # Define the endpoint and parameters for the API call
-    url = f'https://api.narakeet.com/text-to-speech/mp3?voice={voice}&language={language}'
+    url = f'https://api.narakeet.com/text-to-speech/mp3?voice={voice}&language={language}&voice-speed=.8'
     
     options = {
         'headers': {
@@ -58,18 +69,3 @@ def call_narakeet_api(text, voice, language, anki_profile_name):
     # Return the filename
     return filename
 
-def generate_audio(df, language, anki_profile_name):
-    
-    # Generate an audio file for each row of the 'sentence' column,
-    # and return a new column to the dataset with the audio file names. 
-    df['audio'] = df['sentence'].apply(lambda x: call_narakeet_api(x, get_voice(), language, anki_profile_name))
-    
-    # Format the values in the audio column so that Anki will actually play them
-    df['audio'] = df['audio'].apply(lambda x: f"[sound:{x}]")
-    
-    return df
-
-
-# Sample usage:
-# Assuming df is your dataframe
-# updated_df = generate_audio_for_dataframe(df)

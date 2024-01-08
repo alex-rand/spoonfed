@@ -70,6 +70,9 @@ class UserConfigFrameQt(QWidget):
 
         c.execute("SELECT id FROM users WHERE profile_name=?", (user_name,))
         self.controller.selected_user_id = c.fetchone()[0]
+        
+        c.execute("SELECT profile_name FROM users WHERE profile_name=?", (user_name,))
+        self.controller.selected_profile_name = c.fetchone()[0]
 
         conn.close()
 

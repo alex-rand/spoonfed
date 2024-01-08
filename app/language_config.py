@@ -93,11 +93,28 @@ class LanguageConfigFrameQt(QWidget):
                 self.load_language_configurations_to_dropdown()
 
     def execute_ankiconnect(self):
-        # Assuming DecksHomepageQt is already converted
+        # Get the selected configuration name from the dropdown
         self.controller.configuration_name = self.configuration_dropdown.currentText()
-        if self.controller.configuration_name:
-            self.controller.show_frame(DecksHomepageQt)
-            self.close()  # Closes the current window
+
+        # Establish database connection
+        conn = sqlite3.connect('database.db')
+        c = conn.cursor()
+
+        # Retrieve the configuration_language for the selected user_id and configuration name
+        c.execute("""
+            SELECT configuration_language
+            FROM language_configurations
+            WHERE user_id = ? AND configuration_name = ?
+        """, (self.controller.selected_user_id, self.controller.configuration_name))
+        
+        # Fetch the result and save as a 'global' variable
+        configuration_language = c.fetchone()
+        self.controller.selected_language = configuration_language[0]
+        conn.close()
+
+        self.controller.show_frame(DecksHomepageQt)
+        self.close()  # Closes the current window
+                
 class NewLanguageConfigurationWindow(QDialog):
     def __init__(self, parent=None, lang_config_frame=None, selected_user_id=None):
         super().__init__(parent)
@@ -105,7 +122,6 @@ class NewLanguageConfigurationWindow(QDialog):
         self.lang_config_frame = lang_config_frame
         self.selected_user_id = selected_user_id  
   
-
         self.learned_card_entries = []
         self.learned_field_entries = []
         self.new_card_entries = []

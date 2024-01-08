@@ -28,7 +28,10 @@ class MainApp(QMainWindow):
 
         # Initialize some 'global' variables to be made available across all frames of the app
         self.selected_user_id = None
-        #self.selected_language = 
+        self.selected_profile_name = None
+        self.selected_language = None
+        
+        
         self.learned_deck_tokens = []
         self.new_deck_tokens = []
 
@@ -93,7 +96,6 @@ class MainApp(QMainWindow):
                 FOREIGN KEY(card_type_id) REFERENCES card_types(card_type_id)
             )
         ''')
-        
         
         # Create table for runs
         c.execute('''CREATE TABLE IF NOT EXISTS runs
