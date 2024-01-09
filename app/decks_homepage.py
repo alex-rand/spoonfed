@@ -33,6 +33,16 @@ class DecksHomepageQt(QWidget):
 
     def create_deck_display_frame(self):
         main_layout = QVBoxLayout(self)
+        
+        # Back button 
+        top_layout = QHBoxLayout()
+        self.back_button = QPushButton("Back", self)
+        self.back_button.setFixedSize(100, 30)  # Example size, adjust as needed
+        self.back_button.setStyleSheet("QPushButton { font-size: 10pt; }")  # Example style, adjust as needed
+        self.back_button.clicked.connect(self.on_press_back)
+        top_layout.addWidget(self.back_button)
+        top_layout.addStretch()  # This will push the button to the left
+        main_layout.addLayout(top_layout)
 
         # Frames for the treeviews and counts
         upper_frame = QHBoxLayout()
@@ -82,6 +92,10 @@ class DecksHomepageQt(QWidget):
         lower_frame.addWidget(add_sentence_btn)
         lower_frame.addWidget(generate_iplus1_btn)
         lower_frame.addWidget(generate_sentences_btn)
+        
+    def on_press_back(self):
+        from language_config import LanguageConfigFrameQt
+        self.controller.show_frame(LanguageConfigFrameQt)
 
     # Placeholder methods for button commands
     def add_custom_sentence(self):

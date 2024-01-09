@@ -17,7 +17,7 @@ from iplusone import IPlusOneFrameQt
 class MainApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Main App")
+        self.setWindowTitle("Spoonfed")
         
         self.central_widget = QFrame(self)
         self.setCentralWidget(self.central_widget)

@@ -113,7 +113,7 @@ class LanguageConfigFrameQt(QWidget):
         conn.close()
 
         self.controller.show_frame(DecksHomepageQt)
-        self.close()  # Closes the current window
+        self.close() 
                 
 class NewLanguageConfigurationWindow(QDialog):
     def __init__(self, parent=None, lang_config_frame=None, selected_user_id=None):

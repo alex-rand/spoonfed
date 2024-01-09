@@ -4,6 +4,7 @@ from PyQt5.QtGui import QColor, QPalette
 import pandas as pd
 from text_generating_functions import generate_text
 from audio_generating_functions import generate_audio
+from anki_connect_functions import create_new_card
 
 class IPlusOneFrameQt(QWidget):
     update_ui_signal = pyqtSignal(object)
@@ -19,6 +20,16 @@ class IPlusOneFrameQt(QWidget):
 
     def initUI(self):
         main_layout = QVBoxLayout(self)
+        
+        # Back button 
+        top_layout = QHBoxLayout()
+        self.back_button = QPushButton("Back", self)
+        self.back_button.setFixedSize(100, 30)  # Example size, adjust as needed
+        self.back_button.setStyleSheet("QPushButton { font-size: 10pt; }")  # Example style, adjust as needed
+        self.back_button.clicked.connect(self.on_press_back)
+        top_layout.addWidget(self.back_button)
+        top_layout.addStretch()  # This will push the button to the left
+        main_layout.addLayout(top_layout)
 
         # Model Selection UI
         model_layout = QHBoxLayout()
@@ -126,6 +137,10 @@ class IPlusOneFrameQt(QWidget):
         audio_layout.addWidget(self.audio_source_label)
         audio_layout.addWidget(self.audio_source_picklist)
         
+    def on_press_back(self):
+        from decks_homepage import DecksHomepageQt
+        self.controller.show_frame(DecksHomepageQt)
+        
     def toggle_audio_options(self):
         if self.audio_checkbox.isChecked():
             self.audio_source_label.show()
@@ -213,6 +228,8 @@ class IPlusOneFrameQt(QWidget):
         self.layout().addWidget(self.export_button_frame)
 
     def export_to_anki(self):
+        from decks_homepage import DecksHomepageQt
+        
         # Create a list to hold data for rows where the 'Export' checkbox is checked
         export_data = []
 
@@ -244,6 +261,17 @@ class IPlusOneFrameQt(QWidget):
         if self.audio_checkbox.isChecked(): 
             export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
     
+        # Create the cards in Anki
+        result = export_df.apply(create_new_card, args=(self.model_picklist.currentText(), self.audio_source_picklist.currentText()), axis=1)
+
+        if result.eq("success").all():
+            QMessageBox.information(self, "Success", "Cards successfully created in Anki.")
+        else:
+            QMessageBox.warning(self, "Export Error", "Cards could not be created.")
+            
+        # Return to the decks homepage        
+        self.controller.show_frame(DecksHomepageQt)
+        
 class FadeLabel(QLabel):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)

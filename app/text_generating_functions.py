@@ -102,7 +102,7 @@ def gpt__generate_new_sentences(learned_deck_tokens, new_deck_tokens, n_sentence
    
     return generated_text
  
- # This function quality-checks the GPT payload, then it generates some diagnostics about the content of each sentence
+# This function quality-checks the GPT payload, then it generates some diagnostics about the content of each sentence
 def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
   
     # Check whether the GPT payload matches the formatting of a .csv file: If it works then load it as a .csv. If it doesn't then throw an informative error.
