@@ -1,5 +1,4 @@
 from PyQt5.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTreeWidget, QTreeWidgetItem, QMessageBox
-from PyQt5.QtCore import Qt
 import sqlite3
 import pandas as pd
 from anki_connect_functions import *
@@ -84,14 +83,17 @@ class DecksHomepageQt(QWidget):
         add_sentence_btn = QPushButton("Add Custom Sentence", self)
         generate_iplus1_btn = QPushButton("Generate i+1", self)
         generate_sentences_btn = QPushButton("Generate Sentences for Selected Token", self)
+        audio_for_previous_cards_btn = QPushButton("Generate Audio for Previously-Added Cards", self)
 
         add_sentence_btn.clicked.connect(self.add_custom_sentence)
         generate_iplus1_btn.clicked.connect(self.generate_iplus1)
         generate_sentences_btn.clicked.connect(self.generate_sentences_for_selected_token)
+        audio_for_previous_cards_btn.clicked.connect(self.generate_audio_for_previous_cards)
 
         lower_frame.addWidget(add_sentence_btn)
         lower_frame.addWidget(generate_iplus1_btn)
         lower_frame.addWidget(generate_sentences_btn)
+        lower_frame.addWidget(audio_for_previous_cards_btn)
         
     def on_press_back(self):
         from language_config import LanguageConfigFrameQt
@@ -99,7 +101,6 @@ class DecksHomepageQt(QWidget):
 
     # Placeholder methods for button commands
     def add_custom_sentence(self):
-        # Implement functionality here
         pass
     
     def generate_iplus1(self):
@@ -107,7 +108,9 @@ class DecksHomepageQt(QWidget):
         self.controller.show_frame(IPlusOneFrameQt)
 
     def generate_sentences_for_selected_token(self):
-        # Implement functionality here
+        pass
+    
+    def generate_audio_for_previous_cards(self):
         pass
     
     def insert_vocab_into_treeview(self, treeview, vocab_tokens):
