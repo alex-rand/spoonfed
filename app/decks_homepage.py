@@ -3,6 +3,7 @@ import sqlite3
 import pandas as pd
 from anki_connect_functions import *
 from iplusone import IPlusOneFrameQt
+from previous_cards_audio_frame import PreviousCardsAudioFrameQt
 import re
 
 class DecksHomepageQt(QWidget):
@@ -103,6 +104,14 @@ class DecksHomepageQt(QWidget):
     def add_custom_sentence(self):
         pass
     
+        # Open a new, specific frame? Should I implement a superclass that the other specific generating frames inherit? 
+
+        # Load all cards in the language configuration, subset to only include cards that don't include the [sound...mp3] string in any field
+
+        # User can choose via checkboxes which sentences to do
+
+        # Hard-assign the audio file to the final field of the card. This is potentially destructive!!
+        
     def generate_iplus1(self):
         # Assuming IPlusOneFrameQt is already converted
         self.controller.show_frame(IPlusOneFrameQt)
@@ -111,7 +120,7 @@ class DecksHomepageQt(QWidget):
         pass
     
     def generate_audio_for_previous_cards(self):
-        pass
+        self.controller.show_frame(PreviousCardsAudioFrameQt)
     
     def insert_vocab_into_treeview(self, treeview, vocab_tokens):
         treeview.clear()
