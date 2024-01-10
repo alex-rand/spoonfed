@@ -1,10 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTreeWidget, QTreeWidgetItem, QMessageBox
-import sqlite3
 import pandas as pd
 from anki_connect_functions import *
 from iplusone import IPlusOneFrameQt
 from previous_cards_audio_frame import PreviousCardsAudioFrameQt
-import re
 
 class DecksHomepageQt(QWidget):
     def __init__(self, parent=None):

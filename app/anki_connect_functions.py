@@ -124,3 +124,33 @@ def remove_non_language_tokens(text, language):
             raise ValueError("Unsupported language")
 
         return re.sub(pattern, '', text)
+    
+def add_audio_flag(df):
+    """
+    Adds a 'no_audio' column to the dataframe. 
+    This column is a boolean that indicates whether, for that row, 
+    at least one existing text column contains the specific substring pattern '[sound:--othercharacters---.mp3]'.
+
+    Args:
+    df (pandas.DataFrame): The input dataframe.
+
+    Returns:
+    pandas.DataFrame: The dataframe with the 'no_audio' column added.
+    """
+
+    # Regular expression pattern to match the audio file string
+    audio_pattern = re.compile(r'\[sound:[^\]]+\.mp3\]')
+
+    # Function to check if a cell contains the specific substring pattern
+    def contains_audio_string(x):
+        if isinstance(x, str) and audio_pattern.search(x):
+            return True
+        return False
+
+    # Apply the function across all text columns and check if any returns True
+    df['no_audio'] = df.applymap(contains_audio_string).any(axis=1)
+    
+    # Inverting the boolean value as we need 'True' for 'no_audio'
+    df['no_audio'] = ~df['no_audio']
+
+    return df

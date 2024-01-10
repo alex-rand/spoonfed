@@ -1,9 +1,12 @@
 from PyQt5.QtWidgets import QMessageBox, QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QComboBox, QPushButton, QTreeWidget, QTreeWidgetItem, QScrollBar
-from PyQt5.QtCore import Qt, QPropertyAnimation, QSequentialAnimationGroup, pyqtSignal, pyqtProperty
-from PyQt5.QtGui import QColor, QPalette
+from PyQt5.QtCore import pyqtSignal
 import pandas as pd
+import numpy as np
 from anki_connect_functions import *
+from text_generating_functions import generate_text
 from generating_frame import GeneratingFrameQt
+from IPython.display import display, HTML
+
 
 class PreviousCardsAudioFrameQt(GeneratingFrameQt):
     update_ui_signal = pyqtSignal(object)
@@ -18,9 +21,14 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         # Fetch configuration data
         configuration_data = fetch_user_configuration(self, self.controller.selected_user_id, self.controller.configuration_name)
         
-        all_cards = self.load_sentences_from_deck('learned_deck', configuration_data)
-        
-        print(all_cards)
+        # Load the learned cards from anki
+        learned_cards = self.load_sentences_from_deck('learned_deck', configuration_data)
+  
+        # check whether any of the fields point to an audio file in Anki's media colletion
+        learned_cards = add_audio_flag(learned_cards)
+
+        if learned_cards is not None:
+            self.populate_treeview(learned_cards.sort_values(by='no_audio', ascending=False))
         
     def initUI(self):
         super().initUI()
@@ -46,6 +54,54 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         audio_layout.addWidget(self.audio_source_picklist)
         self.main_layout.addLayout(audio_layout)
         
+    def on_press_generate(self):
+        """Overrides the inherited method, for frame-specific functionality"""
+        self.loading_label.show()
+        self.generate_button.setEnabled(False)
+        self.animation.start()
+
+        try:
+            # Generate sentences 
+            generated_sentences = generate_text(self)
+
+            # Update the UI after generation
+            self.update_ui_after_generation(generated_sentences)
+
+        except ValueError as e:  # Catch the specific error raised in generate_text
+            QMessageBox.critical(self, "Generation Error", str(e))
+            generated_sentences = None  # Or handle this case as needed
+
+        self.animation.stop()
+        self.loading_label.hide()
+        self.generate_button.setEnabled(True)
+        
+    # Override interited method
+    def populate_treeview(self, data_frame):
+        self.table.clear()
+        self.table.setColumnCount(9)  # Assuming 9 columns including the checkbox column
+        self.table.setHeaderLabels([
+            'Export', 'Sentence', 'Translation', 'New Word', 
+            'Total Words', 'Known Words', 'New Words',
+            'Rogue Words', 'Meets Criteria'
+        ])
+
+        for row in data_frame.itertuples():
+            tree_item = QTreeWidgetItem(self.table)
+
+            # Checkbox in the first column
+            checkbox = QCheckBox()
+            checkbox.setChecked(row.no_audio)
+            self.table.setItemWidget(tree_item, 0, checkbox)
+
+            # Set other columns
+            tree_item.setText(1, str(row.sentence))
+            tree_item.setText(2, str(row.translation))
+            tree_item.setText(3, str(row.new_word))
+            tree_item.setText(4, str(row.n_words))
+            tree_item.setText(5, str(row.n_known_words))
+            tree_item.setText(6, str(row.n_new_words))
+            tree_item.setText(7, str(row.n_rogue_words))
+            tree_item.setText(8, str(row.no_audio))
         
     def load_sentences_from_deck(self, deck, raw_config_data):
         """
@@ -56,7 +112,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         - raw_config_data (dict): A dictionary where keys are card types and values are lists of fields.
 
         Returns:
-        - pd.DataFrame: A DataFrame with sentences from each field and the deck name.
+        - pd.DataFrame: A DataFrame with sentences from each field, the deck name, and the card type.
         """
 
         # Extract deck and card_types_and_fields from raw_config_data
@@ -71,6 +127,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
             card_types_and_fields[card_type] = clean_fields
 
         all_sentences = []
+        unique_fields = set()  # To store unique fields across all card types
 
         for card_type, fields in card_types_and_fields.items():
             # Construct the query for the card type
@@ -82,19 +139,32 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
             # Retrieve note content for the card type
             note_content = pd.json_normalize(ankiconnect_invoke('notesInfo', notes=note_ids))
 
-            # Process each field and add it to the DataFrame
-            for i, field in enumerate(fields):
-                col_name = f"fields.{field}.value"
-                if col_name in note_content.columns:
-                    note_content[col_name] = note_content[col_name].astype(str).apply(lambda text: remove_non_language_tokens(text, configuration_language))
-                    all_sentences.append(note_content[[col_name]].rename(columns={col_name: f'field_{i+1}'}))
+            # Accumulate unique field names across all card types
+            for col in note_content.columns:
+                if '.' in col:  # Assuming field names contain a dot
+                    unique_fields.add(col)
 
-        # Combine all sentences into one DataFrame
-        combined_df = pd.concat(all_sentences, axis=1)
-        combined_df['deck_name'] = deck  # Add a column for the deck name
+            # Append rows to all_sentences list
+            for index, row in note_content.iterrows():
+                new_row = {field: row[field] if field in row else None for field in unique_fields}
+                new_row['deck_name'] = deck
+                new_row['card_type'] = card_type
+                all_sentences.append(new_row)
 
-        return combined_df
+        # Convert the list of dictionaries to a DataFrame
+        new_df = pd.DataFrame(all_sentences)
+        
+        # Filter columns to include only those ending with '.value'
+        value_columns = [col for col in new_df.columns if col.endswith('.value')]
+        final_columns = ['deck_name', 'card_type'] + value_columns
 
+        # Reorder the DataFrame and return
+        new_df = new_df[final_columns]
+        
+      #  new_df.to_csv("delete.csv", index=False)
+        return new_df
+           
+ 
         
 
         

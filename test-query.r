@@ -3,7 +3,10 @@ library(DBI)
 library(RSQLite)
 library(dbplyr)
 library(tibble)
+library(tidyverse)
 
+test <- read_csv("/Users/alex/Desktop/Python Projects/spoonfed/delete.csv")
+test |> view()
 # Connect to the SQLite file
 con <- dbConnect(RSQLite::SQLite(), "database.db")
 
