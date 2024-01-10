@@ -75,33 +75,54 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         self.loading_label.hide()
         self.generate_button.setEnabled(True)
         
-    # Override interited method
     def populate_treeview(self, data_frame):
+        """
+        Dynamically populate a tree view with data from a pandas DataFrame.
+    
+        Parameters:
+        - data_frame (pd.DataFrame): DataFrame containing the data to be displayed.
+        """
+    
+        # Clear existing data in the tree view
         self.table.clear()
-        self.table.setColumnCount(9)  # Assuming 9 columns including the checkbox column
-        self.table.setHeaderLabels([
-            'Export', 'Sentence', 'Translation', 'New Word', 
-            'Total Words', 'Known Words', 'New Words',
-            'Rogue Words', 'Meets Criteria'
-        ])
-
-        for row in data_frame.itertuples():
+    
+        # Define standard and dynamic field headers
+        standard_headers = ['deck_name', 'card_type', 'no_audio']
+        standard_headers_clean = ['Deck Name', 'Card Type', 'No Audio']
+        dynamic_headers = [col for col in data_frame.columns if col.startswith('fields.')]
+        dynamic_headers_clean = ['Field: ' + col.split('.')[1].replace('_', ' ').capitalize() for col in dynamic_headers]
+        
+        # Combine the cleaned headers for display
+        all_headers_clean = standard_headers_clean + dynamic_headers_clean
+    
+        # Set column count and headers using cleaned headers
+        self.table.setColumnCount(len(all_headers_clean))
+        self.table.setHeaderLabels(all_headers_clean)
+    
+        # Populate the tree view with data
+        for _, row in data_frame.iterrows():
+            # Create a new tree item for each row
             tree_item = QTreeWidgetItem(self.table)
+    
+            # Process standard headers
+            for idx, header in enumerate(standard_headers):
+                if header in data_frame.columns:
+                    if header == 'no_audio':  # Assuming 'no_audio' needs a checkbox
+                        checkbox = QCheckBox()
+                        checkbox.setChecked(row[header] if not pd.isna(row[header]) else False)
+                        self.table.setItemWidget(tree_item, idx, checkbox)
+                    else:
+                        tree_item.setText(idx, str(row[header]) if not pd.isna(row[header]) else "")
+    
+            # Process dynamic field headers
+            dynamic_col_idx = len(standard_headers)
+            for col in dynamic_headers:
+                if col in data_frame.columns:
+                    tree_item.setText(dynamic_col_idx, str(row[col]) if not pd.isna(row[col]) else "")
+                    dynamic_col_idx += 1
+                    
+        
 
-            # Checkbox in the first column
-            checkbox = QCheckBox()
-            checkbox.setChecked(row.no_audio)
-            self.table.setItemWidget(tree_item, 0, checkbox)
-
-            # Set other columns
-            tree_item.setText(1, str(row.sentence))
-            tree_item.setText(2, str(row.translation))
-            tree_item.setText(3, str(row.new_word))
-            tree_item.setText(4, str(row.n_words))
-            tree_item.setText(5, str(row.n_known_words))
-            tree_item.setText(6, str(row.n_new_words))
-            tree_item.setText(7, str(row.n_rogue_words))
-            tree_item.setText(8, str(row.no_audio))
         
     def load_sentences_from_deck(self, deck, raw_config_data):
         """
