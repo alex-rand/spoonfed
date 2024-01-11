@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMessageBox, QHBoxLayout, QLabel, QCheckBox, QComboBox, QPushButton, QTreeWidgetItem
+from PyQt5.QtWidgets import QHBoxLayout, QLabel, QCheckBox, QComboBox, QPushButton, QTreeWidgetItem, QDialog, QVBoxLayout
 from PyQt5.QtCore import pyqtSignal
 import pandas as pd
 from anki_connect_functions import *
@@ -52,7 +52,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         self.main_layout.addLayout(audio_layout)
         
     def on_press_generate(self):
-        pass
+        self.export_to_anki()
         
     def load_sentences_from_deck(self, deck, raw_config_data):
         """
@@ -170,48 +170,144 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
 
     def export_to_anki(self):
         from decks_homepage import DecksHomepageQt
-        
-        # Create a list to hold data for rows where the 'Export' checkbox is checked
-        export_data = []
 
-        # Iterate through the tree view items
+        tree_data = []
         for index in range(self.table.topLevelItemCount()):
             item = self.table.topLevelItem(index)
-            # Check if the checkbox in the 'Export' column is checked
+
+            # Check if the checkbox in the 'Generate' column is checked
             if self.table.itemWidget(item, 0).isChecked():
-                # Append the data of the row to the export_data list
-                export_data.append({
-                    'sentence': item.text(1),
-                    'translation': item.text(2),
-                    'new_word': item.text(3),
-                    'total_words': item.text(4),
-                    'known_words': item.text(5),
-                    'new_words': item.text(6),
-                    'rogue_words': item.text(7),
-                    'meets_criteria': item.text(8),
-                })
-                
-        if not export_data:
-            QMessageBox.warning(self, "Export Error", "Please check at least one item to export.")
-            return  # Stop the function execution
+                row_data = {self.table.headerItem().text(i): item.text(i) for i in range(1, self.table.columnCount())}
+                tree_data.append(row_data)
 
-        # Create a DataFrame from the collected data
-        export_df = pd.DataFrame(export_data)
-        
-        # If the 'audio' checkbox is checked then generate the audio files and pack them into Anki's media folder
-        if self.audio_checkbox.isChecked(): 
-            export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
+        df = pd.DataFrame(tree_data)
+
+        # Get names of non-empty fields for each row. These are the candidate fields for audio generation.
+        df['relevant_fields'] = df.apply(lambda row: [col for col in df.columns if col.startswith('Field:') and row[col] != ''], axis=1)
+
+        # Declare a new row to contain the values of the fields to be exported, as selected by the user
+        df['sentence'] = None
+
+        # Prior to iteration, calculate some quantities for informative labels 
+        total_rows = sum(len(row['relevant_fields']) > 1 for _, row in df.iterrows())
+        current_row = 1
+
+        # Keep track of card types for which the user has settled on a default field selection
+        already_processed_card_types = set()
+
+        for index, row in df.iterrows():
+            if row['relevant_fields'] and row['Card Type'] not in already_processed_card_types:
+                if len(row['relevant_fields']) == 1:
+                    selected_field, apply_to_all = row['relevant_fields'][0], False
+                else:
+                    # Prepare a dictionary of field values
+                    field_values = {field: row[field] for field in row['relevant_fields']}
+                    selected_field, apply_to_all = self.prompt_user_for_field(row['relevant_fields'], field_values, total_rows, current_row)
+                    if apply_to_all:
+                        already_processed_card_types.add(row['Card Type'])
+                    current_row += 1
+
+                if selected_field:  
+                    if apply_to_all:
+                        df.loc[df['Card Type'] == row['Card Type'], 'sentence'] = df.loc[df['Card Type'] == row['Card Type'], selected_field]
+                    else:
+                        df.at[index, 'sentence'] = row[selected_field]
+
+
+    def prompt_user_for_field(self, fields, field_values, total_rows, current_row):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Select Field")
+        dialog.setModal(True)
     
-        # Create the cards in Anki
-        result = export_df.apply(create_new_card, args=(self.model_picklist.currentText(), self.audio_source_picklist.currentText()), axis=1)
-
-        if result.eq("success").all():
-            QMessageBox.information(self, "Success", "Cards successfully created in Anki.")
+        layout = QVBoxLayout(dialog)
+    
+        # Include information about current row and total rows
+        info_label = QLabel(f"Selecting field for row {current_row} of {total_rows} with multiple options")
+        layout.addWidget(info_label)
+    
+        # Field selection ComboBox
+        comboBox = QComboBox(dialog)
+        comboBox.addItems(fields)
+        layout.addWidget(comboBox)
+    
+        # Field value display area
+        value_display = QLabel(dialog)
+        layout.addWidget(value_display)
+    
+        # Update display area when a field is selected
+        def update_display(index):
+            field_name = comboBox.itemText(index)
+            if field_name in field_values:
+                value_display.setText(f"Value: {field_values[field_name]}")
+            else:
+                value_display.setText("No value available")
+    
+        comboBox.currentIndexChanged.connect(update_display)
+        update_display(0)  # Initial update
+    
+        # OK and Cancel buttons
+        buttonLayout = QHBoxLayout()
+        okButton = QPushButton("OK", dialog)
+        cancelButton = QPushButton("Cancel", dialog)
+        buttonLayout.addWidget(okButton)
+        buttonLayout.addWidget(cancelButton)
+        layout.addLayout(buttonLayout)
+    
+        # Connect buttons to slots
+        okButton.clicked.connect(dialog.accept)
+        cancelButton.clicked.connect(dialog.reject)
+        
+        # New checkbox for applying to all cards of this type
+        apply_all_checkbox = QCheckBox("Apply to all cards of this type", dialog)
+        layout.addWidget(apply_all_checkbox)
+    
+        # Show the dialog and wait for user action
+        result = dialog.exec_()
+    
+        if result == QDialog.Accepted:
+            return comboBox.currentText(), apply_all_checkbox.isChecked()
         else:
-            QMessageBox.warning(self, "Export Error", "Cards could not be created.")
-            
-        # Return to the decks homepage        
-        self.controller.show_frame(DecksHomepageQt)
+            return None, False
+
+
+    #   # Iterate through the tree view items
+    #   for index in range(self.table.topLevelItemCount()):
+    #       item = self.table.topLevelItem(index)
+    #       # Check if the checkbox in the 'Export' column is checked
+    #       if self.table.itemWidget(item, 0).isChecked():
+    #           # Append the data of the row to the export_data list
+    #           export_data.append({
+    #               'sentence': item.text(1),
+    #               'translation': item.text(2),
+    #               'new_word': item.text(3),
+    #               'total_words': item.text(4),
+    #               'known_words': item.text(5),
+    #               'new_words': item.text(6),
+    #               'rogue_words': item.text(7),
+    #               'meets_criteria': item.text(8),
+    #           })
+    #           
+    #   if not export_data:
+    #       QMessageBox.warning(self, "Export Error", "Please check at least one item to export.")
+    #       return  # Stop the function execution
+
+    #   # Create a DataFrame from the collected data
+    #   export_df = pd.DataFrame(export_data)
+    #   
+    #   # If the 'audio' checkbox is checked then generate the audio files and pack them into Anki's media folder
+    #   if self.audio_checkbox.isChecked(): 
+    #       export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
+    #
+    #   # Create the cards in Anki
+    #   result = export_df.apply(create_new_card, args=(self.model_picklist.currentText(), self.audio_source_picklist.currentText()), axis=1)
+
+    #   if result.eq("success").all():
+    #       QMessageBox.information(self, "Success", "Cards successfully created in Anki.")
+    #   else:
+    #       QMessageBox.warning(self, "Export Error", "Cards could not be created.")
+    #       
+    #   # Return to the decks homepage        
+    #   self.controller.show_frame(DecksHomepageQt)
            
  
         
