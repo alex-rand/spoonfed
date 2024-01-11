@@ -195,6 +195,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         # Keep track of card types for which the user has settled on a default field selection
         already_processed_card_types = set()
 
+        # Go card-by-card, prompting the user to choose which field to generate audio for
         for index, row in df.iterrows():
             if row['relevant_fields'] and row['Card Type'] not in already_processed_card_types:
                 if len(row['relevant_fields']) == 1:
@@ -212,39 +213,48 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
                         df.loc[df['Card Type'] == row['Card Type'], 'sentence'] = df.loc[df['Card Type'] == row['Card Type'], selected_field]
                     else:
                         df.at[index, 'sentence'] = row[selected_field]
+        
+        # Need to get the 'final' field name for each card type and store it as a column, to be called later.
+        
+        # call generate_audio to create+export the audio files, based on the text in the card-specific fields selected above                
+        export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
+    
+        # Call add_audio_to_existing_card(), adding the name of the generated audio file to the final field (can we do this non-destructively?)
+       
+        result = export_df.apply(add_audio_to_existing_card, args=(self.model_picklist.currentText(), self.audio_source_picklist.currentText()), axis=1)
+
+        if result.eq("success").all():
+            QMessageBox.information(self, "Success", "Cards successfully created in Anki.")
+        else:
+            QMessageBox.warning(self, "Export Error", "Cards could not be created.")
+            
+        # Return to the decks homepage        
+        self.controller.show_frame(DecksHomepageQt)
 
 
     def prompt_user_for_field(self, fields, field_values, total_rows, current_row):
         dialog = QDialog(self)
         dialog.setWindowTitle("Select Field")
         dialog.setModal(True)
-    
+
         layout = QVBoxLayout(dialog)
-    
-        # Include information about current row and total rows
+
+        # Information about current row and total rows
         info_label = QLabel(f"Selecting field for row {current_row} of {total_rows} with multiple options")
         layout.addWidget(info_label)
-    
+
         # Field selection ComboBox
         comboBox = QComboBox(dialog)
         comboBox.addItems(fields)
         layout.addWidget(comboBox)
-    
-        # Field value display area
-        value_display = QLabel(dialog)
-        layout.addWidget(value_display)
-    
-        # Update display area when a field is selected
-        def update_display(index):
-            field_name = comboBox.itemText(index)
-            if field_name in field_values:
-                value_display.setText(f"Value: {field_values[field_name]}")
-            else:
-                value_display.setText("No value available")
-    
-        comboBox.currentIndexChanged.connect(update_display)
-        update_display(0)  # Initial update
-    
+
+        # Display area for all field values
+        values_layout = QVBoxLayout()
+        for field in fields:
+            field_label = QLabel(f"{field}: {field_values.get(field, 'No value')}")
+            values_layout.addWidget(field_label)
+        layout.addLayout(values_layout)
+
         # OK and Cancel buttons
         buttonLayout = QHBoxLayout()
         okButton = QPushButton("OK", dialog)
@@ -252,22 +262,23 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         buttonLayout.addWidget(okButton)
         buttonLayout.addWidget(cancelButton)
         layout.addLayout(buttonLayout)
-    
+
         # Connect buttons to slots
         okButton.clicked.connect(dialog.accept)
         cancelButton.clicked.connect(dialog.reject)
-        
-        # New checkbox for applying to all cards of this type
+
+        # Checkbox for applying to all cards of this type
         apply_all_checkbox = QCheckBox("Apply to all cards of this type", dialog)
         layout.addWidget(apply_all_checkbox)
-    
+
         # Show the dialog and wait for user action
         result = dialog.exec_()
-    
+
         if result == QDialog.Accepted:
             return comboBox.currentText(), apply_all_checkbox.isChecked()
         else:
             return None, False
+
 
 
     #   # Iterate through the tree view items
