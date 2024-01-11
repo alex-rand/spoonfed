@@ -1,12 +1,9 @@
-from PyQt5.QtWidgets import QMessageBox, QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QComboBox, QPushButton, QTreeWidget, QTreeWidgetItem, QScrollBar
+from PyQt5.QtWidgets import QMessageBox, QHBoxLayout, QLabel, QCheckBox, QComboBox, QPushButton, QTreeWidgetItem
 from PyQt5.QtCore import pyqtSignal
 import pandas as pd
-import numpy as np
 from anki_connect_functions import *
-from text_generating_functions import generate_text
+from audio_generating_functions import generate_audio
 from generating_frame import GeneratingFrameQt
-from IPython.display import display, HTML
-
 
 class PreviousCardsAudioFrameQt(GeneratingFrameQt):
     update_ui_signal = pyqtSignal(object)
@@ -55,74 +52,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         self.main_layout.addLayout(audio_layout)
         
     def on_press_generate(self):
-        """Overrides the inherited method, for frame-specific functionality"""
-        self.loading_label.show()
-        self.generate_button.setEnabled(False)
-        self.animation.start()
-
-        try:
-            # Generate sentences 
-            generated_sentences = generate_text(self)
-
-            # Update the UI after generation
-            self.update_ui_after_generation(generated_sentences)
-
-        except ValueError as e:  # Catch the specific error raised in generate_text
-            QMessageBox.critical(self, "Generation Error", str(e))
-            generated_sentences = None  # Or handle this case as needed
-
-        self.animation.stop()
-        self.loading_label.hide()
-        self.generate_button.setEnabled(True)
-        
-    def populate_treeview(self, data_frame):
-        """
-        Dynamically populate a tree view with data from a pandas DataFrame.
-    
-        Parameters:
-        - data_frame (pd.DataFrame): DataFrame containing the data to be displayed.
-        """
-    
-        # Clear existing data in the tree view
-        self.table.clear()
-    
-        # Define standard and dynamic field headers
-        standard_headers = ['deck_name', 'card_type', 'no_audio']
-        standard_headers_clean = ['Deck Name', 'Card Type', 'No Audio']
-        dynamic_headers = [col for col in data_frame.columns if col.startswith('fields.')]
-        dynamic_headers_clean = ['Field: ' + col.split('.')[1].replace('_', ' ').capitalize() for col in dynamic_headers]
-        
-        # Combine the cleaned headers for display
-        all_headers_clean = standard_headers_clean + dynamic_headers_clean
-    
-        # Set column count and headers using cleaned headers
-        self.table.setColumnCount(len(all_headers_clean))
-        self.table.setHeaderLabels(all_headers_clean)
-    
-        # Populate the tree view with data
-        for _, row in data_frame.iterrows():
-            # Create a new tree item for each row
-            tree_item = QTreeWidgetItem(self.table)
-    
-            # Process standard headers
-            for idx, header in enumerate(standard_headers):
-                if header in data_frame.columns:
-                    if header == 'no_audio':  # Assuming 'no_audio' needs a checkbox
-                        checkbox = QCheckBox()
-                        checkbox.setChecked(row[header] if not pd.isna(row[header]) else False)
-                        self.table.setItemWidget(tree_item, idx, checkbox)
-                    else:
-                        tree_item.setText(idx, str(row[header]) if not pd.isna(row[header]) else "")
-    
-            # Process dynamic field headers
-            dynamic_col_idx = len(standard_headers)
-            for col in dynamic_headers:
-                if col in data_frame.columns:
-                    tree_item.setText(dynamic_col_idx, str(row[col]) if not pd.isna(row[col]) else "")
-                    dynamic_col_idx += 1
-                    
-        
-
+        pass
         
     def load_sentences_from_deck(self, deck, raw_config_data):
         """
@@ -136,10 +66,9 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         - pd.DataFrame: A DataFrame with sentences from each field, the deck name, and the card type.
         """
 
-        # Extract deck and card_types_and_fields from raw_config_data
+        # Extract deck and card_types_and_fields from the selected language configuration
         deck = raw_config_data.get(deck, None)
         raw_card_types_and_fields = raw_config_data.get('card_types_and_fields', {})
-        configuration_language = raw_config_data.get('configuration_language', None)
 
         # Transform card_types_and_fields into the required format
         card_types_and_fields = {}
@@ -159,7 +88,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
 
             # Retrieve note content for the card type
             note_content = pd.json_normalize(ankiconnect_invoke('notesInfo', notes=note_ids))
-
+            
             # Accumulate unique field names across all card types
             for col in note_content.columns:
                 if '.' in col:  # Assuming field names contain a dot
@@ -168,6 +97,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
             # Append rows to all_sentences list
             for index, row in note_content.iterrows():
                 new_row = {field: row[field] if field in row else None for field in unique_fields}
+                new_row['note_id'] = row['noteId'] 
                 new_row['deck_name'] = deck
                 new_row['card_type'] = card_type
                 all_sentences.append(new_row)
@@ -177,13 +107,111 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         
         # Filter columns to include only those ending with '.value'
         value_columns = [col for col in new_df.columns if col.endswith('.value')]
-        final_columns = ['deck_name', 'card_type'] + value_columns
+        final_columns = ['note_id', 'deck_name', 'card_type'] + value_columns
 
         # Reorder the DataFrame and return
         new_df = new_df[final_columns]
         
       #  new_df.to_csv("delete.csv", index=False)
         return new_df
+    
+    def populate_treeview(self, data_frame):
+        """
+        Dynamically populate a tree view with data from a pandas DataFrame.
+
+        Parameters:
+        - data_frame (pd.DataFrame): DataFrame containing the data to be displayed.
+        """
+
+        # Clear existing data in the tree view
+        self.table.clear()
+
+        # Define standard and dynamic field headers
+        standard_headers = ['note_id', 'deck_name', 'card_type', 'no_audio']
+        standard_headers_clean = ['Note Id', 'Deck Name', 'Card Type', 'No Audio']
+        dynamic_headers = [col for col in data_frame.columns if col.startswith('fields.')]
+        dynamic_headers_clean = ['Field: ' + col.split('.')[1].replace('_', ' ').capitalize() for col in dynamic_headers]
+
+        # Combine the cleaned headers for display
+        all_headers_clean = ['Generate'] + standard_headers_clean + dynamic_headers_clean
+
+        # Set column count and headers using cleaned headers
+        self.table.setColumnCount(len(all_headers_clean))
+        self.table.setHeaderLabels(all_headers_clean)
+
+        # Populate the tree view with data
+        for _, row in data_frame.iterrows():
+            # Create a new tree item for each row
+            tree_item = QTreeWidgetItem(self.table)
+
+            # Add a checkbox in the 'Generate' column
+            gen_checkbox = QCheckBox()
+            no_audio_val = row['no_audio'] if 'no_audio' in data_frame.columns and not pd.isna(row['no_audio']) else False
+            gen_checkbox.setChecked(no_audio_val)
+            self.table.setItemWidget(tree_item, 0, gen_checkbox)  # Set the checkbox in the first column
+
+            # Process other standard headers
+            for idx, header in enumerate(standard_headers):
+                if header in data_frame.columns:
+                    if header == 'no_audio':  # Non-editable checkbox for 'No Audio'
+                        checkbox = QCheckBox()
+                        checkbox.setChecked(no_audio_val)
+                        checkbox.setEnabled(False)
+                        self.table.setItemWidget(tree_item, idx + 1, checkbox)  # Adjusted index due to 'Generate' column
+                    else:
+                        tree_item.setText(idx + 1, str(row[header]) if not pd.isna(row[header]) else "")  # Adjusted index due to 'Generate' column
+
+            # Process dynamic field headers
+            dynamic_col_idx = len(standard_headers) + 1  # Adjust for the added 'Generate' column
+            for col in dynamic_headers:
+                if col in data_frame.columns:
+                    tree_item.setText(dynamic_col_idx, str(row[col]) if not pd.isna(row[col]) else "")
+                    dynamic_col_idx += 1
+
+    def export_to_anki(self):
+        from decks_homepage import DecksHomepageQt
+        
+        # Create a list to hold data for rows where the 'Export' checkbox is checked
+        export_data = []
+
+        # Iterate through the tree view items
+        for index in range(self.table.topLevelItemCount()):
+            item = self.table.topLevelItem(index)
+            # Check if the checkbox in the 'Export' column is checked
+            if self.table.itemWidget(item, 0).isChecked():
+                # Append the data of the row to the export_data list
+                export_data.append({
+                    'sentence': item.text(1),
+                    'translation': item.text(2),
+                    'new_word': item.text(3),
+                    'total_words': item.text(4),
+                    'known_words': item.text(5),
+                    'new_words': item.text(6),
+                    'rogue_words': item.text(7),
+                    'meets_criteria': item.text(8),
+                })
+                
+        if not export_data:
+            QMessageBox.warning(self, "Export Error", "Please check at least one item to export.")
+            return  # Stop the function execution
+
+        # Create a DataFrame from the collected data
+        export_df = pd.DataFrame(export_data)
+        
+        # If the 'audio' checkbox is checked then generate the audio files and pack them into Anki's media folder
+        if self.audio_checkbox.isChecked(): 
+            export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
+    
+        # Create the cards in Anki
+        result = export_df.apply(create_new_card, args=(self.model_picklist.currentText(), self.audio_source_picklist.currentText()), axis=1)
+
+        if result.eq("success").all():
+            QMessageBox.information(self, "Success", "Cards successfully created in Anki.")
+        else:
+            QMessageBox.warning(self, "Export Error", "Cards could not be created.")
+            
+        # Return to the decks homepage        
+        self.controller.show_frame(DecksHomepageQt)
            
  
         

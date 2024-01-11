@@ -199,50 +199,8 @@ class GeneratingFrameQt(QWidget):
         self.layout().addWidget(self.export_button_frame)
 
     def export_to_anki(self):
-        from decks_homepage import DecksHomepageQt
-        
-        # Create a list to hold data for rows where the 'Export' checkbox is checked
-        export_data = []
+        pass
 
-        # Iterate through the tree view items
-        for index in range(self.table.topLevelItemCount()):
-            item = self.table.topLevelItem(index)
-            # Check if the checkbox in the 'Export' column is checked
-            if self.table.itemWidget(item, 0).isChecked():
-                # Append the data of the row to the export_data list
-                export_data.append({
-                    'sentence': item.text(1),
-                    'translation': item.text(2),
-                    'new_word': item.text(3),
-                    'total_words': item.text(4),
-                    'known_words': item.text(5),
-                    'new_words': item.text(6),
-                    'rogue_words': item.text(7),
-                    'meets_criteria': item.text(8),
-                })
-                
-        if not export_data:
-            QMessageBox.warning(self, "Export Error", "Please check at least one item to export.")
-            return  # Stop the function execution
-
-        # Create a DataFrame from the collected data
-        export_df = pd.DataFrame(export_data)
-        
-        # If the 'audio' checkbox is checked then generate the audio files and pack them into Anki's media folder
-        if self.audio_checkbox.isChecked(): 
-            export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
-    
-        # Create the cards in Anki
-        result = export_df.apply(create_new_card, args=(self.model_picklist.currentText(), self.audio_source_picklist.currentText()), axis=1)
-
-        if result.eq("success").all():
-            QMessageBox.information(self, "Success", "Cards successfully created in Anki.")
-        else:
-            QMessageBox.warning(self, "Export Error", "Cards could not be created.")
-            
-        # Return to the decks homepage        
-        self.controller.show_frame(DecksHomepageQt)
-        
 class FadeLabel(QLabel):
     def __init__(self, text, parent=None):
         super().__init__(text, parent)
