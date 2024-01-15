@@ -22,5 +22,28 @@ This application tries to fill that gap by using generative AI to do the followi
 4. Use a TTS API to generate audio for those sentences;
 5. Export the resulting sentences, along with English translation and audio, to my Anki deck for that language.
 
-## Usage
-It's not done yet.
+## Set-Up
+
+### Anki Collection Set-Up
+This app depends on the user having an existing Anki collection. Anki must be open in order for the AnkiConnect API to function properly. You must have two decks for study of the language you wish to use with Spoonfed:
+- **The 'learned' deck**, containing cards that are either currently suitable for study (at most i+1), or will be suitable for study by the time they are learned if new cards are learned in the order added.
+- ***The 'new' deck**, containing cards with words or phrases that are too difficult to learn (i+2 or higher). 
+
+### User and Language Configuration 
+When opening Spoonfed, you are prompted to create a user configuration, or select an existing one. **The name of the user configuration must be the same as the Anki username for the collection containing your 'learned' and 'new' decks.
+
+After selecting a user configuration, you are prompted to create a language configuration. Here you tell Spoonfed the names of your 'learned' and 'new' decks, as well as all of the card types with at least one field containing relevant vocabulary in each of those decks, and the specific fields by card type. This configuration is a crucial step, allowing Anki to 
+
+## Current Functionality
+Spoonfed currently supports generative Anki card creation and augmentation in the following ways:
+
+1. **Generate new i+1 sentences with audio** based on your learned vocabulary and the unlearned words containing in the 'new' deck. 
+2. **Add audio to existing cards in the 'learned' deck** using the Narakeet API. This is useful for improving cards created before integrating Spoonfed into your workflow, or cards with sentences found in the wild. 
+
+All interactions with generative AI are logged in an SQLite database for analysis. 
+## Future Functionalities
+
+- Edit and store LLM-generated sentences.
+- Suggest new high-frequency vocabulary to learn based on your current selection.
+- Modify the text-generation prompt to focus on specific subject matter or regional idioms.
+- Interactively analyze your generative AI usage to track usage over time, and compare generated content quality under different LLM models.
