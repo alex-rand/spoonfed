@@ -37,8 +37,8 @@ After selecting a user configuration, you are prompted to create a language conf
 ## Current Functionality
 Spoonfed currently supports generative Anki card creation and augmentation in the following ways:
 
-1. **Generate new i+1 sentences with audio** based on your learned vocabulary and the unlearned words containing in the 'new' deck. 
-2. **Add audio to existing cards in the 'learned' deck** using the Narakeet API. This is useful for improving cards created before integrating Spoonfed into your workflow, or cards with sentences found in the wild. 
+1. **Generate new i+1 sentences with audio** based on your learned vocabulary and the unlearned words contained in the 'new' deck. 
+2. **Add audio to existing cards in the 'learned' deck** using the Narakeet API. This is useful for improving cards created before integrating Spoonfed into your workflow, or cards created based on sentences found in the wild. 
 
 All interactions with generative AI are logged in an SQLite database for analysis. 
 ## Future Functionalities
