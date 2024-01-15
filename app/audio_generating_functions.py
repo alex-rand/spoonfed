@@ -28,45 +28,53 @@ def get_anki_media_path(anki_profile_name):
     return f"/Users/{username}/Library/Application Support/Anki2/{anki_profile_name}/collection.media"
 
 def call_narakeet_api(text, voice, language, anki_profile_name):
-    
-    # Define the endpoint and parameters for the API call
-    url = f'https://api.narakeet.com/text-to-speech/mp3?voice={voice}&language={language}&voice-speed=.8'
-    
-    options = {
-        'headers': {
-            'Accept': 'application/octet-stream',
-            'Content-Type': 'text/plain',
-            'x-api-key': os.getenv("NARAKEET_API_KEY")
-        },
-        'data': text.encode('utf8')
-    }
-    
-    logging.info(f"Sending request to Narakeet for text: {text[:50]}...")  # Display only the first 50 characters of the text for brevity
-    
-    response = requests.post(url, **options)
-    
-    # Check the response status code
-    if response.status_code != 200:
-        logging.error(f"Failed to generate audio for text: {text[:50]}. Error: {response.text}")
+    # Check if text is None or empty
+    if not text:
+        logging.error("No text provided for Narakeet API call.")
         return None
 
-    # Make the API call to get audio data
-    audio_data = response.content
-    
-    # Get the save path from get_anki_media_path()
-    directory_path = get_anki_media_path(anki_profile_name)
+    try:
+        # Define the endpoint and parameters for the API call
+        url = f'https://api.narakeet.com/text-to-speech/mp3?voice={voice}&language={language}&voice-speed=.8'
 
-    # Use the first 10 characters of the text for the filename
-    filename = f"{text[:10]}.mp3"
+        options = {
+            'headers': {
+                'Accept': 'application/octet-stream',
+                'Content-Type': 'text/plain',
+                'x-api-key': os.getenv("NARAKEET_API_KEY")
+            },
+            'data': text.encode('utf8')
+        }
 
-    # Join them to get the full save path
-    save_path = os.path.join(directory_path, filename)  
-    
-    # Save the audio data to the specified path
-    with open(save_path, 'wb') as f:
-        f.write(audio_data)
-    
-    # Return the filename
-    return filename
-    
+        logging.info(f"Sending request to Narakeet for text: {text[:50]}...")  # Display only the first 50 characters of the text for brevity
+
+        response = requests.post(url, **options)
+
+        # Check the response status code
+        if response.status_code != 200:
+            logging.error(f"Failed to generate audio for text: {text[:50]}. Error: {response.text}")
+            return None
+
+        # Make the API call to get audio data
+        audio_data = response.content
+
+        # Get the save path from get_anki_media_path()
+        directory_path = get_anki_media_path(anki_profile_name)
+
+        # Use the first 10 characters of the text for the filename
+        filename = f"{text[:10]}.mp3"
+
+        # Join them to get the full save path
+        save_path = os.path.join(directory_path, filename)  
+
+        # Save the audio data to the specified path
+        with open(save_path, 'wb') as f:
+            f.write(audio_data)
+
+        # Return the filename
+        return filename
+
+    except Exception as e:
+        logging.error(f"An error occurred in call_narakeet_api: {str(e)}")
+        return None
 

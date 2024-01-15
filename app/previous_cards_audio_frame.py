@@ -225,7 +225,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         last_fields = {card_type: fields[-1] for card_type, fields in card_types_and_fields.items()}
         
         # DEBUGGING
-        # df = df.iloc[0:1]
+        df = df.iloc[0:10]
         
         # Generate the new audio file             
         df = generate_audio(df, self.controller.selected_language, self.controller.selected_profile_name)
