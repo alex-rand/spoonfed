@@ -1,6 +1,6 @@
-# spoonfed
+# Spoonfed: Optimal Language Learning with Generative AI
 
-This is a Python application that interfaces with [Anki](https://apps.ankiweb.net/) to fill what I feel is a resource gap in my language-learning workflow. It is inspired by the Anki deck [Spoonfed Chinese](https://promagma.gumroad.com/l/IEmpwF), which I used daily for a few years while studying Mandarin. 
+**Spoonfed** is a Python application that interfaces with [Anki](https://apps.ankiweb.net/) to fill what I feel is a resource gap in my language-learning workflow. It is inspired by the Anki deck [Spoonfed Chinese](https://promagma.gumroad.com/l/IEmpwF), which I used daily for a few years while studying Mandarin. 
 
 ## The Problem
 Here's the workflow I like to follow when learning a language:
