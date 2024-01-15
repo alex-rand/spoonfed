@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMessageBox, QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QComboBox, QPushButton, QTreeWidget, QTreeWidgetItem, QScrollBar
+from PyQt5.QtWidgets import QAbstractItemView, QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QCheckBox, QComboBox, QPushButton, QTreeWidget, QTreeWidgetItem, QScrollBar
 from PyQt5.QtCore import Qt, QPropertyAnimation, QSequentialAnimationGroup, pyqtSignal, pyqtProperty
 from PyQt5.QtGui import QColor, QPalette
 import pandas as pd
@@ -100,7 +100,13 @@ class GeneratingFrameQt(QWidget):
             'Total Words', 'Known Words', 'New Words',
             'Rogue Words', 'Meets Criteria'
         ])  
+        
+        # Set selection mode to allow multiple row selection
+        self.table.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
+        # Set selection behavior to select whole rows
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        
         table_layout = QHBoxLayout()
         table_layout.addWidget(self.table)
 

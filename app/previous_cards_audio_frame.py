@@ -16,10 +16,10 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         super().showEvent(event)
         
         # Fetch configuration data
-        configuration_data = fetch_user_configuration(self, self.controller.selected_user_id, self.controller.configuration_name)
+        self.configuration_data = fetch_user_configuration(self, self.controller.selected_user_id, self.controller.configuration_name)
         
         # Load the learned cards from anki
-        learned_cards = self.load_sentences_from_deck('learned_deck', configuration_data)
+        learned_cards = self.load_sentences_from_deck('learned_deck', self.configuration_data)
   
         # check whether any of the fields point to an audio file in Anki's media colletion
         learned_cards = add_audio_flag(learned_cards)
@@ -52,7 +52,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         self.main_layout.addLayout(audio_layout)
         
     def on_press_generate(self):
-        self.export_to_anki()
+        self.export_to_anki(self.configuration_data)
         
     def load_sentences_from_deck(self, deck, raw_config_data):
         """
@@ -168,7 +168,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
                     tree_item.setText(dynamic_col_idx, str(row[col]) if not pd.isna(row[col]) else "")
                     dynamic_col_idx += 1
 
-    def export_to_anki(self):
+    def export_to_anki(self, raw_config_data):
         from decks_homepage import DecksHomepageQt
 
         tree_data = []
@@ -180,17 +180,20 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
                 row_data = {self.table.headerItem().text(i): item.text(i) for i in range(1, self.table.columnCount())}
                 tree_data.append(row_data)
 
+        # Load the treeview data into a dataframe for processing
         df = pd.DataFrame(tree_data)
 
         # Get names of non-empty fields for each row.
         df['relevant_fields'] = df.apply(lambda row: [col for col in df.columns if col.startswith('Field:') and row[col] != ''], axis=1)
         df['sentence'] = None
 
-        total_rows = sum(len(row['relevant_fields']) > 1 for _, row in df.iterrows())
-        current_row = 1
-        already_processed_card_types = set()
-        rows_to_drop = []
+        # Calculate some quantities to support iteration
+        total_rows = sum(len(row['relevant_fields']) > 1 for _, row in df.iterrows()) # N rows for export
+        current_row = 1 
+        already_processed_card_types = set() # To keep track of cards we've already 
+        rows_to_drop = [] # Keep track of the rows for which the user opted to cancel the audio generation
 
+        # For each of the selected cards, prompt the user to choose the field for which to generate audio
         for index, row in df.iterrows():
             if row['relevant_fields'] and row['Card Type'] not in already_processed_card_types:
                 if len(row['relevant_fields']) == 1:
@@ -218,21 +221,29 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         df.drop(rows_to_drop, inplace=True)
         
         # Need to get the 'final' field name for each card type and store it as a column, to be called later.
+        card_types_and_fields = raw_config_data.get('card_types_and_fields', {})
+        last_fields = {card_type: fields[-1] for card_type, fields in card_types_and_fields.items()}
         
-        # call generate_audio to create+export the audio files, based on the text in the card-specific fields selected above                
-      #  export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
-    #
-      #  # Call add_audio_to_existing_card(), adding the name of the generated audio file to the final field (can we do this non-destructively?)
-      # 
-      #  result = export_df.apply(add_audio_to_existing_card, args=(self.model_picklist.currentText(), self.audio_source_picklist.currentText()), axis=1)
-#
-      #  if result.eq("success").all():
-      #      QMessageBox.information(self, "Success", "Cards successfully created in Anki.")
-      #  else:
-      #      QMessageBox.warning(self, "Export Error", "Cards could not be created.")
-      #      
-      #  # Return to the decks homepage        
-      #  self.controller.show_frame(DecksHomepageQt)
+        # DEBUGGING
+        # df = df.iloc[0:1]
+        
+        # Generate the new audio file             
+        df = generate_audio(df, self.controller.selected_language, self.controller.selected_profile_name)
+    
+        # Append the name of the generated audio file to the final field (can we do this non-destructively?)
+        result = append_audio_file_to_notes(df, last_fields)
+
+        if result['success_count'] > 0 and not result['errors']:
+            QMessageBox.information(self, "Success", f"Cards successfully created in Anki. Total: {result['success_count']}")
+        else:
+            error_message = "Some cards could not be updated. Check the errors for details."
+            if result['errors']:
+                error_details = "\n".join([f"Row {index}: {error}" for index, error in result['errors']])
+                error_message += "\n\nDetails:\n" + error_details
+            QMessageBox.warning(self, "Export Error", error_message)
+            
+        # Return to the decks homepage        
+        self.controller.show_frame(DecksHomepageQt)
 
 
     def prompt_user_for_field(self, fields, field_values, total_rows, current_row):

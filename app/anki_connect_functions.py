@@ -154,3 +154,48 @@ def add_audio_flag(df):
     df['no_audio'] = ~df['no_audio']
 
     return df
+
+def append_audio_file_to_notes(df, last_fields):
+    
+    success_count = 0
+    error_list = []
+
+    for index, row in df.iterrows():
+        note_id = int(row['Note Id'])
+        card_type = row['Card Type']
+        audio_content = row['audio']
+
+        if card_type in last_fields:
+            field_to_update = last_fields[card_type]
+            print("note id:", note_id)
+            print("field_to_update:", field_to_update)
+
+            # Fetch current note content
+            current_note_info = ankiconnect_invoke("notesInfo", notes=[note_id])
+            current_field_content = current_note_info[0]['fields'][field_to_update]['value']
+
+            # Append audio content to the current content
+            updated_content = current_field_content + audio_content
+            print("audio_content:", updated_content)
+            print("Updated content:", updated_content)
+
+            # Prepare note_details for update
+            note_details = {
+                "note": {
+                    "id": note_id,
+                    "fields": {
+                        field_to_update: updated_content
+                    }
+                }
+            }
+
+            # Make the update call
+            ankiconnect_invoke("updateNoteFields", **note_details)
+            success_count += 1
+
+    return {
+        "success_count": success_count,
+        "errors": error_list
+    }
+    
+    
