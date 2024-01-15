@@ -1,9 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTreeWidget, QTreeWidgetItem, QMessageBox
-import sqlite3
 import pandas as pd
 from anki_connect_functions import *
 from iplusone import IPlusOneFrameQt
-import re
+from previous_cards_audio_frame import PreviousCardsAudioFrameQt
 
 class DecksHomepageQt(QWidget):
     def __init__(self, parent=None):
@@ -17,7 +16,7 @@ class DecksHomepageQt(QWidget):
     def showEvent(self, event):
         """Override the showEvent to fetch configuration when the frame is shown."""
         super().showEvent(event)
-        configuration_data = self.fetch_user_configuration(self.controller.selected_user_id, self.controller.configuration_name)
+        configuration_data = fetch_user_configuration(self, self.controller.selected_user_id, self.controller.configuration_name)
 
         if configuration_data:
             self.controller.learned_deck_tokens = self.load_vocab_from_deck('learned_deck', configuration_data)
@@ -103,6 +102,14 @@ class DecksHomepageQt(QWidget):
     def add_custom_sentence(self):
         pass
     
+        # Open a new, specific frame? Should I implement a superclass that the other specific generating frames inherit? 
+
+        # Load all cards in the language configuration, subset to only include cards that don't include the [sound...mp3] string in any field
+
+        # User can choose via checkboxes which sentences to do
+
+        # Hard-assign the audio file to the final field of the card. This is potentially destructive!!
+        
     def generate_iplus1(self):
         # Assuming IPlusOneFrameQt is already converted
         self.controller.show_frame(IPlusOneFrameQt)
@@ -111,7 +118,7 @@ class DecksHomepageQt(QWidget):
         pass
     
     def generate_audio_for_previous_cards(self):
-        pass
+        self.controller.show_frame(PreviousCardsAudioFrameQt)
     
     def insert_vocab_into_treeview(self, treeview, vocab_tokens):
         treeview.clear()
@@ -124,58 +131,6 @@ class DecksHomepageQt(QWidget):
     def update_deck_counts(self):
         self.learned_count_label.setText(f"Items: {self.learned_deck_treeview.topLevelItemCount()}")
         self.new_count_label.setText(f"Items: {self.new_deck_treeview.topLevelItemCount()}")
-        
-    def fetch_user_configuration(self, user_id, configuration_name):
-        """
-        Fetches the user's language learning configurations from the database.
-        """
-        conn = None
-        try:
-            conn = sqlite3.connect('database.db')
-            c = conn.cursor()
-
-            # Fetch basic configuration details
-            c.execute("""
-                SELECT id, configuration_language, learned_deck, new_deck
-                FROM language_configurations
-                WHERE user_id=? AND configuration_name=?
-            """, (user_id, configuration_name))
-            config = c.fetchone()
-
-            if config:
-                config_id, config_language, learned_deck, new_deck = config
-
-                # Fetch card types and fields
-                c.execute("""
-                    SELECT card_type_name, field_name
-                    FROM card_types
-                    JOIN card_fields ON card_types.card_type_id = card_fields.card_type_id
-                    WHERE configuration_id=?
-                """, (config_id,))
-                cards_fields = c.fetchall()
-
-                card_types_and_fields = {}
-                for card_type, field in cards_fields:
-                    if card_type not in card_types_and_fields:
-                        card_types_and_fields[card_type] = []
-                    card_types_and_fields[card_type].append(field)
-
-                return {
-                    'configuration_language': config_language,
-                    'learned_deck': learned_deck,
-                    'new_deck': new_deck,
-                    'card_types_and_fields': card_types_and_fields
-                }
-            else:
-                QMessageBox.warning(self, "Configuration Error", "No configuration found for the given user_id and configuration_name")
-                return None
-
-        except sqlite3.Error as e:
-            QMessageBox.critical(self, "Database Error", f"Database error: {e}")
-            return None
-        finally:
-            if conn:
-                conn.close()
 
     ### LOAD THE DATA VIA ANKICONNECT USING THE FIELDS RETRIEVED ABOVE
     def load_vocab_from_deck(self, deck, raw_config_data):
@@ -218,7 +173,7 @@ class DecksHomepageQt(QWidget):
             for field in fields:
                 col_name = f"fields.{field}.value"
                 if col_name in note_content.columns:
-                    note_content[col_name] = note_content[col_name].astype(str).apply(lambda text: self.remove_non_language_tokens(text, configuration_language))
+                    note_content[col_name] = note_content[col_name].astype(str).apply(lambda text: remove_non_language_tokens(text, configuration_language))
                     pass
             # Extract words from all specified fields
             for field in fields:
@@ -233,25 +188,3 @@ class DecksHomepageQt(QWidget):
         combined = pd.concat(all_words, ignore_index=True).drop_duplicates(keep='first')
 
         return combined
-
-    def remove_non_language_tokens(self, text, language):
-        """
-        Removes all characters not belonging to the specified language from the given text.
-
-        Parameters:
-        - text (str): The text to be filtered.
-        - language (str): The language based on which the filtering is to be done.
-
-        Returns:
-        - str: The filtered text containing only characters of the specified language.
-        """
-        if language == 'Hindi':
-            pattern = "[^\u0900-\u097F \n]"
-        elif language == 'Arabic':
-            pattern = "[^\u0600-\u06FF \n]"
-        elif language == 'Mandarin':
-            pattern = "[^\u4e00-\u9fff \n]"
-        else:
-            raise ValueError("Unsupported language")
-
-        return re.sub(pattern, '', text)

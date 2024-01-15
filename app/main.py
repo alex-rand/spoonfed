@@ -6,6 +6,7 @@ from user_config import UserConfigFrameQt
 from language_config import LanguageConfigFrameQt
 from decks_homepage import DecksHomepageQt
 from iplusone import IPlusOneFrameQt
+from previous_cards_audio_frame import PreviousCardsAudioFrameQt
 
 # Import your PyQt converted frames here
 # from user_config_qt import UserConfigFrameQt
@@ -31,14 +32,13 @@ class MainApp(QMainWindow):
         self.selected_profile_name = None
         self.selected_language = None
         
-        
         self.learned_deck_tokens = []
         self.new_deck_tokens = []
 
         # Tell the app what frames exist. These are all classes we define below
         # representing different screens in the UX.
         self.frames = {}
-        for F in (UserConfigFrameQt, LanguageConfigFrameQt, DecksHomepageQt, IPlusOneFrameQt):
+        for F in (UserConfigFrameQt, LanguageConfigFrameQt, DecksHomepageQt, IPlusOneFrameQt, PreviousCardsAudioFrameQt):
             frame = F(parent=self)
             self.frames[F] = frame
             self.layout.addWidget(frame)

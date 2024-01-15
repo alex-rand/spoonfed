@@ -13,3 +13,4 @@ database.db
 configurations.json
 .DS_Store
 __pycache__
+delete.csv
