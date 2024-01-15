@@ -2,9 +2,9 @@ from PyQt5.QtWidgets import QAbstractItemView, QWidget, QFrame, QVBoxLayout, QHB
 from PyQt5.QtCore import Qt, QPropertyAnimation, QSequentialAnimationGroup, pyqtSignal, pyqtProperty
 from PyQt5.QtGui import QColor, QPalette
 import pandas as pd
-from text_generating_functions import generate_text
-from audio_generating_functions import generate_audio
-from anki_connect_functions import create_new_card
+from utils.text_generating_functions import generate_text
+from utils.audio_generating_functions import generate_audio
+from utils.anki_connect_functions import create_new_card
 
 class GeneratingFrameQt(QWidget):
     """Superclass for all GUI frames that involve generating sentences or audio"""

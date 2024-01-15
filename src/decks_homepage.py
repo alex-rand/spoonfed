@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTreeWidget, QTreeWidgetItem, QMessageBox
 import pandas as pd
-from anki_connect_functions import *
+from utils.anki_connect_functions import *
 from iplusone import IPlusOneFrameQt
 from previous_cards_audio_frame import PreviousCardsAudioFrameQt
 

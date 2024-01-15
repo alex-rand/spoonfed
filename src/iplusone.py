@@ -3,9 +3,11 @@ from PyQt5.QtCore import pyqtSignal, pyqtProperty
 from PyQt5.QtGui import QPalette
 import pandas as pd
 from generating_frame import GeneratingFrameQt
-from text_generating_functions import generate_text
-from audio_generating_functions import generate_audio
-from anki_connect_functions import create_new_card
+import sys
+sys.path.append("../utils/")
+from utils.text_generating_functions import generate_text
+from utils.audio_generating_functions import generate_audio
+from utils.anki_connect_functions import create_new_card
 
 class IPlusOneFrameQt(GeneratingFrameQt):
     update_ui_signal = pyqtSignal(object)

@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QHBoxLayout, QLabel, QCheckBox, QComboBox, QPushButton, QTreeWidgetItem, QDialog, QVBoxLayout
 from PyQt5.QtCore import pyqtSignal
 import pandas as pd
-from anki_connect_functions import *
-from audio_generating_functions import generate_audio
+from utils.anki_connect_functions import *
+from utils.audio_generating_functions import generate_audio
 from generating_frame import GeneratingFrameQt
 
 class PreviousCardsAudioFrameQt(GeneratingFrameQt):
