@@ -91,13 +91,10 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
             # Retrieve note content for the card type
             note_content = pd.json_normalize(ankiconnect_invoke('notesInfo', notes=note_ids))
             
-            print("BEFORE:", len(note_content))
             # Remove suspended cards
             to_suspend = check_suspended_status(card_ids)
             mask = -pd.Series(to_suspend)
-            print("MASK:" , mask)
             note_content = note_content[mask]
-            print("AFTER:", len(note_content))
             
             # Accumulate unique field names across all card types
             for col in note_content.columns:
@@ -216,17 +213,12 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
 
         df.drop(rows_to_drop, inplace=True)
                     
-        # Drop the rows for which 'Cancel' was pressed
-       # df.drop(rows_to_drop, inplace=True)
-        
-       # print(df)
-        
         # Need to get the 'final' field name for each card type and store it as a column, to be called later.
         card_types_and_fields = raw_config_data.get('card_types_and_fields', {})
         last_fields = {card_type: fields[-1] for card_type, fields in card_types_and_fields.items()}
         
         # DEBUGGING
-        df = df.iloc[0:1]
+       # df = df.iloc[0:1]
         
         # Generate the new audio file             
         df = generate_audio(df, self.controller.selected_language, self.controller.selected_profile_name)
