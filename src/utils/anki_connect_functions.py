@@ -51,6 +51,17 @@ def create_new_card(dat, gpt_model, audio_provider):
     
     return("success")
 
+def check_suspended_status(note_ids):
+    # The request for 'areSuspended' requires a list of card IDs
+    params = {
+        'cards': note_ids
+    }
+
+    # Call ankiconnect_invoke with the 'areSuspended' action and the card IDs
+    result = ankiconnect_invoke('areSuspended', **params)
+
+    return result
+
 def fetch_user_configuration(calling_frame, user_id, configuration_name):
         """
         Fetches the user's language learning configurations from the database.

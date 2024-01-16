@@ -85,9 +85,19 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
 
             # Retrieve note IDs for the card type
             note_ids = ankiconnect_invoke('findNotes', query=query)
+            
+            card_ids = ankiconnect_invoke('findCards', query=query)
 
             # Retrieve note content for the card type
             note_content = pd.json_normalize(ankiconnect_invoke('notesInfo', notes=note_ids))
+            
+            print("BEFORE:", len(note_content))
+            # Remove suspended cards
+            to_suspend = check_suspended_status(card_ids)
+            mask = -pd.Series(to_suspend)
+            print("MASK:" , mask)
+            note_content = note_content[mask]
+            print("AFTER:", len(note_content))
             
             # Accumulate unique field names across all card types
             for col in note_content.columns:
@@ -104,7 +114,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
 
         # Convert the list of dictionaries to a DataFrame
         new_df = pd.DataFrame(all_sentences)
-        
+
         # Filter columns to include only those ending with '.value'
         value_columns = [col for col in new_df.columns if col.endswith('.value')]
         final_columns = ['note_id', 'deck_name', 'card_type'] + value_columns
@@ -170,62 +180,53 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
 
     def export_to_anki(self, raw_config_data):
         from decks_homepage import DecksHomepageQt
-
+        
         tree_data = []
         for index in range(self.table.topLevelItemCount()):
             item = self.table.topLevelItem(index)
-
-            # Check if the checkbox in the 'Generate' column is checked
             if self.table.itemWidget(item, 0).isChecked():
                 row_data = {self.table.headerItem().text(i): item.text(i) for i in range(1, self.table.columnCount())}
                 tree_data.append(row_data)
 
-        # Load the treeview data into a dataframe for processing
         df = pd.DataFrame(tree_data)
-
-        # Get names of non-empty fields for each row.
         df['relevant_fields'] = df.apply(lambda row: [col for col in df.columns if col.startswith('Field:') and row[col] != ''], axis=1)
         df['sentence'] = None
 
-        # Calculate some quantities to support iteration
-        total_rows = sum(len(row['relevant_fields']) > 1 for _, row in df.iterrows()) # N rows for export
-        current_row = 1 
-        already_processed_card_types = set() # To keep track of cards we've already 
-        rows_to_drop = [] # Keep track of the rows for which the user opted to cancel the audio generation
+        total_rows = len(df)
+        current_row = 1
+        already_processed_card_types = set()
+        rows_to_drop = []
 
-        # For each of the selected cards, prompt the user to choose the field for which to generate audio
         for index, row in df.iterrows():
             if row['relevant_fields'] and row['Card Type'] not in already_processed_card_types:
-                if len(row['relevant_fields']) == 1:
-                    selected_field, apply_to_all = row['relevant_fields'][0], False
-                else:
-                    field_values = {field: row[field] for field in row['relevant_fields']}
-                    result = self.prompt_user_for_field(row['relevant_fields'], field_values, total_rows, current_row)
-                    if result is None:  # Cancel was pressed
-                        rows_to_drop.append(index)
-                        continue
-                    else:
-                        selected_field, apply_to_all = result
-
-                    if apply_to_all:
-                        already_processed_card_types.add(row['Card Type'])
+                field_values = {field: row[field] for field in row['relevant_fields']}
+                result = self.prompt_user_for_field(row['relevant_fields'], field_values, total_rows, current_row)
+                if result is None:
+                    rows_to_drop.append(index)
                     current_row += 1
+                    continue
+                selected_field, apply_to_all = result
+                if apply_to_all:
+                    already_processed_card_types.add(row['Card Type'])
+                    df.loc[df['Card Type'] == row['Card Type'], 'sentence'] = row[selected_field]
+                    current_row += df[df['Card Type'] == row['Card Type']].shape[0]
+                    continue
+                df.at[index, 'sentence'] = row[selected_field]
+            current_row += 1
 
-                if selected_field:
-                    if apply_to_all:
-                        df.loc[df['Card Type'] == row['Card Type'], 'sentence'] = df.loc[df['Card Type'] == row['Card Type'], selected_field]
-                    else:
-                        df.at[index, 'sentence'] = row[selected_field]
-
-        # Drop the rows for which 'Cancel' was pressed
         df.drop(rows_to_drop, inplace=True)
+                    
+        # Drop the rows for which 'Cancel' was pressed
+       # df.drop(rows_to_drop, inplace=True)
+        
+       # print(df)
         
         # Need to get the 'final' field name for each card type and store it as a column, to be called later.
         card_types_and_fields = raw_config_data.get('card_types_and_fields', {})
         last_fields = {card_type: fields[-1] for card_type, fields in card_types_and_fields.items()}
         
         # DEBUGGING
-        df = df.iloc[0:10]
+        df = df.iloc[0:1]
         
         # Generate the new audio file             
         df = generate_audio(df, self.controller.selected_language, self.controller.selected_profile_name)
@@ -287,11 +288,11 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
 
         # Show the dialog and wait for user action
         result = dialog.exec_()
-
-        if result == QDialog.Accepted:
+        
+        if result == 1:
             return comboBox.currentText(), apply_all_checkbox.isChecked()
         else:
-            return None, False
+            return None
 
 
 

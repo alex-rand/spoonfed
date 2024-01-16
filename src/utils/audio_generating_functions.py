@@ -1,6 +1,7 @@
 import os
 import requests
 import random
+import string
 import logging
 
 def generate_audio(df, language, anki_profile_name):
@@ -61,8 +62,13 @@ def call_narakeet_api(text, voice, language, anki_profile_name):
         # Get the save path from get_anki_media_path()
         directory_path = get_anki_media_path(anki_profile_name)
 
-        # Use the first 10 characters of the text for the filename
-        filename = f"{text[:10]}.mp3"
+        # Use the first 10 characters of the text for the filename,
+        # unelss the text field is empty, in which case just use a random string
+        if text:
+            filename = f"{text[:10]}-{random.randint(10000000, 99999999)}.mp3"
+        else:
+            random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+            filename = f"{random_string}.mp3"
 
         # Join them to get the full save path
         save_path = os.path.join(directory_path, filename)  
