@@ -1,6 +1,11 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QComboBox, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QInputDialog
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QLabel, QComboBox, QPushButton, QVBoxLayout, QGridLayout, QInputDialog
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QPixmap, QCursor, QFont, QFontDatabase
 import sqlite3
+import webbrowser
+import os
+import random
+
 from language_config import LanguageConfigFrameQt
 
 # Assuming LanguageConfigFrame is also converted to PyQt5
@@ -15,18 +20,27 @@ class UserConfigFrameQt(QWidget):
 
     def create_user_config_frame(self):
         layout = QVBoxLayout(self)
-
-        # Title
-        title = QLabel("User Configuration", self)
-        title.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title)
-
+        layout.setSpacing(10)  # Adjust spacing as needed
+        
+        # Application Title
+        # Add custom font
+        font_path = "assets/fonts/PlantinMTStd-Italic.otf"
+        absolute_font_path = os.path.abspath(font_path)
+        font_id = QFontDatabase.addApplicationFont(absolute_font_path)
+        font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
+        
+        app_title = QLabel("Spoonfed", self)
+        app_title.setAlignment(Qt.AlignCenter)
+        font = QFont(font_family, 36) 
+        app_title.setFont(font)
+        layout.addWidget(app_title)
+        
         # Grid for inputs and labels
         grid_layout = QGridLayout()
         layout.addLayout(grid_layout)
 
         # Label and ComboBox for user profiles
-        self.anki_profile_label = QLabel("Anki Profile:", self)
+        self.anki_profile_label = QLabel("Anki Profile Name:", self)
         grid_layout.addWidget(self.anki_profile_label, 0, 0)
 
         self.saved_users_dropdown = QComboBox(self)
@@ -41,6 +55,11 @@ class UserConfigFrameQt(QWidget):
         add_user_button = QPushButton("Add New User", self)
         add_user_button.clicked.connect(self.add_new_user)
         layout.addWidget(add_user_button)
+        
+        self.display_random_image()
+        
+        # Style the dropdown and label
+        self.anki_profile_label.setStyleSheet("QLabel { color: #555; }")
 
     def load_all_saved_users(self):
         conn = sqlite3.connect('database.db')
@@ -81,3 +100,35 @@ class UserConfigFrameQt(QWidget):
         if selected_user:
             self.set_user_configuration(selected_user)
             self.controller.show_frame(LanguageConfigFrameQt)
+            
+    def display_random_image(self):
+        image_folder = 'assets/images'
+        images = [img for img in os.listdir(image_folder) if img.endswith('.png')]
+        if images:
+            selected_image = random.choice(images)
+            pixmap = QPixmap(os.path.join(image_folder, selected_image))
+            image_label = ClickableLabel(self)
+            image_label.setPixmap(pixmap.scaled(400, 300, Qt.KeepAspectRatio)) # Adjust size as needed
+            image_label.clicked.connect(self.on_image_click)
+            self.layout().addWidget(image_label)
+        
+    def on_image_click(self):
+        url = "https://github.com/alex-rand/spoonfed" 
+        webbrowser.open(url)
+
+class ClickableLabel(QLabel):
+    clicked = pyqtSignal()  # Signal to be emitted when the label is clicked
+
+    def __init__(self, *args, **kwargs):
+        super(ClickableLabel, self).__init__(*args, **kwargs)
+        self.setCursor(QCursor(Qt.PointingHandCursor))  # Set cursor initially
+
+    def mousePressEvent(self, event):
+        self.clicked.emit()
+        self.setCursor(QCursor(Qt.PointingHandCursor))  # Reinstate the cursor after click
+
+    def enterEvent(self, event):
+        self.setCursor(QCursor(Qt.PointingHandCursor))  # Ensure cursor is set on re-enter
+
+    def leaveEvent(self, event):
+        self.unsetCursor()  # Reset cursor to default
