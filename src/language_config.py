@@ -8,14 +8,27 @@ class LanguageConfigFrameQt(QWidget):
         super().__init__(parent)
         self.controller = parent
         self.create_language_config_frame()
+        self.setFixedSize(500, 200)
         
     def showEvent(self, event):
         """Override the show event to refresh the dropdown each time the frame is shown."""
         self.load_language_configurations_to_dropdown()
         super().showEvent(event)
+        self.controller.resize(500, 200)
 
     def create_language_config_frame(self):
         layout = QVBoxLayout(self)
+        
+        # Back button 
+        top_layout = QHBoxLayout()
+        self.back_button = QPushButton("Back", self)
+        self.back_button.setFixedSize(100, 30)  # Example size, adjust as needed
+        self.back_button.setStyleSheet("QPushButton { font-size: 10pt; }")  # Example style, adjust as needed
+        self.back_button.clicked.connect(self.back_to_user_config)
+        top_layout.addWidget(self.back_button)
+        top_layout.addStretch()  # This will push the button to the left
+        layout.addLayout(top_layout)
+        top_layout.addStretch(1)  # This will push the button to the left
 
         # Title
         title = QLabel("Language Configuration", self)
@@ -42,13 +55,9 @@ class LanguageConfigFrameQt(QWidget):
         load_decks_button = QPushButton("Load Decks", self)
         load_decks_button.clicked.connect(self.execute_ankiconnect)
         layout.addWidget(load_decks_button)
-
-        back_button = QPushButton("Back", self)
-        back_button.clicked.connect(self.back_to_user_config)
-        layout.addWidget(back_button)
-
+        
     def back_to_user_config(self):
-        # Assuming UserConfigFrameQt is already converted
+        from user_config import UserConfigFrameQt
         self.controller.show_frame(UserConfigFrameQt)
         
     def load_language_configurations_to_dropdown(self):
