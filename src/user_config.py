@@ -17,17 +17,17 @@ class UserConfigFrameQt(QWidget):
         self.controller = parent
         self.create_user_config_frame()
         self.load_all_saved_users()
-        self.setFixedSize(300, 400)
+        self.setFixedSize(300, 450)
 
     def showEvent(self, event):
         """Override the show event to refresh the dropdown each time the frame is shown."""
         super().showEvent(event)
-        self.controller.resize(300, 400)
+        self.controller.resize(300, 450)
         
     def create_user_config_frame(self):
         layout = QVBoxLayout(self)
         layout.setSpacing(10)  
-        self.controller.resize(300, 400)
+        self.controller.resize(300, 450)
         
         # Add custom font
         font_path = "assets/fonts/PlantinMTStd-Italic.otf"
@@ -114,7 +114,7 @@ class UserConfigFrameQt(QWidget):
             selected_image = random.choice(images)
             pixmap = QPixmap(os.path.join(image_folder, selected_image))
             image_label = ClickableLabel(self)
-            image_label.setPixmap(pixmap.scaled(300, 400, Qt.KeepAspectRatio)) # Adjust size as needed
+            image_label.setPixmap(pixmap.scaled(300, 450)) # Adjust size as needed
             image_label.clicked.connect(self.on_image_click)
             self.layout().addWidget(image_label)
         

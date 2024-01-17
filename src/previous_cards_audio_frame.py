@@ -194,6 +194,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         already_processed_card_types = set()
         rows_to_drop = []
 
+        # Select the content from the user-specified field and pack it into the 'sentence' field of the df to send to audio API.
         for index, row in df.iterrows():
             if row['relevant_fields'] and row['Card Type'] not in already_processed_card_types:
                 field_values = {field: row[field] for field in row['relevant_fields']}
@@ -212,6 +213,9 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
             current_row += 1
 
         df.drop(rows_to_drop, inplace=True)
+        
+        # Remove HTML headers, which Anki sometimes adds automatically and which confuse Narakeet
+        df['sentence'] = df['sentence'].str.replace(r'<[^>]+>', '')
                     
         # Need to get the 'final' field name for each card type and store it as a column, to be called later.
         card_types_and_fields = raw_config_data.get('card_types_and_fields', {})
