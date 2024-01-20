@@ -80,9 +80,9 @@ class DecksHomepageQt(QWidget):
         # Create Dropdown Menu (Picklist)
         self.action_picklist = QComboBox(self)
         self.action_picklist.addItems([
+            "'Verb Exploder'",
             "Generate Audio for Existing Cards",
             "Generate i+1",
-            "'Verb Exploder'",
             "Generate Sentences for Selected Token"
         ])
         lower_frame.addWidget(self.action_picklist)
@@ -95,14 +95,16 @@ class DecksHomepageQt(QWidget):
     # Implement the method to handle button press
     def execute_selected_action(self):
         selected_action = self.action_picklist.currentText()
-        if selected_action == "Add Custom Sentence":
-            self.add_custom_sentence()
+        if selected_action == "'Verb Exploder'":
+            self.verb_exploder()
         elif selected_action == "Generate i+1":
             self.generate_iplus1()
         elif selected_action == "Generate Sentences for Selected Token":
             self.generate_sentences_for_selected_token()
-        elif selected_action == "Generate Audio for Previously-Added Cards":
+        elif selected_action == "Generate Audio for Existing Cards":
             self.generate_audio_for_previous_cards()
+        elif selected_action == "Add Custom Sentence":
+            self.add_custom_sentence()
 
     def on_press_back(self):
         from language_config import LanguageConfigFrameQt
@@ -129,6 +131,10 @@ class DecksHomepageQt(QWidget):
     
     def generate_audio_for_previous_cards(self):
         self.controller.show_frame(PreviousCardsAudioFrameQt)
+    
+    def verb_exploder(self):
+        from verb_exploder_frame import VerbExploderFrameQt
+        self.controller.show_frame(VerbExploderFrameQt)
     
     def insert_vocab_into_treeview(self, treeview, vocab_tokens):
         treeview.clear()
