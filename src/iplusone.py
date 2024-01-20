@@ -24,7 +24,7 @@ class IPlusOneFrameQt(GeneratingFrameQt):
         super().initUI()
            
     def on_press_generate(self):
-        print(self.controller.learned_deck_tokens)
+        n_sentences = int(self.nsentences_picklist.currentText())
         
         # Declare the prompt
         self.prompt = f""" 
@@ -35,9 +35,9 @@ class IPlusOneFrameQt(GeneratingFrameQt):
             {", ".join(self.controller.learned_deck_tokens)} 
             \n
             Today the student is trying to learn the following words, which we can call the 'new words', and are as follows:
-            {", ".join(self.controller.learned_deck_tokens)} 
+            {", ".join(self.controller.new_deck_tokens.sample(n=min(n_sentences, len(self.controller.new_deck_tokens)), replace=False))} 
             \n
-            Based on the above information, please generate {int(self.nsentences_picklist.currentText())} new Hindi sentences and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
+            Based on the above information, please generate {n_sentences} new Hindi sentences and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
             - Each sentence includes _exactly one_ of the 'new words' -- you are NOT ALLOWED to include more than one word from the list of 'new words';
             - All of the other words in each sentence (besides the exactly one 'new word') must already appear in the list of 'learned words';
             - Each sentence must include a subject, a verb, and an object. 
