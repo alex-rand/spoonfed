@@ -14,6 +14,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
     def showEvent(self, event):
         """Override the showEvent"""
         super().showEvent(event)
+        self.controller.resize(1000, 500)
         
         # Fetch configuration data
         self.configuration_data = fetch_user_configuration(self, self.controller.selected_user_id, self.controller.configuration_name)

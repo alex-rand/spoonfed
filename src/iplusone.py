@@ -18,6 +18,7 @@ class IPlusOneFrameQt(GeneratingFrameQt):
     def showEvent(self, event):
         """Override the showEvent"""
         super().showEvent(event)
+        self.controller.resize(1000, 500)
 
     def initUI(self):
         super().initUI()

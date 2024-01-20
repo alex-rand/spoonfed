@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTreeWidget, QTreeWidgetItem, QMessageBox
+from PyQt5.QtWidgets import QComboBox, QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTreeWidget, QTreeWidgetItem, QMessageBox
 import pandas as pd
 from utils.anki_connect_functions import *
 from iplusone import IPlusOneFrameQt
@@ -9,13 +9,12 @@ class DecksHomepageQt(QWidget):
         super().__init__(parent)
         self.controller = parent
         self.create_deck_display_frame()
-        
-      # c.execute("SELECT id FROM users WHERE profile_name=?", (user_name,))
-      # self.controller.selected_user_id = c.fetchone()[0]
 
     def showEvent(self, event):
         """Override the showEvent to fetch configuration when the frame is shown."""
         super().showEvent(event)
+        self.controller.resize(800, 400)
+        
         configuration_data = fetch_user_configuration(self, self.controller.selected_user_id, self.controller.configuration_name)
 
         if configuration_data:
@@ -78,22 +77,33 @@ class DecksHomepageQt(QWidget):
         lower_frame = QHBoxLayout()
         main_layout.addLayout(lower_frame)
 
-        # Buttons
-        add_sentence_btn = QPushButton("Add Custom Sentence", self)
-        generate_iplus1_btn = QPushButton("Generate i+1", self)
-        generate_sentences_btn = QPushButton("Generate Sentences for Selected Token", self)
-        audio_for_previous_cards_btn = QPushButton("Generate Audio for Previously-Added Cards", self)
+        # Create Dropdown Menu (Picklist)
+        self.action_picklist = QComboBox(self)
+        self.action_picklist.addItems([
+            "Generate Audio for Existing Cards",
+            "Generate i+1",
+            "'Verb Exploder'",
+            "Generate Sentences for Selected Token"
+        ])
+        lower_frame.addWidget(self.action_picklist)
 
-        add_sentence_btn.clicked.connect(self.add_custom_sentence)
-        generate_iplus1_btn.clicked.connect(self.generate_iplus1)
-        generate_sentences_btn.clicked.connect(self.generate_sentences_for_selected_token)
-        audio_for_previous_cards_btn.clicked.connect(self.generate_audio_for_previous_cards)
-
-        lower_frame.addWidget(add_sentence_btn)
-        lower_frame.addWidget(generate_iplus1_btn)
-        lower_frame.addWidget(generate_sentences_btn)
-        lower_frame.addWidget(audio_for_previous_cards_btn)
+        # Create a Single Button
+        self.execute_action_button = QPushButton("Go", self)
+        self.execute_action_button.clicked.connect(self.execute_selected_action)
+        lower_frame.addWidget(self.execute_action_button)
         
+    # Implement the method to handle button press
+    def execute_selected_action(self):
+        selected_action = self.action_picklist.currentText()
+        if selected_action == "Add Custom Sentence":
+            self.add_custom_sentence()
+        elif selected_action == "Generate i+1":
+            self.generate_iplus1()
+        elif selected_action == "Generate Sentences for Selected Token":
+            self.generate_sentences_for_selected_token()
+        elif selected_action == "Generate Audio for Previously-Added Cards":
+            self.generate_audio_for_previous_cards()
+
     def on_press_back(self):
         from language_config import LanguageConfigFrameQt
         self.controller.show_frame(LanguageConfigFrameQt)
