@@ -151,7 +151,7 @@ class DecksHomepageQt(QWidget):
     ### LOAD THE DATA VIA ANKICONNECT USING THE FIELDS RETRIEVED ABOVE
     def load_vocab_from_deck(self, deck, raw_config_data):
         """
-        Load vocabulary words from Anki cards based on specified deck, card types, and fields.
+        Use AnkiConnect to load vocabulary words from Anki cards based on specified deck, card types, and fields.
 
         Parameters:
         - deck (str): The name of the Anki deck.

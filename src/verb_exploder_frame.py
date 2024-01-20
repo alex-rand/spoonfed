@@ -1,6 +1,5 @@
-from PyQt5.QtWidgets import QMessageBox, QComboBox, QLabel, QCheckBox, QTreeWidgetItem
-from PyQt5.QtCore import pyqtSignal, pyqtProperty
-from PyQt5.QtGui import QPalette
+from PyQt5.QtWidgets import QMessageBox, QLabel, QCheckBox, QTreeWidgetItem
+from PyQt5.QtCore import pyqtSignal
 import pandas as pd
 from generating_frame import GeneratingFrameQt
 import sys
@@ -122,21 +121,3 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         # Return to the decks homepage        
         self.controller.show_frame(DecksHomepageQt)
         
-class FadeLabel(QLabel):
-    def __init__(self, text, parent=None):
-        super().__init__(text, parent)
-        self._opacity = 1
-
-    def getOpacity(self):
-        return self._opacity
-
-    def setOpacity(self, opacity):
-        self._opacity = opacity
-        palette = self.palette()
-        color = palette.color(QPalette.WindowText)
-        color.setAlphaF(opacity)
-        palette.setColor(QPalette.WindowText, color)
-        self.setPalette(palette)
-
-    opacity = pyqtProperty(float, getOpacity, setOpacity)
-
