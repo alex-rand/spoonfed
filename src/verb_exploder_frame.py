@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QMessageBox, QLabel, QCheckBox, QTreeWidgetItem
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QMessageBox, QLabel, QHBoxLayout, QLineEdit, QCheckBox, QTreeWidgetItem
+from PyQt5.QtCore import pyqtSignal, QRegExp
+from PyQt5.QtGui import QRegExpValidator
 import pandas as pd
 from generating_frame import GeneratingFrameQt
 import sys
@@ -27,6 +28,31 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         self.nsentences_picklist.clear()
         self.nsentences_picklist.addItems(['1', '2', '3'])
         self.generate_button.setText("Generate cards")
+        
+        # New widgets for Verb input
+        verb_layout = QHBoxLayout()  # Create a horizontal layout
+        self.verb_label = QLabel('Verb (one word, any tense):', self)  # Create a label
+        self.verb_input = QLineEdit(self)  # Create a text field for input
+        self.verb_input.setMaximumWidth(100)
+        
+        # Set up the validator to only allow a single word (no spaces)
+        no_space_regexp = QRegExp("\\S+")  # Regular expression for no spaces
+        no_space_validator = QRegExpValidator(no_space_regexp, self.verb_input)
+        self.verb_input.setValidator(no_space_validator)  # Apply the validator
+
+        verb_layout.addWidget(self.verb_label)  # Add the label to the layout
+        verb_layout.addWidget(self.verb_input)  # Add the text field to the layout
+        
+        verb_layout.setContentsMargins(0, 8, 190, 0)  # Left, Top, Right, Bottom margins
+        verb_layout.setSpacing(8)  # Spacing between widgets in the layout
+        
+        # Set up the validator to only allow a single word (no spaces)
+        no_space_regexp = QRegExp("\\S+")  # Regular expression for no spaces
+        no_space_validator = QRegExpValidator(no_space_regexp, self.verb_input)
+        self.verb_input.setValidator(no_space_validator)  # Apply the validator
+
+        # Insert the new layout into the main layout
+        self.main_layout.insertLayout(self.main_layout.indexOf(self.generate_button), verb_layout)
         
     def on_press_generate(self):
         self.loading_label.show()
