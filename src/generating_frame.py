@@ -107,6 +107,8 @@ class GeneratingFrameQt(QWidget):
         # Set selection behavior to select whole rows
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         
+        # See this video for multiple selection: https://www.youtube.com/watch?v=RwjYTXeUlKg
+        
         table_layout = QHBoxLayout()
         table_layout.addWidget(self.table)
 
@@ -146,7 +148,7 @@ class GeneratingFrameQt(QWidget):
         audio_layout.addWidget(self.audio_source_picklist)
         
         return self.main_layout
-    
+
     def hide_widgets(self, layout):
         """useful function for inheriting classes to customize the layout of the superclass"""
         if layout is not None:

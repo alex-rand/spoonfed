@@ -19,13 +19,11 @@ def generate_text(calling_frame):
     gpt_payload_enhanced = evaluate_gpt_response(gpt_payload, learned_deck_tokens, new_deck_tokens)
     
     # Flag sentences that don't meet the specified rule, e.g. 'i+1 no rogue'
-    print(calling_frame.selection_criterion_picklist.currentText())
     gpt_payload_enhanced = flag_bad_sentences(gpt_payload_enhanced, calling_frame.selection_criterion_picklist.currentText())
     
     # Export for debugging 
     gpt_payload_enhanced.to_csv('test-payload-enhanced.csv', encoding='utf-8', index=False)
 
-    print(gpt_payload_enhanced)
     # Apend to the database
   #  save_to_database("database.db", gpt_payload_enhanced, calling_frame.model_picklist.currentText(), audio_source) 
     
@@ -43,24 +41,23 @@ def gpt__generate_new_sentences(calling_frame):
     ] 
     
     ### For debugging purposes, load a cached CSV so we don't call OpenAI a zillion times
-    with open('test-payload.txt', 'r') as f:
-        generated_text = f.read()
- 
-    return(generated_text)
+  #  with open('test-payload.txt', 'r') as f:
+  #      generated_text = f.read()
+ #
+  #  return(generated_text)
   
- #   response = openai.ChatCompletion.create(
- #     model=calling_frame.model_picklist.currentText(),
- #     messages=messages,
- #     temperature=0.1,
- #     top_p=1.0,
- #     frequency_penalty=0.0,
- #     presence_penalty=0.0
- #   )
- #  
- #   generated_text = [
- #     choice.message["content"].strip() for choice in response["choices"]
- #   ]
+    response = openai.ChatCompletion.create(
+      model=calling_frame.model_picklist.currentText(),
+      messages=messages,
+      temperature=0.1,
+      top_p=1.0,
+      frequency_penalty=0.0,
+      presence_penalty=0.0
+    )
    
+    generated_text = [
+      choice.message["content"].strip() for choice in response["choices"]
+    ]
 
  #  # Export it for debugging purposes
  #   with open('test-payload.txt', 'w', encoding='utf-8') as f:
@@ -76,8 +73,8 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
   
     # Check whether the GPT payload matches the formatting of a .csv file: If it works then load it as a .csv. If it doesn't then throw an informative error.
     try:
-     #   gpt_payload = pd.read_csv(io.StringIO(gpt_payload[0]))
-        gpt_payload = pd.read_csv(io.StringIO(gpt_payload))
+        gpt_payload = pd.read_csv(io.StringIO(gpt_payload[0]))
+      #  gpt_payload = pd.read_csv(io.StringIO(gpt_payload)) # for debugging, works with the exported txt file
     except pd.errors.ParserError:
         raise ValueError("The GPT response string does not match the format of a CSV file.")
       
@@ -104,7 +101,12 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
 
     # Apply the function and assign results to new columns
     gpt_payload[['n_words', 'n_known_words', 'n_new_words', 'n_rogue_words']] = gpt_payload['sentence'].apply(count_word_types)
+    
+    # Do some adhoc correction of HTML tags, which GPT seems to predictably get wrong sometimes
+    gpt_payload['sentence'] = gpt_payload['sentence'].str.replace('&quot;', '', regex=False)
+    gpt_payload['sentence'] = gpt_payload['sentence'].str.replace(r'<span class=\\\\"target_verb\\\\">', '<span class="target_verb">', regex=False)
 
+    print(gpt_payload['sentence'])
     return(gpt_payload)
     
 # The function checks if the sentence meets two criteria:
