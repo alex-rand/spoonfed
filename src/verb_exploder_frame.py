@@ -108,10 +108,9 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             
             # Generate sentences with the necessary cloze formatting and HTML tag around the target verb
             generated_sentences = generate_text(self)
-            
-          #  
-          #  # Update the UI after generation
-          #  self.update_ui_after_generation(generated_sentences, 'meets_criteria')
+        
+            # Update the UI after generation
+            self.update_ui_after_generation(generated_sentences, 'meets_criteria')
 
         except ValueError as e:  # Catch the specific error raised in generate_text
             QMessageBox.critical(self, "Generation Error", str(e))
@@ -121,14 +120,24 @@ class VerbExploderFrameQt(GeneratingFrameQt):
        # self.loading_label.hide()
         self.generate_button.setEnabled(True)
         
+    def update_ui_after_generation(self, sentences, checkbox_column):
+
+        if sentences is not None:
+            self.populate_treeview(sentences.sort_values(by=checkbox_column, ascending=False))
+        self.loading_label.hide()
+        self.generate_button.setEnabled(True)
+        self.export_button.show()
+        self.audio_frame.show()
+        
     # Override interited method
     def populate_treeview(self, data_frame):
+        print(data_frame.columns)
         self.table.clear()
-        self.table.setColumnCount(9)  # Assuming 9 columns including the checkbox column
+        self.table.setColumnCount(8)  # Assuming 9 columns including the checkbox column
         self.table.setHeaderLabels([
-            'Export', 'Sentence', 'Translation', 'New Word', 
+            'Export', 'Sentence', 'Translation', 'Target Verb', 
             'Total Words', 'Known Words', 'New Words',
-            'Rogue Words', 'Meets Criteria'
+            'Rogue Words'
         ])
 
         for row in data_frame.itertuples():
@@ -142,12 +151,11 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             # Set other columns
             tree_item.setText(1, str(row.sentence))
             tree_item.setText(2, str(row.translation))
-            tree_item.setText(3, str(row.new_word))
+            tree_item.setText(3, str(row.target_verb))
             tree_item.setText(4, str(row.n_words))
             tree_item.setText(5, str(row.n_known_words))
             tree_item.setText(6, str(row.n_new_words))
             tree_item.setText(7, str(row.n_rogue_words))
-            tree_item.setText(8, str(row.meets_criteria))
             
     def export_to_anki(self):
         from decks_homepage import DecksHomepageQt

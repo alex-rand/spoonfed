@@ -23,7 +23,7 @@ def generate_text(calling_frame):
     gpt_payload_enhanced = flag_bad_sentences(gpt_payload_enhanced, calling_frame.selection_criterion_picklist.currentText())
     
    #  Export for debugging 
-    gpt_payload_enhanced.to_csv('test-payload-enhanced.csv', encoding='utf-8', index=False)
+  #  gpt_payload_enhanced.to_csv('test-payload-enhanced.csv', encoding='utf-8', index=False)
 
     print(gpt_payload_enhanced)
     # Apend to the database
@@ -42,11 +42,10 @@ def gpt__generate_new_sentences(calling_frame):
       {"role": "user", "content": prompt},
     ] 
     
-    ### For debugging purposes, save and load a cached CSV so we don't query OpenAI a zillion times
+    ### For debugging purposes, save and load a cached CSV so we don't call OpenAI a zillion times
     
     # Open the file in read mode ('r')
     with open('test-payload.txt', 'r') as f:
-        # Read the entire file to a string
         generated_text = f.read()
     
     return(generated_text)
