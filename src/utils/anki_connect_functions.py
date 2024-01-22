@@ -26,22 +26,15 @@ def ankiconnect_invoke(action, **params):
         raise Exception(response['error'])
     return response['result']
 
-def create_new_card(dat, gpt_model, audio_provider):
+def create_new_card(gpt_model, audio_provider, anki_model, fields):
     
-    # The AnkiConnect API needs a particular nestedd structure to create a new note, 
+    # The AnkiConnect API needs a particular nested structure to create a new note, 
     # as documented under 'addNote' here: https://github.com/FooSoft/anki-connect 
-    
-    # Define the fields for the Anki card
-    fields = {
-        'Front': dat['sentence'],
-        'Back': dat['translation'],
-        'Definition': dat['audio']
-    }
 
     # Structure the note according to AnkiConnect's requirements
     note = {
         'deckName': "देवनागरी::मैंने सीखा",
-        'modelName': "Basic-10b04",
+        'modelName': anki_model,
         'fields': fields,
         'tags': ["spoonfed", gpt_model, audio_provider]
     }

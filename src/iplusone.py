@@ -134,8 +134,17 @@ class IPlusOneFrameQt(GeneratingFrameQt):
             export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
     
         # Create the cards in Anki
-        result = export_df.apply(create_new_card, args=(self.model_picklist.currentText(), self.audio_source_picklist.currentText()), axis=1)
-
+        result = export_df.apply(lambda row: create_new_card(
+            gpt_model=self.model_picklist.currentText(), 
+            audio_provider=self.audio_source_picklist.currentText(), 
+            anki_model="Basic-10b04",
+            fields={
+                'Front': row['sentence'], 
+                'Back': row['translation'], 
+                'Definition': row['audio']
+            }
+        ), axis=1)
+        
         if result.eq("success").all():
             QMessageBox.information(self, "Success", "Cards successfully created in Anki.")
         else:

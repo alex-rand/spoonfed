@@ -90,7 +90,7 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             - The Target Verb Word, i.e. the full cloze including its curly braces, should be encased in an HTML <span> tag of class "target_verb". The entire cloze for the Target Verb word must be inside this tag.
             Please use correct grammar and formal sentence structure when writing the sentences, and always respect Hindi's standard subject-object-verb structure.  
             The output format of the new sentences you generate should be a .csv with a column for the Hindi sentence, 
-            a column for the English translation called 'translation', and a column specifying the infinitive of the target verb, and the technical name of the conjugation the sentence is demonstrating. 
+            a column for the English translation called 'translation', and a column called 'target_verb' specifying the infinitive of the target verb, and a column called 'conjugation' containing the technical name of the conjugation the sentence is demonstrating. 
             Remember: other than the conjugation of the Target Verb, the rest of the words in each sentence must all already be present in the 'learned words' list above.
             The output MUST be a .csv file with columns exactly as specified above. 
             Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
@@ -133,10 +133,10 @@ class VerbExploderFrameQt(GeneratingFrameQt):
     def populate_treeview(self, data_frame):
         print(data_frame.columns)
         self.table.clear()
-        self.table.setColumnCount(8)  # Assuming 9 columns including the checkbox column
+        self.table.setColumnCount(9)  # Assuming 9 columns including the checkbox column
         self.table.setHeaderLabels([
-            'Export', 'Sentence', 'Translation', 'Target Verb', 
-            'Total Words', 'Known Words', 'New Words',
+            'Export', 'Sentence', 'Translation', 'Target Verb',  
+            'Conjugation', 'Total Words', 'Known Words', 'New Words',
             'Rogue Words'
         ])
 
@@ -152,10 +152,11 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             tree_item.setText(1, str(row.sentence))
             tree_item.setText(2, str(row.translation))
             tree_item.setText(3, str(row.target_verb))
-            tree_item.setText(4, str(row.n_words))
-            tree_item.setText(5, str(row.n_known_words))
-            tree_item.setText(6, str(row.n_new_words))
-            tree_item.setText(7, str(row.n_rogue_words))
+            tree_item.setText(4, str(row.conjugation))
+            tree_item.setText(5, str(row.n_words))
+            tree_item.setText(6, str(row.n_known_words))
+            tree_item.setText(7, str(row.n_new_words))
+            tree_item.setText(8, str(row.n_rogue_words))
             
     def export_to_anki(self):
         from decks_homepage import DecksHomepageQt
@@ -172,12 +173,12 @@ class VerbExploderFrameQt(GeneratingFrameQt):
                 export_data.append({
                     'sentence': item.text(1),
                     'translation': item.text(2),
-                    'new_word': item.text(3),
-                    'total_words': item.text(4),
-                    'known_words': item.text(5),
-                    'new_words': item.text(6),
-                    'rogue_words': item.text(7),
-                    'meets_criteria': item.text(8),
+                    'target_verb': item.text(3),
+                    'conjugation': item.text(4),
+                    'total_words': item.text(5),
+                    'known_words': item.text(6),
+                    'new_words': item.text(7),
+                    'rogue_words': item.text(8),
                 })
                 
         if not export_data:
@@ -191,6 +192,8 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         if self.audio_checkbox.isChecked(): 
             export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
     
+        else: export_df['audio'] = ' '
+        
         # Create the cards in Anki
         result = export_df.apply(create_new_card, args=(self.model_picklist.currentText(), self.audio_source_picklist.currentText()), axis=1)
 
