@@ -43,23 +43,23 @@ def gpt__generate_new_sentences(calling_frame):
     ] 
     
     ### For debugging purposes, load a cached CSV so we don't call OpenAI a zillion times
-  #  with open('test-payload.txt', 'r') as f:
-  #      generated_text = f.read()
-    
-  #  return(generated_text)
+    with open('test-payload.txt', 'r') as f:
+        generated_text = f.read()
+ 
+    return(generated_text)
   
-    response = openai.ChatCompletion.create(
-      model=calling_frame.model_picklist.currentText(),
-      messages=messages,
-      temperature=0.1,
-      top_p=1.0,
-      frequency_penalty=0.0,
-      presence_penalty=0.0
-    )
-   
-    generated_text = [
-      choice.message["content"].strip() for choice in response["choices"]
-    ]
+ #   response = openai.ChatCompletion.create(
+ #     model=calling_frame.model_picklist.currentText(),
+ #     messages=messages,
+ #     temperature=0.1,
+ #     top_p=1.0,
+ #     frequency_penalty=0.0,
+ #     presence_penalty=0.0
+ #   )
+ #  
+ #   generated_text = [
+ #     choice.message["content"].strip() for choice in response["choices"]
+ #   ]
    
 
  #  # Export it for debugging purposes
@@ -76,8 +76,8 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
   
     # Check whether the GPT payload matches the formatting of a .csv file: If it works then load it as a .csv. If it doesn't then throw an informative error.
     try:
-        gpt_payload = pd.read_csv(io.StringIO(gpt_payload[0]))
-       # gpt_payload = pd.read_csv(io.StringIO(gpt_payload))
+     #   gpt_payload = pd.read_csv(io.StringIO(gpt_payload[0]))
+        gpt_payload = pd.read_csv(io.StringIO(gpt_payload))
     except pd.errors.ParserError:
         raise ValueError("The GPT response string does not match the format of a CSV file.")
       
