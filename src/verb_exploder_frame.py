@@ -19,10 +19,14 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         """Override the showEvent"""
         super().showEvent(event)
         self.controller.resize(1000, 500)
+        
+        # I think we don't want a filter condition for this functionality,
+        # So overwrite the default value of the picklist
+        self.selection_criterion_picklist.setCurrentText("None")
 
     def initUI(self):
         super().initUI()
-        
+       
         self.hide_widgets(self.selection_layout)
         self.nsentences_label.setText("N sentences per conjugation")
         self.nsentences_picklist.clear()
@@ -51,19 +55,25 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         no_space_validator = QRegExpValidator(no_space_regexp, self.verb_input)
         self.verb_input.setValidator(no_space_validator)  # Apply the validator
        
-
         # Insert the new layout into the main layout
         self.main_layout.insertLayout(self.main_layout.indexOf(self.generate_button), verb_layout)
         
     def on_press_generate(self):
-        self.loading_label.show()
+        
+        # Make sure the verb input field is not empty
+        if not self.verb_input.text().strip():
+            QMessageBox.warning(self, "Input Required", "You forgot to input a verb.")
+            return  
+        
+        # Modify the GUI
+        # self.loading_label.show()
         self.generate_button.setEnabled(False)
-        self.animation.start()
+       # self.animation.start()
         
         # Declare the prompt
         self.prompt = f""" 
             I need your help to output a .csv file containing new Hindi sentences based on a student's existing vocabulary, 
-            and with a single HTML tag according to a structure I will show you.
+            following Anki Cloze formatting and with a single HTML tag according to a structure I will show you.
             Your output must be only a .csv file, with no other content.  
             Imagine you are a Hindi teacher, helping a native English speaker who has just started learning Hindi. 
             So far the student has learned the following words, which we can call the 'learned words', and are as follows: 
@@ -72,12 +82,12 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             Today the student is trying to learn all the conjugations of a certain verb, which we can call the 'Target Verb':
             {self.verb_input.text()}
             \n
-            Based on the above information, a new Hindi sentence for all possible conjugations of the Target Verb, and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
+            Based on the above information, a new Hindi sentence for all possible conjugations (and, if applicable, gender forms) of the Target Verb, and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
             - Each sentence includes _exactly one_ possible conjugation of the Target Verb;
             - All of the other words in each sentence (besides the Target Verb) must appear in the list of 'learned words';
-            - Each sentence must include a subject, a verb, and an object;
-            - The sentences should each follow normal punctuation, but the Target Verb word should be encased in Anki Cloze notation, where the clue is the infinitive of the target verb. For example, if the generated sentence were हम खुश होंगे, the sentence would be written as हम खुश {{{{c1::होंगे::…होना…}}}}
-            - The Target Verb Word, i.e. the full cloze, should be encased in an HTML <span> tag of class "target_verb". Only the cloze for the Target Verb word should be inside this tag.
+            - Each sentence must include a unique, interesting situational context to help motivate the conjugation. Try to use a unique situational context that is different for each of the sentences, while remember to only use words from the above 'learned words';
+            - The sentences should each follow normal punctuation, but the Target Verb word should be encased in Anki Cloze notation, where the clue is the infinitive of the target verb. For example, if the target verb were होना and the generated sentence were जब हम त्योहार में जाएँगे, तब हम खुश, the sentence would be written as हम खुश जब हम त्योहार में जाएँगे, तब हम खुश <span class="target_verb">{{{{c1::होंगे::…होना…}}}}</span>
+            - The Target Verb Word, i.e. the full cloze including its curly braces, should be encased in an HTML <span> tag of class "target_verb". The entire cloze for the Target Verb word must be inside this tag.
             Please use correct grammar and formal sentence structure when writing the sentences, and always respect Hindi's standard subject-object-verb structure.  
             The output format of the new sentences you generate should be a .csv with a column for the Hindi sentence, 
             a column for the English translation called 'translation', and a column specifying the infinitive of the target verb, and the technical name of the conjugation the sentence is demonstrating. 
@@ -86,8 +96,6 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
             """ 
             
-        print(self.prompt)
-
         try:
             
             # Check whether the 'verb exploder' card type exists. 
@@ -98,8 +106,9 @@ class VerbExploderFrameQt(GeneratingFrameQt):
                 
                 create_ve_card_type()      
             
-            # Generate sentences with the necessary HTML tag around the target verb
-          #  generated_sentences = generate_text(self)
+            # Generate sentences with the necessary cloze formatting and HTML tag around the target verb
+            generated_sentences = generate_text(self)
+            
           #  
           #  # Update the UI after generation
           #  self.update_ui_after_generation(generated_sentences, 'meets_criteria')
@@ -108,8 +117,8 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             QMessageBox.critical(self, "Generation Error", str(e))
             generated_sentences = None  # Or handle this case as needed
 
-        self.animation.stop()
-        self.loading_label.hide()
+       # self.animation.stop()
+       # self.loading_label.hide()
         self.generate_button.setEnabled(True)
         
     # Override interited method

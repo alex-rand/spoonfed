@@ -19,18 +19,21 @@ def generate_text(calling_frame):
     gpt_payload_enhanced = evaluate_gpt_response(gpt_payload, learned_deck_tokens, new_deck_tokens)
     
     # Flag sentences that don't meet the specified rule, e.g. 'i+1 no rogue'
+    print(calling_frame.selection_criterion_picklist.currentText())
     gpt_payload_enhanced = flag_bad_sentences(gpt_payload_enhanced, calling_frame.selection_criterion_picklist.currentText())
     
+   #  Export for debugging 
+    gpt_payload_enhanced.to_csv('test-payload-enhanced.csv', encoding='utf-8', index=False)
+
+    print(gpt_payload_enhanced)
     # Apend to the database
-    save_to_database("database.db", gpt_payload_enhanced, calling_frame.model_picklist.currentText(), audio_source) 
+  #  save_to_database("database.db", gpt_payload_enhanced, calling_frame.model_picklist.currentText(), audio_source) 
     
     return(gpt_payload_enhanced)
    
 # Call OpenAI API
 def gpt__generate_new_sentences(calling_frame):
     openai.api_key = os.getenv("OPENAI_API_KEY") 
-    
-    print(calling_frame.prompt)
 
     # Define the prompt for GPT 
     prompt = calling_frame.prompt
@@ -39,31 +42,35 @@ def gpt__generate_new_sentences(calling_frame):
       {"role": "user", "content": prompt},
     ] 
     
-    ### For debugging purposes, load a cached CSV so we don't query OpenAI a zillion times
- #   import ast
- #   # Open the file in read mode ('r')
- #   with open('test-payload.txt', 'r') as f:
- #       # Read the entire file to a string
- #       test_payload = f.read()
- #       
- #   gpt_payload = ast.literal_eval(test_payload)
- #   
- #   return(gpt_payload)
+    ### For debugging purposes, save and load a cached CSV so we don't query OpenAI a zillion times
+    
+    # Open the file in read mode ('r')
+    with open('test-payload.txt', 'r') as f:
+        # Read the entire file to a string
+        generated_text = f.read()
+    
+    return(generated_text)
   
-    ###  /DELETE up to here
-    response = openai.ChatCompletion.create(
-     # model="gpt-3.5-turbo-0613",
-      model=calling_frame.model_picklist.currentText(),
-      messages=messages,
-      temperature=0.1,
-      top_p=1.0,
-      frequency_penalty=0.0,
-      presence_penalty=0.0
-    )
-   
-    generated_text = [
-      choice.message["content"].strip() for choice in response["choices"]
-    ]
+   # response = openai.ChatCompletion.create(
+   #   model=calling_frame.model_picklist.currentText(),
+   #   messages=messages,
+   #   temperature=0.1,
+   #   top_p=1.0,
+   #   frequency_penalty=0.0,
+   #   presence_penalty=0.0
+   # )
+   #
+   # generated_text = [
+   #   choice.message["content"].strip() for choice in response["choices"]
+   # ]
+#
+   # # Open a file in write mode ('w')
+   # with open('test-payload.txt', 'w', encoding='utf-8') as f:
+   # 
+   #     # Write the CSV data to the file
+   #     f.write(generated_text[0])
+   # 
+   # print(generated_text[0])
    
     return generated_text
  
@@ -72,7 +79,8 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
   
     # Check whether the GPT payload matches the formatting of a .csv file: If it works then load it as a .csv. If it doesn't then throw an informative error.
     try:
-        gpt_payload = pd.read_csv(io.StringIO(gpt_payload[0]))
+      #  gpt_payload = pd.read_csv(io.StringIO(gpt_payload[0]))
+        gpt_payload = pd.read_csv(io.StringIO(gpt_payload))
     except pd.errors.ParserError:
         raise ValueError("The GPT response string does not match the format of a CSV file.")
       
@@ -124,8 +132,10 @@ def flag_bad_sentences(df, condition):
     elif condition == "n+2 with rogue":
         df['meets_criteria'] = ((df['n_new_words'] + df['n_rogue_words'] > 0) & (df['n_new_words'] + df['n_rogue_words'] <= 2))
     
+    elif condition == "None":
+        df['meets_criteria'] = True
+        
     return df
-
 
 # Function to call the other functions below
 def save_to_database(db_name, dat, gpt_model, audio_provider):

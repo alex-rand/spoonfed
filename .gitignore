@@ -14,3 +14,9 @@ configurations.json
 .DS_Store
 __pycache__
 delete.csv
+test-payload-enhanced.csv
+.gitignore
+test-payload.txt
+.gitignore
+scratch.r
+test-payload-enhanced.txt

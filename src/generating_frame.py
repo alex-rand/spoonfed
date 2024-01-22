@@ -45,7 +45,7 @@ class GeneratingFrameQt(QWidget):
         self.selection_layout = QHBoxLayout()
         self.selection_criterion_label = QLabel('Selection Criterion:', self)
         self.selection_criterion_picklist = QComboBox(self)
-        self.selection_criterion_picklist.addItems(['n+1 with rogue', 'n+1 no rogue', 'n+2 with rogue', 'n+2 no rogue'])
+        self.selection_criterion_picklist.addItems(['n+1 with rogue', 'n+1 no rogue', 'n+2 with rogue', 'n+2 no rogue', 'None'])
         self.selection_layout.addWidget(self.selection_criterion_label)
         self.selection_layout.addWidget(self.selection_criterion_picklist)
         self.main_layout.addLayout(self.selection_layout)
