@@ -50,6 +50,7 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         no_space_regexp = QRegExp("\\S+")  # Regular expression for no spaces
         no_space_validator = QRegExpValidator(no_space_regexp, self.verb_input)
         self.verb_input.setValidator(no_space_validator)  # Apply the validator
+       
 
         # Insert the new layout into the main layout
         self.main_layout.insertLayout(self.main_layout.indexOf(self.generate_button), verb_layout)
@@ -68,23 +69,24 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             So far the student has learned the following words, which we can call the 'learned words', and are as follows: 
             {", ".join(self.controller.learned_deck_tokens)} 
             \n
-            Today the student is trying to learn all the conjugations of a certain verb, the following words, which we can call the 'new words', and are as follows:
-            {", ".join(self.controller.new_deck_tokens.sample(n=min(n_sentences, len(self.controller.new_deck_tokens)), replace=False))} 
+            Today the student is trying to learn all the conjugations of a certain verb, which we can call the 'Target Verb':
+            {self.verb_input.text()}
             \n
-            Based on the above information, please generate {n_sentences} new Hindi sentences and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
-            - Each sentence includes _exactly one_ of the 'new words' -- you are NOT ALLOWED to include more than one word from the list of 'new words';
-            - All of the other words in each sentence (besides the exactly one 'new word') must already appear in the list of 'learned words';
-            - Each sentence must include a subject, a verb, and an object. 
-            Please use correct grammar and formal sentence structure when writing the sentences.
-            Include as many of the words from the list of 'learned words' as you can in each sentence while still respecting the rules I mentioned above.
-            Try to include a different 'new word' in each sentence.
-            Always respect Hindi's standard subject-object-verb structure.  
+            Based on the above information, a new Hindi sentence for all possible conjugations of the Target Verb, and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
+            - Each sentence includes _exactly one_ possible conjugation of the Target Verb;
+            - All of the other words in each sentence (besides the Target Verb) must appear in the list of 'learned words';
+            - Each sentence must include a subject, a verb, and an object;
+            - The sentences should each follow normal punctuation, but the Target Verb word should be encased in Anki Cloze notation, where the clue is the infinitive of the target verb. For example, if the generated sentence were हम खुश होंगे, the sentence would be written as हम खुश {{{{c1::होंगे::…होना…}}}}
+            - The Target Verb Word, i.e. the full cloze, should be encased in an HTML <span> tag of class "target_verb". Only the cloze for the Target Verb word should be inside this tag.
+            Please use correct grammar and formal sentence structure when writing the sentences, and always respect Hindi's standard subject-object-verb structure.  
             The output format of the new sentences you generate should be a .csv with a column for the Hindi sentence, 
-            a column for the English translation called 'translation', and a column called 'new_word' specifying which of the new words you've included in that sentence.  
-            Remember: you must include exactly _one_ of the 'new words' in each sentence, and the rest of the words must all already be present in the 'learned words', except for the exceptions I mentioned above.
-            The output MUST be a .csv file with one column exactly as specified above. 
+            a column for the English translation called 'translation', and a column specifying the infinitive of the target verb, and the technical name of the conjugation the sentence is demonstrating. 
+            Remember: other than the conjugation of the Target Verb, the rest of the words in each sentence must all already be present in the 'learned words' list above.
+            The output MUST be a .csv file with columns exactly as specified above. 
             Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
             """ 
+            
+        print(self.prompt)
 
         try:
             
@@ -97,10 +99,10 @@ class VerbExploderFrameQt(GeneratingFrameQt):
                 create_ve_card_type()      
             
             # Generate sentences with the necessary HTML tag around the target verb
-            generated_sentences = generate_text(self)
-            
-            # Update the UI after generation
-            self.update_ui_after_generation(generated_sentences, 'meets_criteria')
+          #  generated_sentences = generate_text(self)
+          #  
+          #  # Update the UI after generation
+          #  self.update_ui_after_generation(generated_sentences, 'meets_criteria')
 
         except ValueError as e:  # Catch the specific error raised in generate_text
             QMessageBox.critical(self, "Generation Error", str(e))

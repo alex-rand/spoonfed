@@ -48,7 +48,7 @@ class IPlusOneFrameQt(GeneratingFrameQt):
             The output format of the new sentences you generate should be a .csv with a column for the Hindi sentence, 
             a column for the English translation called 'translation', and a column called 'new_word' specifying which of the new words you've included in that sentence.  
             Remember: you must include exactly _one_ of the 'new words' in each sentence, and the rest of the words must all already be present in the 'learned words', except for the exceptions I mentioned above.
-            The output MUST be a .csv file with one column exactly as specified above. 
+            The output MUST be a .csv file with columns exactly as specified above. 
             Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
             """ 
             
