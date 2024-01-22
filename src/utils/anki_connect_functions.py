@@ -62,6 +62,12 @@ def check_suspended_status(note_ids):
 
     return result
 
+def get_model_names():
+    
+    result = ankiconnect_invoke('modelNames')
+    
+    return result
+
 def fetch_user_configuration(calling_frame, user_id, configuration_name):
         """
         Fetches the user's language learning configurations from the database.
@@ -204,5 +210,47 @@ def append_audio_file_to_notes(df, last_fields):
         "success_count": success_count,
         "errors": error_list
     }
+    
+# Check for 'Verb Exploder' card type
+def check_for_ve_card_type():
+
+    has_ve = 'Spoonfed Verb Exploder' in get_model_names()
+    
+    return(has_ve)
+
+# Create 'Verb Exploder' card type
+def create_ve_card_type():
+    
+    params = {
+        'modelName': "Spoonfed Verb Exploder",
+        'inOrderFields': ["Text", "Translation", "Audio"],
+        'css': 
+            """.card {\n font-family: arial;\n font-size: 20px;\n text-align: center;\n color: black;\n background-color: white;\n}\n
+            .target_verb { color: rgb(84, 212, 255)};
+            """,
+        'isCloze': True,
+         'cardTemplates': [
+            {
+                "name": "Spoonfed Verb Exploder",
+                "Front": "{{cloze:Text}}",
+                "Back": "<div class='front'> {{cloze:Text}} <div class='back'><br/><br/>&mdash;<br/>{{Translation}}<br/><br/>{{Audio}}"
+            }
+        ]
+    }
+    
+    res = ankiconnect_invoke('createModel', **params)
+    
+    return(res)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     

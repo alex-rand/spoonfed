@@ -7,7 +7,7 @@ import sys
 sys.path.append("../utils/")
 from utils.text_generating_functions import generate_text
 from utils.audio_generating_functions import generate_audio
-from utils.anki_connect_functions import create_new_card
+from utils.anki_connect_functions import *
 
 class VerbExploderFrameQt(GeneratingFrameQt):
     update_ui_signal = pyqtSignal(object)
@@ -58,11 +58,47 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         self.loading_label.show()
         self.generate_button.setEnabled(False)
         self.animation.start()
+        
+        # Declare the prompt
+        self.prompt = f""" 
+            I need your help to output a .csv file containing new Hindi sentences based on a student's existing vocabulary, 
+            and with a single HTML tag according to a structure I will show you.
+            Your output must be only a .csv file, with no other content.  
+            Imagine you are a Hindi teacher, helping a native English speaker who has just started learning Hindi. 
+            So far the student has learned the following words, which we can call the 'learned words', and are as follows: 
+            {", ".join(self.controller.learned_deck_tokens)} 
+            \n
+            Today the student is trying to learn all the conjugations of a certain verb, the following words, which we can call the 'new words', and are as follows:
+            {", ".join(self.controller.new_deck_tokens.sample(n=min(n_sentences, len(self.controller.new_deck_tokens)), replace=False))} 
+            \n
+            Based on the above information, please generate {n_sentences} new Hindi sentences and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
+            - Each sentence includes _exactly one_ of the 'new words' -- you are NOT ALLOWED to include more than one word from the list of 'new words';
+            - All of the other words in each sentence (besides the exactly one 'new word') must already appear in the list of 'learned words';
+            - Each sentence must include a subject, a verb, and an object. 
+            Please use correct grammar and formal sentence structure when writing the sentences.
+            Include as many of the words from the list of 'learned words' as you can in each sentence while still respecting the rules I mentioned above.
+            Try to include a different 'new word' in each sentence.
+            Always respect Hindi's standard subject-object-verb structure.  
+            The output format of the new sentences you generate should be a .csv with a column for the Hindi sentence, 
+            a column for the English translation called 'translation', and a column called 'new_word' specifying which of the new words you've included in that sentence.  
+            Remember: you must include exactly _one_ of the 'new words' in each sentence, and the rest of the words must all already be present in the 'learned words', except for the exceptions I mentioned above.
+            The output MUST be a .csv file with one column exactly as specified above. 
+            Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
+            """ 
 
         try:
-            # Generate sentences 
+            
+            # Check whether the 'verb exploder' card type exists. 
+            has_ve = check_for_ve_card_type()
+            
+            # If the 'verb exploder' card type doesn't exist then create it
+            if not has_ve:
+                
+                create_ve_card_type()      
+            
+            # Generate sentences with the necessary HTML tag around the target verb
             generated_sentences = generate_text(self)
-
+            
             # Update the UI after generation
             self.update_ui_after_generation(generated_sentences, 'meets_criteria')
 

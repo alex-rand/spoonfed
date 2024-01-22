@@ -161,4 +161,3 @@ class FadeLabel(QLabel):
         self.setPalette(palette)
 
     opacity = pyqtProperty(float, getOpacity, setOpacity)
-
