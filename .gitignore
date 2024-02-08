@@ -20,3 +20,4 @@ test-payload.txt
 .gitignore
 scratch.r
 test-payload-enhanced.txt
+src/utils/delete.py

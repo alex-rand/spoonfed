@@ -3,12 +3,19 @@ import requests
 import random
 import string
 import logging
+import pandas as pd
 
 def generate_audio(df, language, anki_profile_name):
     
     # Strip HTML tags and Anki Cloze notation
-    df['sentence_stripped'] = df['sentence'].str.replace(r'<span class=target_verb>{{c1::(.*?)::….*?…}}</span>', r'\1', regex=True)
+    df['sentence_stripped'] = df['sentence'].str.replace(r'<span class="?[^"]*"?>{{c1::(.*?)::.*?}}</span>', r'\1', regex=True)
+
+    pd.set_option("display.max_rows", 1000)
+    pd.set_option("display.expand_frame_repr", True)
+    pd.set_option('display.width', 1000)
+    pd.set_option('display.max_colwidth', None) 
     
+    print(df['sentence_stripped'].to_string())
     # Generate an audio file for each row of the 'sentence' column,
     # and return a new column to the dataset with the audio file names. 
     df['audio'] = df['sentence_stripped'].apply(lambda x: call_narakeet_api(x, get_voice(), language, anki_profile_name))
