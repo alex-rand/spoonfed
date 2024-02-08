@@ -16,7 +16,7 @@ class DecksHomepageQt(QWidget):
         self.controller.resize(800, 400)
         
         configuration_data = fetch_user_configuration(self, self.controller.selected_user_id, self.controller.configuration_name)
-
+        
         if configuration_data:
             self.controller.learned_deck_tokens = self.load_vocab_from_deck('learned_deck', configuration_data)
             self.controller.new_deck_tokens = self.load_vocab_from_deck('new_deck', configuration_data)
@@ -102,7 +102,7 @@ class DecksHomepageQt(QWidget):
         elif selected_action == "Generate Sentences for Selected Token":
             self.generate_sentences_for_selected_token()
         elif selected_action == "Generate Audio for Existing Cards":
-            self.generate_audio_for_previous_cards()
+            self.generate_audio_for_existing_cards()
         elif selected_action == "Add Custom Sentence":
             self.add_custom_sentence()
 
@@ -123,13 +123,12 @@ class DecksHomepageQt(QWidget):
         # Hard-assign the audio file to the final field of the card. This is potentially destructive!!
         
     def generate_iplus1(self):
-        # Assuming IPlusOneFrameQt is already converted
         self.controller.show_frame(IPlusOneFrameQt)
 
     def generate_sentences_for_selected_token(self):
         pass
     
-    def generate_audio_for_previous_cards(self):
+    def generate_audio_for_existing_cards(self):
         self.controller.show_frame(PreviousCardsAudioFrameQt)
     
     def verb_exploder(self):
@@ -148,7 +147,7 @@ class DecksHomepageQt(QWidget):
         self.learned_count_label.setText(f"Items: {self.learned_deck_treeview.topLevelItemCount()}")
         self.new_count_label.setText(f"Items: {self.new_deck_treeview.topLevelItemCount()}")
 
-    ### LOAD THE DATA VIA ANKICONNECT USING THE FIELDS RETRIEVED ABOVE
+    ### Load the vocab data via ankiconnect using the selected language configuration. 
     def load_vocab_from_deck(self, deck, raw_config_data):
         """
         Use AnkiConnect to load vocabulary words from Anki cards based on specified deck, card types, and fields.

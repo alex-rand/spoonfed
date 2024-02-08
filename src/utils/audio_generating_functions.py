@@ -7,7 +7,7 @@ import logging
 def generate_audio(df, language, anki_profile_name):
     
     # Strip HTML tags and Anki Cloze notation
-    df['sentence_stripped'] = df['sentence'].str.replace(r'<span class="target_verb">{{c1::(.*?)::….*?…}}</span>', r'\1', regex=True)
+    df['sentence_stripped'] = df['sentence'].str.replace(r'<span class=target_verb>{{c1::(.*?)::….*?…}}</span>', r'\1', regex=True)
     
     # Generate an audio file for each row of the 'sentence' column,
     # and return a new column to the dataset with the audio file names. 
