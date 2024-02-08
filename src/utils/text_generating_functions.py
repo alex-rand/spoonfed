@@ -8,7 +8,6 @@ from datetime import datetime
 def generate_text(calling_frame):
 
     # Get all the user specifications from the calling frame, or from 'global' state
-    audio_source = calling_frame.audio_source_picklist.currentText()
     learned_deck_tokens = calling_frame.controller.learned_deck_tokens
     new_deck_tokens = calling_frame.controller.new_deck_tokens
     
@@ -103,7 +102,7 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
     gpt_payload[['n_words', 'n_known_words', 'n_new_words', 'n_rogue_words']] = gpt_payload['sentence'].apply(count_word_types)
     
     # Do some adhoc correction of HTML tags, which GPT seems to predictably get wrong sometimes
-    gpt_payload['sentence'] = gpt_payload['sentence'].str.replace('&quot;', '', regex=False)
+    gpt_payload['sentence'] = gpt_payload['sentence'].str.replace(r'(<span class="[^"]*)&quot;([^"]*">)', r'\1"\2', regex=True)
     gpt_payload['sentence'] = gpt_payload['sentence'].str.replace(r'<span class=\\\\"target_verb\\\\">', '<span class="target_verb">', regex=False)
 
     print(gpt_payload['sentence'])

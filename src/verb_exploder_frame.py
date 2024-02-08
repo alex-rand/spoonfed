@@ -65,8 +65,6 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             QMessageBox.warning(self, "Input Required", "You forgot to input a verb.")
             return  
         
-        # Modify the GUI
-        # self.loading_label.show()
         self.generate_button.setEnabled(False)
        # self.animation.start()
         
@@ -86,7 +84,7 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             - Each sentence includes _exactly one_ possible conjugation of the Target Verb;
             - All of the other words in each sentence (besides the Target Verb) must appear in the list of 'learned words';
             - Each sentence must include a unique, interesting situational context to help motivate the conjugation. Try to use a unique situational context that is different for each of the sentences, while remember to only use words from the above 'learned words';
-            - The sentences should each follow normal punctuation, but the Target Verb word should be encased in Anki Cloze notation, where the clue is the infinitive of the target verb, with elipses '...' on either side of it to help indicate that it is the infinitive. For example, if the target verb were होना and the generated sentence were जब हम त्योहार में जाएँगे, तब हम खुश, the sentence would be written as हम खुश जब हम त्योहार में जाएँगे, तब हम खुश <span class="target_verb">{{{{c1::होंगे::…होना…}}}}</span>
+            - The sentences should each follow normal punctuation, but the Target Verb word should be encased in Anki Cloze notation, where the clue is the infinitive of the target verb, with elipses '...' on either side of it to help indicate that it is the infinitive. For example, if the target verb were होना and the generated sentence were जब हम त्योहार में जाएँगे, तब हम खुश, the sentence would be written as हम खुश जब हम त्योहार में जाएँगे, तब हम खुश <span class=target_verb>{{{{c1::होंगे::…होना…}}}}</span>
             - The Target Verb Word, i.e. the full cloze including its curly braces, MUST be encased in an HTML <span> tag of class target_verb. The entire cloze for the Target Verb word must be inside this tag. This is very important!
             Please use correct grammar and formal sentence structure when writing the sentences, and always respect Hindi's standard subject-object-verb structure.  
             The output format of the new sentences you generate should be a .csv with a column for the Hindi sentence, 
