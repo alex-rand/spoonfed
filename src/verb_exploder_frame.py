@@ -197,6 +197,7 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             gpt_model=self.model_picklist.currentText(), 
             audio_provider=self.audio_source_picklist.currentText(), 
             anki_model="Spoonfed Verb Exploder",
+            functionality="Verb Exploder",
             fields={
                 'Text': row['sentence'], 
                 'Translation': row['translation'], 

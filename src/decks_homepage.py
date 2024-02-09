@@ -11,6 +11,8 @@ class DecksHomepageQt(QWidget):
         self.create_deck_display_frame()
 
     def showEvent(self, event):
+        from language_config import LanguageConfigFrameQt
+        
         """Override the showEvent to fetch configuration when the frame is shown."""
         super().showEvent(event)
         self.controller.resize(800, 400)
@@ -18,7 +20,10 @@ class DecksHomepageQt(QWidget):
         configuration_data = fetch_user_configuration(self, self.controller.selected_user_id, self.controller.configuration_name)
         
         if configuration_data:
+            print("HERE!")
             self.controller.learned_deck_tokens = self.load_vocab_from_deck('learned_deck', configuration_data)
+            if self.controller.learned_deck_tokens.isnull().all():
+                return self.controller.show_frame(LanguageConfigFrameQt)
             self.controller.new_deck_tokens = self.load_vocab_from_deck('new_deck', configuration_data)
             
             # Remove 'new' tokens that actually already occur in the learned tokens
@@ -149,6 +154,8 @@ class DecksHomepageQt(QWidget):
 
     ### Load the vocab data via ankiconnect using the selected language configuration. 
     def load_vocab_from_deck(self, deck, raw_config_data):
+        from language_config import LanguageConfigFrameQt
+        
         """
         Use AnkiConnect to load vocabulary words from Anki cards based on specified deck, card types, and fields.
 
@@ -179,10 +186,13 @@ class DecksHomepageQt(QWidget):
             query = f'"deck:{deck}" "note:{card_type}"'
 
             # Retrieve note IDs for the card type
-            note_ids = ankiconnect_invoke('findNotes', query=query)
-
+            note_ids = ankiconnect_invoke(self, 'findNotes', query=query)
+            if note_ids == 1:
+               print("YES")
+               return None
+           
             # Retrieve note content for the card type
-            note_content = pd.json_normalize(ankiconnect_invoke('notesInfo', notes=note_ids))
+            note_content = pd.json_normalize(ankiconnect_invoke(self, 'notesInfo', notes=note_ids))
 
             # Remove non-Devanagari text for all specified fields
             for field in fields:

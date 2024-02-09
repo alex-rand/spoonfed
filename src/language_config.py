@@ -7,16 +7,8 @@ class LanguageConfigFrameQt(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.controller = parent
-        self.create_language_config_frame()
         self.setFixedSize(500, 200)
         
-    def showEvent(self, event):
-        """Override the show event to refresh the dropdown each time the frame is shown."""
-        self.load_language_configurations_to_dropdown()
-        super().showEvent(event)
-        self.controller.resize(500, 200)
-
-    def create_language_config_frame(self):
         layout = QVBoxLayout(self)
         
         # Back button 
@@ -55,6 +47,14 @@ class LanguageConfigFrameQt(QWidget):
         load_decks_button = QPushButton("Load Decks", self)
         load_decks_button.clicked.connect(self.execute_ankiconnect)
         layout.addWidget(load_decks_button)
+        
+    def showEvent(self, event):
+        """Override the show event to refresh the dropdown each time the frame is shown."""
+        self.load_language_configurations_to_dropdown()
+        print("LOCKED N LOADED")
+        super().showEvent(event)
+        self.controller.resize(500, 200)
+
         
     def back_to_user_config(self):
         from user_config import UserConfigFrameQt

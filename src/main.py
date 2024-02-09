@@ -2,7 +2,6 @@ import sys
 import os
 import sqlite3
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame, QVBoxLayout
-from PyQt5.QtGui import QPixmap, QCursor, QFont, QFontDatabase
 from user_config import UserConfigFrameQt
 from language_config import LanguageConfigFrameQt
 from decks_homepage import DecksHomepageQt

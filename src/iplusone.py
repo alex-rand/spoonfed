@@ -138,6 +138,7 @@ class IPlusOneFrameQt(GeneratingFrameQt):
             gpt_model=self.model_picklist.currentText(), 
             audio_provider=self.audio_source_picklist.currentText(), 
             anki_model="Basic-10b04",
+            functionality = "i+1",
             fields={
                 'Front': row['sentence'], 
                 'Back': row['translation'], 

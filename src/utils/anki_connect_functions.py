@@ -5,17 +5,17 @@ import sqlite3
 import re
 from PyQt5.QtWidgets import QMessageBox
 
-
 def request(action, **params):
     return {'action': action, 'params': params, 'version': 6}
 
 # Function to send requests to Ankiconnect
-def ankiconnect_invoke(action, **params):
+def ankiconnect_invoke(calling_frame, action, **params):
     requestJson = json.dumps(request(action, **params)).encode('utf-8')
     try:
         response = json.load(urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:8765', requestJson)))
     except urllib.error.URLError as e:
-        raise Exception("Failed to establish connection with Anki. Make sure you have Anki open on your desktop.") from e
+        QMessageBox.critical(calling_frame, "Connection Error", "Unable to connect with your Anki profile: make sure Anki is currently open")
+        return 1
     if len(response) != 2:
         raise Exception('response has an unexpected number of fields')
     if 'error' not in response:
@@ -26,7 +26,7 @@ def ankiconnect_invoke(action, **params):
         raise Exception(response['error'])
     return response['result']
 
-def create_new_card(gpt_model, audio_provider, anki_model, fields):
+def create_new_card(gpt_model, audio_provider, anki_model, fields, functionality):
     
     # The AnkiConnect API needs a particular nested structure to create a new note, 
     # as documented under 'addNote' here: https://github.com/FooSoft/anki-connect 
@@ -36,11 +36,11 @@ def create_new_card(gpt_model, audio_provider, anki_model, fields):
         'deckName': "देवनागरी::मैंने सीखा",
         'modelName': anki_model,
         'fields': fields,
-        'tags': ["spoonfed", gpt_model, audio_provider]
+        'tags': ["spoonfed", gpt_model, audio_provider, functionality]
     }
  
     # Call
-    ankiconnect_invoke('addNote', note=note)
+    ankiconnect_invoke(None, 'addNote', note=note)
     
     return("success")
 
@@ -51,13 +51,13 @@ def check_suspended_status(note_ids):
     }
 
     # Call ankiconnect_invoke with the 'areSuspended' action and the card IDs
-    result = ankiconnect_invoke('areSuspended', **params)
+    result = ankiconnect_invoke(None, 'areSuspended', **params)
 
     return result
 
 def get_model_names():
     
-    result = ankiconnect_invoke('modelNames')
+    result = ankiconnect_invoke(None, 'modelNames')
     
     return result
 
@@ -185,7 +185,7 @@ def append_audio_file_to_notes(df, last_fields):
             field_to_update = last_fields[card_type]
 
             # Fetch current note content
-            current_note_info = ankiconnect_invoke("notesInfo", notes=[note_id])
+            current_note_info = ankiconnect_invoke(self, "notesInfo", notes=[note_id])
             current_field_content = current_note_info[0]['fields'][field_to_update]['value']
 
             # Append audio content to the current content
@@ -202,7 +202,7 @@ def append_audio_file_to_notes(df, last_fields):
             }
 
             # Make the update call
-            ankiconnect_invoke("updateNoteFields", **note_details)
+            ankiconnect_invoke(None, "updateNoteFields", **note_details)
             success_count += 1
 
     return {

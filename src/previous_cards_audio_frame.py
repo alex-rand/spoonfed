@@ -85,12 +85,12 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
             query = f'"deck:{deck}" "note:{card_type}"'
 
             # Retrieve note IDs for the card type
-            note_ids = ankiconnect_invoke('findNotes', query=query)
+            note_ids = ankiconnect_invoke(self, 'findNotes', query=query)
             
-            card_ids = ankiconnect_invoke('findCards', query=query)
+            card_ids = ankiconnect_invoke(self, 'findCards', query=query)
 
             # Retrieve note content for the card type
-            note_content = pd.json_normalize(ankiconnect_invoke('notesInfo', notes=note_ids))
+            note_content = pd.json_normalize(ankiconnect_invoke(self, 'notesInfo', notes=note_ids))
             
             # Remove suspended cards
             to_suspend = check_suspended_status(card_ids)
