@@ -80,14 +80,14 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             Today the student is trying to learn all the conjugations of a certain verb, which we can call the 'Target Verb':
             {self.verb_input.text()}
             \n
-            Based on the above information, a new Hindi sentence for all possible conjugations (and, if applicable, gender forms) of the Target Verb, and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
+            Based on the above information, a new Hindi sentence for all possible conjugations (and, if applicable, gender forms) of the Target Verb, and return them as a .csv file with a column titled 'sentence'. Remember to include the conditional tense too, if appropriate. Each sentence must meet all of the following criteria:
             - Each sentence includes _exactly one_ possible conjugation of the Target Verb;
             - All of the other words in each sentence (besides the Target Verb) must appear in the list of 'learned words';
             - Each sentence must include a unique, interesting situational context to help motivate the conjugation. Try to use a unique situational context that is different for each of the sentences, while remember to only use words from the above 'learned words';
             - The sentences should each follow normal punctuation, but the Target Verb word should be encased in Anki Cloze notation, where the clue is the infinitive of the target verb, with elipses '...' on either side of it to help indicate that it is the infinitive. For example, if the target verb were होना and the generated sentence were जब हम त्योहार में जाएँगे, तब हम खुश, the sentence would be written as हम खुश जब हम त्योहार में जाएँगे, तब हम खुश <span class=target_verb>{{{{c1::होंगे::…होना…}}}}</span>
             - The Target Verb Word, i.e. the full cloze including its curly braces, MUST be encased in an HTML <span> tag of class target_verb. The entire cloze for the Target Verb word must be inside this tag. This is very important!
             Please use correct grammar and formal sentence structure when writing the sentences, and always respect Hindi's standard subject-object-verb structure.  
-            The output format of the new sentences you generate should be a .csv with a column for the Hindi sentence, 
+            The output format of the new sentences you generate should be a .csv with a column for the full Hindi sentence (not just the target verb, be sure to include the full sentence), 
             a column for the English translation called 'translation', and a column called 'target_verb' specifying the infinitive of the target verb, and a column called 'conjugation' containing the technical name of the conjugation the sentence is demonstrating. 
             Remember: other than the conjugation of the Target Verb, the rest of the words in each sentence must all already be present in the 'learned words' list above.
             Be careful to declare the HTML class properly in the span: it should be simply `class="target_verb"`, and you should NEVER include extra characters such as &quot; or / in this class declaration.
@@ -197,7 +197,7 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             gpt_model=self.model_picklist.currentText(), 
             audio_provider=self.audio_source_picklist.currentText(), 
             anki_model="Spoonfed Verb Exploder",
-            functionality="Verb Exploder",
+            functionality="verb-exploder",
             fields={
                 'Text': row['sentence'], 
                 'Translation': row['translation'], 
