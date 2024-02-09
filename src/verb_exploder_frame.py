@@ -80,7 +80,7 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             Today the student is trying to learn all the conjugations of a certain verb, which we can call the 'Target Verb':
             {self.verb_input.text()}
             \n
-            Based on the above information, a new Hindi sentence for all possible conjugations (and, if applicable, gender forms) of the Target Verb, and return them as a .csv file with a column titled 'sentence'. Remember to include the conditional tense too, if appropriate. Each sentence must meet all of the following criteria:
+            Based on the above information, a new Hindi sentence for all possible conjugations (and, if applicable, gender forms) of the Target Verb, and return them as a .csv file with a column titled 'sentence'. Remember to include sentences in the past, present, future, and conditional tenses, as well as others if appropriate. Each sentence must meet all of the following criteria:
             - Each sentence includes _exactly one_ possible conjugation of the Target Verb;
             - All of the other words in each sentence (besides the Target Verb) must appear in the list of 'learned words';
             - Each sentence must include a unique, interesting situational context to help motivate the conjugation. Try to use a unique situational context that is different for each of the sentences, while remember to only use words from the above 'learned words';
