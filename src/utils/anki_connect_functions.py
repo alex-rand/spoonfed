@@ -185,7 +185,7 @@ def append_audio_file_to_notes(df, last_fields):
             field_to_update = last_fields[card_type]
 
             # Fetch current note content
-            current_note_info = ankiconnect_invoke(self, "notesInfo", notes=[note_id])
+            current_note_info = ankiconnect_invoke(None, "notesInfo", notes=[note_id])
             current_field_content = current_note_info[0]['fields'][field_to_update]['value']
 
             # Append audio content to the current content
