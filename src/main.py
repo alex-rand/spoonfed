@@ -9,12 +9,6 @@ from iplusone import IPlusOneFrameQt
 from previous_cards_audio_frame import PreviousCardsAudioFrameQt
 from verb_exploder_frame import VerbExploderFrameQt
 
-# Import your PyQt converted frames here
-# from user_config_qt import UserConfigFrameQt
-# from language_config_qt import LanguageConfigFrameQt
-# from decks_homepage_qt import DecksHomepageQt
-# from iplusone_qt import IPlusOneFrameQt
-
 # Main Application Class
 class MainApp(QMainWindow):
     def __init__(self):

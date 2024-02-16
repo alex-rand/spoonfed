@@ -9,6 +9,7 @@ def generate_audio(df, language, anki_profile_name):
     
     # Strip HTML tags and Anki Cloze notation
     df['sentence_stripped'] = df['sentence'].str.replace(r'<span class="?[^"]*"?>{{c1::(.*?)::.*?}}</span>', r'\1', regex=True)
+    df['sentence_stripped'] = df['sentence_stripped'].str.replace(r'<[^>]+>', '', regex=True)
 
     pd.set_option("display.max_rows", 1000)
     pd.set_option("display.expand_frame_repr", True)
