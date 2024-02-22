@@ -141,6 +141,17 @@ def remove_non_language_tokens(text, language):
 
         return re.sub(pattern, '', text)
     
+def strip_html_and_cloze(text):
+    # Remove HTML tags
+    text = re.sub(r'<[^>]+>', '', text)
+    # Remove Anki Cloze notation, keeping the visible text part (e.g., "{{c1::दे दो::…देना…}}" -> "दे दो देना")
+    text = re.sub(r'\{\{c\d+::([^:]+)::[^}]+\}\}', r'\1', text)
+    return text
+
+def strip_punctuation(text):
+    text = re.sub("\u0964", '', text)
+    return text
+    
 def add_audio_flag(df):
     """
     Adds a 'no_audio' column to the dataframe. 

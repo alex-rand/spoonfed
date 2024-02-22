@@ -20,7 +20,6 @@ class DecksHomepageQt(QWidget):
         configuration_data = fetch_user_configuration(self, self.controller.selected_user_id, self.controller.configuration_name)
         
         if configuration_data:
-            print("HERE!")
             self.controller.learned_deck_tokens = self.load_vocab_from_deck('learned_deck', configuration_data)
             if self.controller.learned_deck_tokens.isnull().all():
                 return self.controller.show_frame(LanguageConfigFrameQt)
@@ -154,7 +153,6 @@ class DecksHomepageQt(QWidget):
 
     ### Load the vocab data via ankiconnect using the selected language configuration. 
     def load_vocab_from_deck(self, deck, raw_config_data):
-        from language_config import LanguageConfigFrameQt
         
         """
         Use AnkiConnect to load vocabulary words from Anki cards based on specified deck, card types, and fields.
@@ -194,12 +192,14 @@ class DecksHomepageQt(QWidget):
             # Retrieve note content for the card type
             note_content = pd.json_normalize(ankiconnect_invoke(self, 'notesInfo', notes=note_ids))
 
-            # Remove non-Devanagari text for all specified fields
+            # Remove non-Devanagari text, HTML tags, and Anki Cloze notation for all specified fields
             for field in fields:
                 col_name = f"fields.{field}.value"
                 if col_name in note_content.columns:
+                    note_content[col_name] = note_content[col_name].astype(str).apply(lambda text: strip_punctuation(text))
+                    note_content[col_name] = note_content[col_name].astype(str).apply(lambda text: strip_html_and_cloze(text))
                     note_content[col_name] = note_content[col_name].astype(str).apply(lambda text: remove_non_language_tokens(text, configuration_language))
-                    pass
+                    
             # Extract words from all specified fields
             for field in fields:
                 col_name = f"fields.{field}.value"
