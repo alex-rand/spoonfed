@@ -95,9 +95,6 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
             """ 
         
-        print(self.prompt)
-        return(0)
-    
         try:
             
             # Check whether the 'verb exploder' card type exists. 
