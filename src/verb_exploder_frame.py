@@ -70,7 +70,7 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         
         # Declare the prompt
         self.prompt = f""" 
-            I need your help to output a .csv file containing new Hindi sentences based on a student's existing vocabulary, 
+            I need your help to output a .csv file containing new {self.controller.selected_language} sentences based on a student's existing vocabulary, 
             following Anki Cloze formatting and with a single HTML tag according to a structure I will show you.
             Your output must be only a .csv file, with no other content.  
             Imagine you are a Hindi teacher, helping a native English speaker who has just started learning Hindi. 
@@ -94,6 +94,9 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             The output MUST be a .csv file with columns exactly as specified above. 
             Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
             """ 
+            
+        print(self.prompt)
+        return(0)
             
         try:
             
