@@ -59,10 +59,10 @@ def gpt__generate_new_sentences(calling_frame):
     ]
 
  #  # Export it for debugging purposes
- #   with open('test-payload.txt', 'w', encoding='utf-8') as f:
- #       # Write the CSV data to the file
- #       f.write(generated_text[0])
- #   
+    with open('test-payload.txt', 'w', encoding='utf-8') as f:
+        # Write the CSV data to the file
+        f.write(generated_text[0])
+    
  #  # print(generated_text[0])
    
     return generated_text
@@ -77,6 +77,13 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
     except pd.errors.ParserError:
         raise ValueError("The GPT response string does not match the format of a CSV file.")
       
+    # DEBUGGING
+    gpt_payload.to_csv('parsed-csv.csv', encoding='utf-8', index=False)
+    print("SENTENCE:", gpt_payload['sentence'])
+    print("TRANSLATION:", gpt_payload['translation'])
+    print("TARGET VERB:", gpt_payload['target_verb'])
+    print("CONJUGATION:", gpt_payload['conjugation'])
+    
     # Count the total number of sentences in the payload
     gpt_payload['n_sentences'] = len(gpt_payload)
     
@@ -105,7 +112,7 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
     gpt_payload['sentence'] = gpt_payload['sentence'].str.replace(r'(<span class="[^"]*)&quot;([^"]*">)', r'\1"\2', regex=True)
     gpt_payload['sentence'] = gpt_payload['sentence'].str.replace(r'<span class=\\\\"target_verb\\\\">', '<span class="target_verb">', regex=False)
 
-    print(gpt_payload['sentence'])
+    print(gpt_payload.columns.tolist())
     return(gpt_payload)
     
 # The function checks if the sentence meets two criteria:
