@@ -21,3 +21,5 @@ test-payload.txt
 scratch.r
 test-payload-enhanced.txt
 src/utils/delete.py
+parsed-csv.csv
+test-payload.csv

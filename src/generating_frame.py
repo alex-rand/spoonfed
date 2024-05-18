@@ -36,7 +36,7 @@ class GeneratingFrameQt(QWidget):
         self.model_layout = QHBoxLayout()
         self.model_label = QLabel('Model:', self)
         self.model_picklist = QComboBox(self)
-        self.model_picklist.addItems(['gpt-3.5-turbo-1106', 'gpt-3.5-turbo', 'gpt-4-1106-preview'])
+        self.model_picklist.addItems(['gpt-3.5-turbo-1106', 'gpt-3.5-turbo', 'gpt-4o'])
         self.model_layout.addWidget(self.model_label)
         self.model_layout.addWidget(self.model_picklist)
         self.main_layout.addLayout(self.model_layout)

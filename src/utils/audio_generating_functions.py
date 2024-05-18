@@ -10,6 +10,10 @@ def generate_audio(df, language, anki_profile_name):
     # Strip HTML tags and Anki Cloze notation
     df['sentence_stripped'] = df['sentence'].str.replace(r'<span class="?[^"]*"?>{{c1::(.*?)::.*?}}</span>', r'\1', regex=True)
     df['sentence_stripped'] = df['sentence_stripped'].str.replace(r'<[^>]+>', '', regex=True)
+    
+    # If the above stripping functions failed then the audio generating functions will include Cloze or HTML nonsense, so stop.
+    if df['sentence_stripped'].str.contains('c1').any():
+        raise ValueError("The HTML or Anki Cloze structure returned by the language model is incorrect, so generated audio would be incorrect.")
 
     pd.set_option("display.max_rows", 1000)
     pd.set_option("display.expand_frame_repr", True)

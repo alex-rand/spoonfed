@@ -3,6 +3,7 @@ import io
 import openai
 import pandas as pd
 import sqlite3
+import csv
 from datetime import datetime
 
 def generate_text(calling_frame):
@@ -35,7 +36,7 @@ def gpt__generate_new_sentences(calling_frame):
     # Define the prompt for GPT 
     prompt = calling_frame.prompt
     messages = [
-      {"role": "system", "content": f"You are a helpful assistant. Your response must be in .CSV format."},
+      {"role": "system", "content": f"You are a CSV generator to assist with creating tables for language learning. Your response must be in .CSV format."},
       {"role": "user", "content": prompt},
     ] 
     
@@ -48,7 +49,7 @@ def gpt__generate_new_sentences(calling_frame):
     response = openai.ChatCompletion.create(
       model=calling_frame.model_picklist.currentText(),
       messages=messages,
-      temperature=0.1,
+      temperature=0.8,
       top_p=1.0,
       frequency_penalty=0.0,
       presence_penalty=0.0
@@ -59,7 +60,7 @@ def gpt__generate_new_sentences(calling_frame):
     ]
 
  #  # Export it for debugging purposes
-    with open('test-payload.txt', 'w', encoding='utf-8') as f:
+    with open('test-payload.csv', 'w', encoding='utf-8') as f:
         # Write the CSV data to the file
         f.write(generated_text[0])
     
@@ -69,20 +70,22 @@ def gpt__generate_new_sentences(calling_frame):
  
 # This function quality-checks the GPT payload, then it generates some diagnostics about the content of each sentence
 def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
-  
     # Check whether the GPT payload matches the formatting of a .csv file: If it works then load it as a .csv. If it doesn't then throw an informative error.
     try:
-        gpt_payload = pd.read_csv(io.StringIO(gpt_payload[0]))
-      #  gpt_payload = pd.read_csv(io.StringIO(gpt_payload)) # for debugging, works with the exported txt file
+        # Read the payload using the csv module to handle commas within quotes
+        data = []
+        reader = csv.reader(io.StringIO(gpt_payload[0]))
+        for row in reader:
+            data.append(row)
+
+        # Convert the list of lists into a DataFrame
+        gpt_payload = pd.DataFrame(data[1:], columns=data[0])
+        
     except pd.errors.ParserError:
         raise ValueError("The GPT response string does not match the format of a CSV file.")
       
     # DEBUGGING
-    gpt_payload.to_csv('parsed-csv.csv', encoding='utf-8', index=False)
-    print("SENTENCE:", gpt_payload['sentence'])
-    print("TRANSLATION:", gpt_payload['translation'])
-    print("TARGET VERB:", gpt_payload['target_verb'])
-    print("CONJUGATION:", gpt_payload['conjugation'])
+  # gpt_payload.to_csv('parsed-csv.csv', encoding='utf-8', index=False)
     
     # Count the total number of sentences in the payload
     gpt_payload['n_sentences'] = len(gpt_payload)
@@ -112,7 +115,6 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
     gpt_payload['sentence'] = gpt_payload['sentence'].str.replace(r'(<span class="[^"]*)&quot;([^"]*">)', r'\1"\2', regex=True)
     gpt_payload['sentence'] = gpt_payload['sentence'].str.replace(r'<span class=\\\\"target_verb\\\\">', '<span class="target_verb">', regex=False)
 
-    print(gpt_payload.columns.tolist())
     return(gpt_payload)
     
 # The function checks if the sentence meets two criteria:

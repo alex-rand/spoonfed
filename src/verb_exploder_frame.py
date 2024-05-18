@@ -93,7 +93,7 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             3. a column called 'target_verb' specifying the infinitive of the target verb, 
             4. a single column called 'conjugation' containing both the technical name of the conjugation and the gender the sentence is demonstrating.
             Be sure to declare the csv without row names -- the first column 'sentence' should be a column, not the row names.
-            Remember: other than the conjugation of the Target Verb, the rest of the words in each sentence must all already be present in the 'learned words' list above.
+            Remember: other than the conjugation of the Target Verb, the rest of the words in each sentence must all already be present in the 'learned words' list above, but try to keep the sentences diverse and different from each other.
             Be careful to declare the HTML class properly in the span: it should be simply `class="target_verb"`, and you should NEVER include extra characters such as &quot; or / in this class declaration.
             The output MUST be a .csv file with columns exactly as specified above. 
             Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
