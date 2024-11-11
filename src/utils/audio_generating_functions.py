@@ -3,12 +3,33 @@ import requests
 import random
 import string
 import logging
+import pandas as pd
+import random
 
-def generate_audio(df, language, anki_profile_name):
+def generate_audio(df, language, anki_profile_name, tts_api):
+    
+    # Strip HTML tags and Anki Cloze notation
+    df['sentence_stripped'] = df['sentence'].str.replace(r'<span class="?[^"]*"?>{{c1::(.*?)::.*?}}</span>', r'\1', regex=True)
+    df['sentence_stripped'] = df['sentence_stripped'].str.replace(r'<[^>]+>', '', regex=True)
+    
+    # If the above stripping functions failed then the audio generating functions will include Cloze or HTML nonsense, so stop.
+    if df['sentence_stripped'].str.contains('c1').any():
+        raise ValueError("The HTML or Anki Cloze structure returned by the language model is incorrect, so generated audio would be incorrect.")
+
+    pd.set_option("display.max_rows", 1000)
+    pd.set_option("display.expand_frame_repr", True)
+    pd.set_option('display.width', 1000)
+    pd.set_option('display.max_colwidth', None) 
     
     # Generate an audio file for each row of the 'sentence' column,
     # and return a new column to the dataset with the audio file names. 
-    df['audio'] = df['sentence'].apply(lambda x: call_narakeet_api(x, get_voice(), language, anki_profile_name))
+    if tts_api == "ElevenLabs":
+        df['audio'] = df['sentence_stripped'].apply(lambda x: call_elevenlabs_api(x, anki_profile_name))
+    elif tts_api == "Narakeet":
+        df['audio'] = df['sentence_stripped'].apply(lambda x: call_narakeet_api(x, get_voice(), language, anki_profile_name))
+    else:
+        raise ValueError("Invalid TTS API selected. Choose 'ElevenLabs' or 'Narakeet'.")
+
     
     # Format the values in the audio column so that Anki will actually play them
     df['audio'] = df['audio'].apply(lambda x: f"[sound:{x}]")
@@ -29,6 +50,7 @@ def get_anki_media_path(anki_profile_name):
     return f"/Users/{username}/Library/Application Support/Anki2/{anki_profile_name}/collection.media"
 
 def call_narakeet_api(text, voice, language, anki_profile_name):
+    
     # Check if text is None or empty
     if not text:
         logging.error("No text provided for Narakeet API call.")
@@ -63,7 +85,68 @@ def call_narakeet_api(text, voice, language, anki_profile_name):
         directory_path = get_anki_media_path(anki_profile_name)
 
         # Use the first 10 characters of the text for the filename,
-        # unelss the text field is empty, in which case just use a random string
+        # unless the text field is empty, in which case just use a random string
+        if text:
+            filename = f"{text[:10]}-{random.randint(10000000, 99999999)}.mp3"
+        else:
+            random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+            filename = f"{random_string}.mp3"
+
+        # Join them to get the full save path
+        save_path = os.path.join(directory_path, filename)  
+
+        # Save the audio data to the specified path
+        with open(save_path, 'wb') as f:
+            f.write(audio_data)
+
+        # Return the filename
+        return filename
+
+    except Exception as e:
+        logging.error(f"An error occurred in call_narakeet_api: {str(e)}")
+        return None
+    
+def call_elevenlabs_api(text, anki_profile_name):
+    
+    # Check if text is None or empty
+    if not text:
+        logging.error("No text provided for Narakeet API call.")
+        return None
+    
+    try:
+        # Where does elevenlabs live?
+        url = "https://api.elevenlabs.io/v1/text-to-speech/GGs86ihiCGgvbv8vqV7h" # or OUxfKPssG0qAk5VQF8We for lowlex
+
+        # Build the payload
+        payload = {
+            "text": text,
+            "model_id": "eleven_multilingual_v2",
+            "voice_settings": {
+                "stability": random.randint(50, 70)/100,  # Random integer stability between 50 and 70
+                "similarity_boost": random.randint(60, 80)/100,  # Random integer similarity boost between 60 and 80
+            }
+        }
+        headers = {
+            "Accept": "audio/mpeg",
+            "xi-api-key": os.getenv("ELEVENLABS_API_KEY"),
+            "Content-Type": "application/json",
+        }
+    
+        response = requests.request("POST", url, json=payload, headers=headers)
+
+        # Check the response status code
+        if response.status_code != 200:
+            logging.error(f"Failed to generate audio for text: {text[:50]}. Error: {response.text}")
+            return None
+
+        # Get the audio
+        audio_data = response.content
+
+        # Get the save path from 
+        directory_path = get_anki_media_path(anki_profile_name)
+
+        # Use the first 10 characters of the text for the filename,
+        # unless the text field is empty, in which case just use a random string
         if text:
             filename = f"{text[:10]}-{random.randint(10000000, 99999999)}.mp3"
         else:

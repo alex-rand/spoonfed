@@ -17,7 +17,7 @@ class UserConfigFrameQt(QWidget):
         self.controller = parent
         self.create_user_config_frame()
         self.load_all_saved_users()
-        self.setFixedSize(300, 450)
+        self.setFixedSize(300, 500)
 
     def showEvent(self, event):
         """Override the show event to refresh the dropdown each time the frame is shown."""

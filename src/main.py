@@ -2,18 +2,12 @@ import sys
 import os
 import sqlite3
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame, QVBoxLayout
-from PyQt5.QtGui import QPixmap, QCursor, QFont, QFontDatabase
 from user_config import UserConfigFrameQt
 from language_config import LanguageConfigFrameQt
 from decks_homepage import DecksHomepageQt
 from iplusone import IPlusOneFrameQt
 from previous_cards_audio_frame import PreviousCardsAudioFrameQt
-
-# Import your PyQt converted frames here
-# from user_config_qt import UserConfigFrameQt
-# from language_config_qt import LanguageConfigFrameQt
-# from decks_homepage_qt import DecksHomepageQt
-# from iplusone_qt import IPlusOneFrameQt
+from verb_exploder_frame import VerbExploderFrameQt
 
 # Main Application Class
 class MainApp(QMainWindow):
@@ -39,7 +33,7 @@ class MainApp(QMainWindow):
         # Tell the app what frames exist. These are all classes we define below
         # representing different screens in the UX.
         self.frames = {}
-        for F in (UserConfigFrameQt, LanguageConfigFrameQt, DecksHomepageQt, IPlusOneFrameQt, PreviousCardsAudioFrameQt):
+        for F in (UserConfigFrameQt, LanguageConfigFrameQt, DecksHomepageQt, IPlusOneFrameQt, PreviousCardsAudioFrameQt, VerbExploderFrameQt):
             frame = F(parent=self)
             self.frames[F] = frame
             self.layout.addWidget(frame)

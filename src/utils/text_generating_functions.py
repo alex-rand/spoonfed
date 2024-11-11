@@ -3,94 +3,53 @@ import io
 import openai
 import pandas as pd
 import sqlite3
+import csv
 from datetime import datetime
 
 def generate_text(calling_frame):
 
     # Get all the user specifications from the calling frame, or from 'global' state
-    with_audio = calling_frame.audio_checkbox.isChecked()
-    audio_source = calling_frame.audio_source_picklist.currentText()
-    model = calling_frame.model_picklist.currentText()
-    n_sentences = int(calling_frame.nsentences_picklist.currentText())
     learned_deck_tokens = calling_frame.controller.learned_deck_tokens
     new_deck_tokens = calling_frame.controller.new_deck_tokens
     
     # Generate sentences
-    gpt_payload = gpt__generate_new_sentences(learned_deck_tokens, new_deck_tokens, n_sentences, model)
+    gpt_payload = gpt__generate_new_sentences(calling_frame)
     
     # Quality control and examine the generated sentences
     gpt_payload_enhanced = evaluate_gpt_response(gpt_payload, learned_deck_tokens, new_deck_tokens)
     
-    # Flag sentences that don't meet the N+1 rule, or any other rule I haven't thought of yet
+    # Flag sentences that don't meet the specified rule, e.g. 'i+1 no rogue'
     gpt_payload_enhanced = flag_bad_sentences(gpt_payload_enhanced, calling_frame.selection_criterion_picklist.currentText())
     
+    # Export for debugging 
+    gpt_payload_enhanced.to_csv('test-payload-enhanced.csv', encoding='utf-8', index=False)
+
     # Apend to the database
-    save_to_database("database.db", gpt_payload_enhanced, model, audio_source) 
+  #  save_to_database("database.db", gpt_payload_enhanced, calling_frame.model_picklist.currentText(), audio_source) 
     
     return(gpt_payload_enhanced)
    
-   # Display the sentences and diagnostics in a new window
-
-  # # Subset only the sentences that fit the criteria
-  # keepers = gpt_payload_enhanced[gpt_payload_enhanced['meets_criteria'] == True]
-    
-  
-    if with_audio:
-    # narakeet functions
-      pass
-
 # Call OpenAI API
-def gpt__generate_new_sentences(learned_deck_tokens, new_deck_tokens, n_sentences, model):
+def gpt__generate_new_sentences(calling_frame):
     openai.api_key = os.getenv("OPENAI_API_KEY") 
-    # Join each list into a single string, with words separated by comma
-    learned_deck_tokens_str = ", ".join(learned_deck_tokens)
-    new_deck_tokens_str = ", ".join(new_deck_tokens)
-   
+
     # Define the prompt for GPT 
-    prompt =f""" 
-      I need your help to output a .csv file containing new Hindi sentences based on a student's existing vocabulary.
-      Your output must be only a .csv file, with no other content.  
-      Imagine you are a Hindi teacher, helping a native English speaker who has just started learning Hindi. 
-      So far the student has learned the following words, which we can call the 'learned words', and are as follows: 
-      {learned_deck_tokens_str} 
-      Today the student is trying to learn the following words, which we can call the 'new words', and are as follows; 
-      {new_deck_tokens_str} 
-      Please generate {n_sentences} new Hindi sentences and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
-      - Each sentence includes _exactly one_ of the 'new words' -- you are NOT ALLOWED to include more than one word from the list of 'new words';
-      - All of the other words in each sentence (besides the exactly one 'new word') must already appear in the list of 'learned words';
-      - Each sentence must include a subject, a verb, and an object. 
-      Please use correct grammar and formal sentence structure when writing the sentences.
-      Include as many of the words from the list of 'learned words' as you can in each sentence while still respecting the rules I mentioned above.
-      Try to include a different 'new word' in each sentence.
-      Always respect Hindi's standard subject-object-verb structure.  
-      The output format of the new sentences you generate should be a .csv with a column for the Hindi sentence, 
-      a column for the English translation called 'translation', and a column called 'new_word' specifying which of the new words you've included in that sentence.  
-      Remember: you must include exactly _one_ of the 'new words' in each sentence, and the rest of the words must all already be present in the 'learned words', except for the exceptions I mentioned above.
-      The output MUST be a .csv file with one column exactly as specified above. 
-      Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
-      """ 
+    prompt = calling_frame.prompt
     messages = [
-      {"role": "system", "content": f"You are a helpful assistant. Your response must be in .CSV format."},
+      {"role": "system", "content": f"You are a CSV generator to assist with creating tables for language learning. Your response must be in .CSV format."},
       {"role": "user", "content": prompt},
     ] 
     
-    ### For debugging purposes, load a cached CSV so we don't query OpenAI a zillion times
- #   import ast
- #   # Open the file in read mode ('r')
- #   with open('test-payload.txt', 'r') as f:
- #       # Read the entire file to a string
- #       test_payload = f.read()
- #       
- #   gpt_payload = ast.literal_eval(test_payload)
- #   
- #   return(gpt_payload)
+    ### For debugging purposes, load a cached CSV so we don't call OpenAI a zillion times
+  #  with open('test-payload.txt', 'r') as f:
+  #      generated_text = f.read()
+ #
+  #  return(generated_text)
   
-    ###  /DELETE up to here
     response = openai.ChatCompletion.create(
-     # model="gpt-3.5-turbo-0613",
-      model=model,
+      model=calling_frame.model_picklist.currentText(),
       messages=messages,
-      temperature=0.1,
+      temperature=0.8,
       top_p=1.0,
       frequency_penalty=0.0,
       presence_penalty=0.0
@@ -99,18 +58,35 @@ def gpt__generate_new_sentences(learned_deck_tokens, new_deck_tokens, n_sentence
     generated_text = [
       choice.message["content"].strip() for choice in response["choices"]
     ]
+
+ #  # Export it for debugging purposes
+    with open('test-payload.csv', 'w', encoding='utf-8') as f:
+        # Write the CSV data to the file
+        f.write(generated_text[0])
+    
+ #  # print(generated_text[0])
    
     return generated_text
  
 # This function quality-checks the GPT payload, then it generates some diagnostics about the content of each sentence
 def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
-  
     # Check whether the GPT payload matches the formatting of a .csv file: If it works then load it as a .csv. If it doesn't then throw an informative error.
     try:
-        gpt_payload = pd.read_csv(io.StringIO(gpt_payload[0]))
+        # Read the payload using the csv module to handle commas within quotes
+        data = []
+        reader = csv.reader(io.StringIO(gpt_payload[0]))
+        for row in reader:
+            data.append(row)
+
+        # Convert the list of lists into a DataFrame
+        gpt_payload = pd.DataFrame(data[1:], columns=data[0])
+        
     except pd.errors.ParserError:
         raise ValueError("The GPT response string does not match the format of a CSV file.")
       
+    # DEBUGGING
+  # gpt_payload.to_csv('parsed-csv.csv', encoding='utf-8', index=False)
+    
     # Count the total number of sentences in the payload
     gpt_payload['n_sentences'] = len(gpt_payload)
     
@@ -134,6 +110,10 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
 
     # Apply the function and assign results to new columns
     gpt_payload[['n_words', 'n_known_words', 'n_new_words', 'n_rogue_words']] = gpt_payload['sentence'].apply(count_word_types)
+    
+    # Do some adhoc correction of HTML tags, which GPT seems to predictably get wrong sometimes
+    gpt_payload['sentence'] = gpt_payload['sentence'].str.replace(r'(<span class="[^"]*)&quot;([^"]*">)', r'\1"\2', regex=True)
+    gpt_payload['sentence'] = gpt_payload['sentence'].str.replace(r'<span class=\\\\"target_verb\\\\">', '<span class="target_verb">', regex=False)
 
     return(gpt_payload)
     
@@ -159,8 +139,10 @@ def flag_bad_sentences(df, condition):
     elif condition == "n+2 with rogue":
         df['meets_criteria'] = ((df['n_new_words'] + df['n_rogue_words'] > 0) & (df['n_new_words'] + df['n_rogue_words'] <= 2))
     
+    elif condition == "None":
+        df['meets_criteria'] = True
+        
     return df
-
 
 # Function to call the other functions below
 def save_to_database(db_name, dat, gpt_model, audio_provider):

@@ -36,7 +36,7 @@ class GeneratingFrameQt(QWidget):
         self.model_layout = QHBoxLayout()
         self.model_label = QLabel('Model:', self)
         self.model_picklist = QComboBox(self)
-        self.model_picklist.addItems(['gpt-3.5-turbo-1106', 'gpt-3.5-turbo', 'gpt-4-1106-preview'])
+        self.model_picklist.addItems(['gpt-3.5-turbo-1106', 'gpt-3.5-turbo', 'gpt-4o'])
         self.model_layout.addWidget(self.model_label)
         self.model_layout.addWidget(self.model_picklist)
         self.main_layout.addLayout(self.model_layout)
@@ -45,7 +45,7 @@ class GeneratingFrameQt(QWidget):
         self.selection_layout = QHBoxLayout()
         self.selection_criterion_label = QLabel('Selection Criterion:', self)
         self.selection_criterion_picklist = QComboBox(self)
-        self.selection_criterion_picklist.addItems(['n+1 with rogue', 'n+1 no rogue', 'n+2 with rogue', 'n+2 no rogue'])
+        self.selection_criterion_picklist.addItems(['n+1 with rogue', 'n+1 no rogue', 'n+2 with rogue', 'n+2 no rogue', 'None'])
         self.selection_layout.addWidget(self.selection_criterion_label)
         self.selection_layout.addWidget(self.selection_criterion_picklist)
         self.main_layout.addLayout(self.selection_layout)
@@ -107,6 +107,8 @@ class GeneratingFrameQt(QWidget):
         # Set selection behavior to select whole rows
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         
+        # See this video for multiple selection: https://www.youtube.com/watch?v=RwjYTXeUlKg
+        
         table_layout = QHBoxLayout()
         table_layout.addWidget(self.table)
 
@@ -138,7 +140,7 @@ class GeneratingFrameQt(QWidget):
         # Label and Picklist for 'choose audio source'
         self.audio_source_label = QLabel('Choose audio source:', self.audio_frame)
         self.audio_source_picklist = QComboBox(self.audio_frame)
-        self.audio_source_picklist.addItems(['Narakeet', 'Fake'])
+        self.audio_source_picklist.addItems(['ElevenLabs', 'Narakeet'])
         self.audio_source_picklist.setCurrentIndex(0)
         self.toggle_audio_options()
 
@@ -146,7 +148,7 @@ class GeneratingFrameQt(QWidget):
         audio_layout.addWidget(self.audio_source_picklist)
         
         return self.main_layout
-    
+
     def hide_widgets(self, layout):
         """useful function for inheriting classes to customize the layout of the superclass"""
         if layout is not None:

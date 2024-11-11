@@ -11,14 +11,18 @@ class DecksHomepageQt(QWidget):
         self.create_deck_display_frame()
 
     def showEvent(self, event):
+        from language_config import LanguageConfigFrameQt
+        
         """Override the showEvent to fetch configuration when the frame is shown."""
         super().showEvent(event)
         self.controller.resize(800, 400)
         
         configuration_data = fetch_user_configuration(self, self.controller.selected_user_id, self.controller.configuration_name)
-
+        
         if configuration_data:
             self.controller.learned_deck_tokens = self.load_vocab_from_deck('learned_deck', configuration_data)
+            if self.controller.learned_deck_tokens.isnull().all():
+                return self.controller.show_frame(LanguageConfigFrameQt)
             self.controller.new_deck_tokens = self.load_vocab_from_deck('new_deck', configuration_data)
             
             # Remove 'new' tokens that actually already occur in the learned tokens
@@ -80,9 +84,9 @@ class DecksHomepageQt(QWidget):
         # Create Dropdown Menu (Picklist)
         self.action_picklist = QComboBox(self)
         self.action_picklist.addItems([
+            "'Verb Exploder'",
             "Generate Audio for Existing Cards",
             "Generate i+1",
-            "'Verb Exploder'",
             "Generate Sentences for Selected Token"
         ])
         lower_frame.addWidget(self.action_picklist)
@@ -95,14 +99,16 @@ class DecksHomepageQt(QWidget):
     # Implement the method to handle button press
     def execute_selected_action(self):
         selected_action = self.action_picklist.currentText()
-        if selected_action == "Add Custom Sentence":
-            self.add_custom_sentence()
+        if selected_action == "'Verb Exploder'":
+            self.verb_exploder()
         elif selected_action == "Generate i+1":
             self.generate_iplus1()
         elif selected_action == "Generate Sentences for Selected Token":
             self.generate_sentences_for_selected_token()
-        elif selected_action == "Generate Audio for Previously-Added Cards":
-            self.generate_audio_for_previous_cards()
+        elif selected_action == "Generate Audio for Existing Cards":
+            self.generate_audio_for_existing_cards()
+        elif selected_action == "Add Custom Sentence":
+            self.add_custom_sentence()
 
     def on_press_back(self):
         from language_config import LanguageConfigFrameQt
@@ -121,14 +127,17 @@ class DecksHomepageQt(QWidget):
         # Hard-assign the audio file to the final field of the card. This is potentially destructive!!
         
     def generate_iplus1(self):
-        # Assuming IPlusOneFrameQt is already converted
         self.controller.show_frame(IPlusOneFrameQt)
 
     def generate_sentences_for_selected_token(self):
         pass
     
-    def generate_audio_for_previous_cards(self):
+    def generate_audio_for_existing_cards(self):
         self.controller.show_frame(PreviousCardsAudioFrameQt)
+    
+    def verb_exploder(self):
+        from verb_exploder_frame import VerbExploderFrameQt
+        self.controller.show_frame(VerbExploderFrameQt)
     
     def insert_vocab_into_treeview(self, treeview, vocab_tokens):
         treeview.clear()
@@ -142,10 +151,11 @@ class DecksHomepageQt(QWidget):
         self.learned_count_label.setText(f"Items: {self.learned_deck_treeview.topLevelItemCount()}")
         self.new_count_label.setText(f"Items: {self.new_deck_treeview.topLevelItemCount()}")
 
-    ### LOAD THE DATA VIA ANKICONNECT USING THE FIELDS RETRIEVED ABOVE
+    ### Load the vocab data via ankiconnect using the selected language configuration. 
     def load_vocab_from_deck(self, deck, raw_config_data):
+        
         """
-        Load vocabulary words from Anki cards based on specified deck, card types, and fields.
+        Use AnkiConnect to load vocabulary words from Anki cards based on specified deck, card types, and fields.
 
         Parameters:
         - deck (str): The name of the Anki deck.
@@ -174,17 +184,22 @@ class DecksHomepageQt(QWidget):
             query = f'"deck:{deck}" "note:{card_type}"'
 
             # Retrieve note IDs for the card type
-            note_ids = ankiconnect_invoke('findNotes', query=query)
-
+            note_ids = ankiconnect_invoke(self, 'findNotes', query=query)
+            if note_ids == 1:
+               print("YES")
+               return None
+           
             # Retrieve note content for the card type
-            note_content = pd.json_normalize(ankiconnect_invoke('notesInfo', notes=note_ids))
+            note_content = pd.json_normalize(ankiconnect_invoke(self, 'notesInfo', notes=note_ids))
 
-            # Remove non-Devanagari text for all specified fields
+            # Remove non-Devanagari text, HTML tags, and Anki Cloze notation for all specified fields
             for field in fields:
                 col_name = f"fields.{field}.value"
                 if col_name in note_content.columns:
+                    note_content[col_name] = note_content[col_name].astype(str).apply(lambda text: strip_punctuation(text))
+                    note_content[col_name] = note_content[col_name].astype(str).apply(lambda text: strip_html_and_cloze(text))
                     note_content[col_name] = note_content[col_name].astype(str).apply(lambda text: remove_non_language_tokens(text, configuration_language))
-                    pass
+                    
             # Extract words from all specified fields
             for field in fields:
                 col_name = f"fields.{field}.value"
