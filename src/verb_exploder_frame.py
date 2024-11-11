@@ -192,7 +192,7 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         
         # If the 'audio' checkbox is checked then generate the audio files and pack them into Anki's media folder
         if self.audio_checkbox.isChecked():
-            export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
+            export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name, self.audio_source_picklist.currentText())
     
         else: export_df['audio'] = ' '
         

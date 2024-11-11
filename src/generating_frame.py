@@ -140,7 +140,7 @@ class GeneratingFrameQt(QWidget):
         # Label and Picklist for 'choose audio source'
         self.audio_source_label = QLabel('Choose audio source:', self.audio_frame)
         self.audio_source_picklist = QComboBox(self.audio_frame)
-        self.audio_source_picklist.addItems(['Narakeet', 'Fake'])
+        self.audio_source_picklist.addItems(['ElevenLabs', 'Narakeet'])
         self.audio_source_picklist.setCurrentIndex(0)
         self.toggle_audio_options()
 

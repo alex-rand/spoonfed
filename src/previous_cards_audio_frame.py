@@ -26,7 +26,12 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         learned_cards = add_audio_flag(learned_cards)
 
         if learned_cards is not None:
-            self.populate_treeview(learned_cards.sort_values(by='no_audio', ascending=False))
+            
+            # Filter for rows where no_audio is True
+            learned_cards_no_audio = learned_cards[learned_cards['no_audio'] == True]
+
+            # Pass only the filtered DataFrame to populate_treeview
+            self.populate_treeview(learned_cards_no_audio.sort_values(by='no_audio', ascending=False))
         
     def initUI(self):
         super().initUI()
@@ -46,7 +51,7 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         audio_layout = QHBoxLayout()  # Create a horizontal layout for audio controls
         self.audio_source_label = QLabel('Choose audio source:', self)
         self.audio_source_picklist = QComboBox(self)
-        self.audio_source_picklist.addItems(['Narakeet', 'Fake'])
+        self.audio_source_picklist.addItems(['ElevenLabs', 'Narakeet'])
         self.audio_source_picklist.setCurrentIndex(0)
         audio_layout.addWidget(self.audio_source_label)
         audio_layout.addWidget(self.audio_source_picklist)
@@ -221,12 +226,9 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         # Need to get the 'final' field name for each card type and store it as a column, to be called later.
         card_types_and_fields = raw_config_data.get('card_types_and_fields', {})
         last_fields = {card_type: fields[-1] for card_type, fields in card_types_and_fields.items()}
-        
-        # DEBUGGING
-       # df = df.iloc[0:1]
-        
+
         # Generate the new audio file             
-        df = generate_audio(df, self.controller.selected_language, self.controller.selected_profile_name)
+        df = generate_audio(df, self.controller.selected_language, self.controller.selected_profile_name, self.audio_source_picklist.currentText())
     
         # Append the name of the generated audio file to the final field (can we do this non-destructively?)
         result = append_audio_file_to_notes(df, last_fields)
@@ -290,51 +292,3 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
             return comboBox.currentText(), apply_all_checkbox.isChecked()
         else:
             return None
-
-
-
-    #   # Iterate through the tree view items
-    #   for index in range(self.table.topLevelItemCount()):
-    #       item = self.table.topLevelItem(index)
-    #       # Check if the checkbox in the 'Export' column is checked
-    #       if self.table.itemWidget(item, 0).isChecked():
-    #           # Append the data of the row to the export_data list
-    #           export_data.append({
-    #               'sentence': item.text(1),
-    #               'translation': item.text(2),
-    #               'new_word': item.text(3),
-    #               'total_words': item.text(4),
-    #               'known_words': item.text(5),
-    #               'new_words': item.text(6),
-    #               'rogue_words': item.text(7),
-    #               'meets_criteria': item.text(8),
-    #           })
-    #           
-    #   if not export_data:
-    #       QMessageBox.warning(self, "Export Error", "Please check at least one item to export.")
-    #       return  # Stop the function execution
-
-    #   # Create a DataFrame from the collected data
-    #   export_df = pd.DataFrame(export_data)
-    #   
-    #   # If the 'audio' checkbox is checked then generate the audio files and pack them into Anki's media folder
-    #   if self.audio_checkbox.isChecked(): 
-    #       export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name)
-    #
-    #   # Create the cards in Anki
-    #   result = export_df.apply(create_new_card, args=(self.model_picklist.currentText(), self.audio_source_picklist.currentText()), axis=1)
-
-    #   if result.eq("success").all():
-    #       QMessageBox.information(self, "Success", "Cards successfully created in Anki.")
-    #   else:
-    #       QMessageBox.warning(self, "Export Error", "Cards could not be created.")
-    #       
-    #   # Return to the decks homepage        
-    #   self.controller.show_frame(DecksHomepageQt)
-           
- 
-        
-
-        
-
-        
