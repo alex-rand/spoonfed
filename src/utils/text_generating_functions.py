@@ -36,7 +36,7 @@ def gpt__generate_new_sentences(calling_frame):
     # Define the prompt for GPT 
     prompt = calling_frame.prompt
     messages = [
-      {"role": "system", "content": f"You are a CSV generator to assist with creating tables for language learning. Your response must be in .CSV format."},
+      {"role": "system", "content": f"You are a CSV generator to assist with creating tables for language learning. Your response must be in .CSV format with exactly 4 columns."},
       {"role": "user", "content": prompt},
     ] 
     

@@ -122,9 +122,11 @@ def call_elevenlabs_api(text, anki_profile_name):
             "text": text,
             "model_id": "eleven_multilingual_v2",
             "voice_settings": {
-                "stability": random.randint(50, 70)/100,  # Random integer stability between 50 and 70
-                "similarity_boost": random.randint(60, 80)/100,  # Random integer similarity boost between 60 and 80
+                "stability": random.randint(30, 80)/100,  # Random integer stability between 50 and 70
+                "similarity_boost": random.randint(30, 80)/100,  # Random integer similarity boost between 60 and 80
+                "use_speaker_boost": True
             }
+            
         }
         headers = {
             "Accept": "audio/mpeg",

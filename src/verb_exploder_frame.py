@@ -87,7 +87,7 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             - The sentences should each follow normal punctuation, but the Target Verb word should be encased in Anki Cloze notation, where the clue is the infinitive of the target verb, with elipses '...' on either side of it to help indicate that it is the infinitive. For example, if the target verb were होना and the generated sentence were जब हम त्योहार में जाएँगे, तब हम खुश, the sentence would be written as हम खुश जब हम त्योहार में जाएँगे, तब हम खुश <span class=target_verb>{{{{c1::होंगे::…होना…}}}}</span>
             - The Target Verb Word, i.e. the full cloze including its curly braces, MUST be encased in an HTML <span> tag of class target_verb. The entire cloze for the Target Verb word must be inside this tag. This is very important!
             Please use correct grammar and formal sentence structure when writing the sentences.  {"Always respect Hindi's standard subject-object-verb structure." if self.controller.selected_language == "Hindi" else ""}
-            The output format of the new sentences you generate should be a .csv with EXACTLY four columns: 
+            The output format of the new sentences you generate should be a .csv with EXACTLY four columns, no more and no less: 
             1. a column called 'sentence' containing each full {self.controller.selected_language} sentence;
             2. a column called 'translation' containing the English translation for each sentence;
             3. a column called 'target_verb' specifying the infinitive of the target verb, 
