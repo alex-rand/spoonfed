@@ -35,10 +35,19 @@ def gpt__generate_new_sentences(calling_frame):
 
     # Define the prompt for GPT 
     prompt = calling_frame.prompt
-    messages = [
-      {"role": "system", "content": f"You are a CSV generator to assist with creating tables for language learning. Your response must be in .CSV format with exactly 4 columns."},
-      {"role": "user", "content": prompt},
-    ] 
+    
+
+    
+    # o1 can't take a system prompt, but other models take both system and user prompts
+    if calling_frame.model_picklist.currentText() in ['o1-preview', 'o1-mini']:
+        messages = [
+            {"role": "user", "content": prompt},
+        ]
+    else:
+        messages = [
+            {"role": "system", "content": "You are a CSV generator to assist with creating tables for language learning. Your response must be in .CSV format with exactly 4 columns."},
+            {"role": "user", "content": prompt},
+        ]
     
     ### For debugging purposes, load a cached CSV so we don't call OpenAI a zillion times
   #  with open('test-payload.txt', 'r') as f:
@@ -49,7 +58,7 @@ def gpt__generate_new_sentences(calling_frame):
     response = openai.ChatCompletion.create(
       model=calling_frame.model_picklist.currentText(),
       messages=messages,
-      temperature=0.8,
+      temperature=1,
       top_p=1.0,
       frequency_penalty=0.0,
       presence_penalty=0.0
