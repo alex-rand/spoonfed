@@ -136,6 +136,8 @@ def remove_non_language_tokens(text, language):
             pattern = "[^\u0600-\u06FF \n]"
         elif language == 'Mandarin':
             pattern = "[^\u4e00-\u9fff \n]"
+        elif language == 'French':
+            pattern = "[^a-zA-ZÀ-ÿœŒ \n]"
         else:
             raise ValueError("Unsupported language")
 

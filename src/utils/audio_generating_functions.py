@@ -23,8 +23,9 @@ def generate_audio(df, language, anki_profile_name, tts_api):
     
     # Generate an audio file for each row of the 'sentence' column,
     # and return a new column to the dataset with the audio file names. 
+
     if tts_api == "ElevenLabs":
-        df['audio'] = df['sentence_stripped'].apply(lambda x: call_elevenlabs_api(x, anki_profile_name))
+        df['audio'] = df['sentence_stripped'].apply(lambda x: call_elevenlabs_api(x, language, anki_profile_name))
     elif tts_api == "Narakeet":
         df['audio'] = df['sentence_stripped'].apply(lambda x: call_narakeet_api(x, get_voice(), language, anki_profile_name))
     else:
@@ -106,16 +107,20 @@ def call_narakeet_api(text, voice, language, anki_profile_name):
         logging.error(f"An error occurred in call_narakeet_api: {str(e)}")
         return None
     
-def call_elevenlabs_api(text, anki_profile_name):
+def call_elevenlabs_api(text, language, anki_profile_name):
     
     # Check if text is None or empty
     if not text:
-        logging.error("No text provided for Narakeet API call.")
+        logging.error("No text provided for Elevenlabs API call.")
         return None
     
     try:
-        # Where does elevenlabs live?
-        url = "https://api.elevenlabs.io/v1/text-to-speech/GGs86ihiCGgvbv8vqV7h" # or OUxfKPssG0qAk5VQF8We for lowlex
+        if language == "French":
+            voice = "r7gc4KEJhGwyEQx71Tx1"  # or Patrick: "XTyroWkQl32ZSd3rRVZ1"
+        elif language != "French":
+            voice = "GGs86ihiCGgvbv8vqV7h" # or OUxfKPssG0qAk5VQF8We for lowlex
+            
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice}"
 
         # Build the payload
         payload = {
@@ -143,6 +148,32 @@ def call_elevenlabs_api(text, anki_profile_name):
 
         # Get the audio
         audio_data = response.content
+        
+        # If we're doing French, send the voice back to the Voice-to-Voice API to turn it into Alex
+        if language == "French":
+            
+            url = "https://api.elevenlabs.io/v1/speech-to-speech/GGs86ihiCGgvbv8vqV7h" # send to Alex-Clone voice
+    
+            # Set up the multipart form data
+            files = {
+                'audio': ('input_audio.mp3', audio_data, 'audio/mpeg'),
+               'model_id': (None, 'eleven_multilingual_sts_v2', 'text/plain')
+            }
+    
+            headers = {
+                "Accept": "audio/mpeg",
+                "xi-api-key": os.getenv("ELEVENLABS_API_KEY"),
+            }
+
+            response = requests.post(
+                url,
+                files=files,
+                headers=headers,
+            )
+            
+            # Extract the Alex version of the French text
+            audio_data = response.content
+            
 
         # Get the save path from 
         directory_path = get_anki_media_path(anki_profile_name)
