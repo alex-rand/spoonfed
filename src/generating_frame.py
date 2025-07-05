@@ -36,7 +36,7 @@ class GeneratingFrameQt(QWidget):
         self.model_layout = QHBoxLayout()
         self.model_label = QLabel('Model:', self)
         self.model_picklist = QComboBox(self)
-        self.model_picklist.addItems(['gpt-4o', 'o1-mini', 'o1-preview'])
+        self.model_picklist.addItems(['gpt-4o', 'o1-mini', 'o1-preview', 'o4-mini'])
         self.model_layout.addWidget(self.model_label)
         self.model_layout.addWidget(self.model_picklist)
         self.main_layout.addLayout(self.model_layout)
