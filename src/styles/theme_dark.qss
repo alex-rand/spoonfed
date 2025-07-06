@@ -1,0 +1,335 @@
+/* Spoonfed Dark Theme */
+
+/* Override base colors for dark theme */
+QMainWindow {
+    background-color: #1A1A1A;
+    color: #FFFFFF;
+}
+
+QFrame {
+    background-color: #1A1A1A;
+    color: #FFFFFF;
+}
+
+/* Typography for dark theme */
+QLabel {
+    color: #FFFFFF;
+}
+
+QLabel[class*="text-secondary"] {
+    color: #B0B0B0;
+}
+
+QLabel[class*="text-muted"] {
+    color: #808080;
+}
+
+QLabel[class*="text-primary"] {
+    color: #FFFFFF;
+}
+
+/* Dark theme buttons */
+QPushButton {
+    background-color: #5BA0F2;
+    color: white;
+}
+
+QPushButton:hover {
+    background-color: #7BB4F5;
+}
+
+QPushButton:pressed {
+    background-color: #4A8BDF;
+}
+
+QPushButton[class="secondary"] {
+    background-color: #2D2D2D;
+    border: 1px solid #5BA0F2;
+    color: #5BA0F2;
+}
+
+QPushButton[class="secondary"]:hover {
+    background-color: #404040;
+    border-color: #7BB4F5;
+}
+
+QPushButton[class="secondary"]:pressed {
+    background-color: #555555;
+    border-color: #4A8BDF;
+}
+
+QPushButton[class="tertiary"] {
+    background-color: transparent;
+    color: #5BA0F2;
+}
+
+QPushButton[class="tertiary"]:hover {
+    color: #7BB4F5;
+}
+
+QPushButton[class="tertiary"]:pressed {
+    color: #4A8BDF;
+}
+
+/* Dark theme inputs */
+QLineEdit {
+    background-color: #2D2D2D;
+    border: 1px solid #404040;
+    color: #FFFFFF;
+}
+
+QLineEdit:focus {
+    border: 2px solid #5BA0F2;
+}
+
+QLineEdit:disabled {
+    background-color: #404040;
+    color: #808080;
+}
+
+QLineEdit::placeholder {
+    color: #808080;
+}
+
+/* Dark theme text areas */
+QTextEdit {
+    background-color: #2D2D2D;
+    border: 1px solid #404040;
+    color: #FFFFFF;
+}
+
+QTextEdit:focus {
+    border: 2px solid #5BA0F2;
+}
+
+QPlainTextEdit {
+    background-color: #2D2D2D;
+    border: 1px solid #404040;
+    color: #FFFFFF;
+}
+
+QPlainTextEdit:focus {
+    border: 2px solid #5BA0F2;
+}
+
+/* Dark theme dropdowns */
+QComboBox {
+    background-color: #2D2D2D;
+    border: 1px solid #404040;
+    color: #FFFFFF;
+}
+
+QComboBox:focus {
+    border: 2px solid #5BA0F2;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #2D2D2D;
+    border: 1px solid #404040;
+    selection-background-color: #5BA0F2;
+    selection-color: white;
+}
+
+QComboBox QAbstractItemView::item:hover {
+    background-color: #404040;
+}
+
+/* Dark theme checkboxes and radio buttons */
+QCheckBox {
+    color: #FFFFFF;
+}
+
+QCheckBox::indicator {
+    background-color: #2D2D2D;
+    border: 1px solid #404040;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #5BA0F2;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #5BA0F2;
+    border-color: #5BA0F2;
+}
+
+QRadioButton {
+    color: #FFFFFF;
+}
+
+QRadioButton::indicator {
+    background-color: #2D2D2D;
+    border: 1px solid #404040;
+}
+
+QRadioButton::indicator:hover {
+    border-color: #5BA0F2;
+}
+
+QRadioButton::indicator:checked {
+    background-color: #5BA0F2;
+    border-color: #5BA0F2;
+}
+
+/* Dark theme progress bars */
+QProgressBar {
+    background-color: #404040;
+    color: #FFFFFF;
+}
+
+QProgressBar::chunk {
+    background-color: #5BA0F2;
+}
+
+/* Dark theme sliders */
+QSlider::groove:horizontal {
+    background-color: #404040;
+}
+
+QSlider::handle:horizontal {
+    background-color: #5BA0F2;
+}
+
+QSlider::handle:horizontal:hover {
+    background-color: #7BB4F5;
+}
+
+QSlider::handle:horizontal:pressed {
+    background-color: #4A8BDF;
+}
+
+QSlider::sub-page:horizontal {
+    background-color: #5BA0F2;
+}
+
+/* Dark theme tabs */
+QTabWidget::pane {
+    background-color: #2D2D2D;
+    border: 1px solid #404040;
+}
+
+QTabBar::tab {
+    background-color: #404040;
+    border: 1px solid #555555;
+    color: #B0B0B0;
+}
+
+QTabBar::tab:hover {
+    background-color: #555555;
+    color: #FFFFFF;
+}
+
+QTabBar::tab:selected {
+    background-color: #2D2D2D;
+    color: #5BA0F2;
+    border-bottom: 2px solid #5BA0F2;
+}
+
+/* Dark theme tree and table views */
+QTreeWidget {
+    background-color: #2D2D2D;
+    border: 1px solid #404040;
+    color: #FFFFFF;
+    alternate-background-color: #333333;
+}
+
+QTreeWidget::item:hover {
+    background-color: #404040;
+}
+
+QTreeWidget::item:selected {
+    background-color: #5BA0F2;
+    color: white;
+}
+
+QHeaderView::section {
+    background-color: #404040;
+    border: 1px solid #555555;
+    color: #B0B0B0;
+}
+
+/* Dark theme cards */
+QFrame[class="card"] {
+    background-color: #2D2D2D;
+    border: 1px solid #404040;
+}
+
+QFrame[class="card-shadow"] {
+    background-color: #2D2D2D;
+    border: 1px solid #404040;
+}
+
+/* Dark theme dividers */
+QFrame[class="divider"] {
+    background-color: #404040;
+}
+
+/* Dark theme scrollbars */
+QScrollBar:vertical {
+    background: #404040;
+}
+
+QScrollBar::handle:vertical {
+    background: #808080;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #B0B0B0;
+}
+
+QScrollBar:horizontal {
+    background: #404040;
+}
+
+QScrollBar::handle:horizontal {
+    background: #808080;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #B0B0B0;
+}
+
+/* Dark theme status badges */
+QLabel[class="badge"] {
+    background-color: #5BA0F2;
+    color: white;
+}
+
+QLabel[class="badge-success"] {
+    background-color: #38B755;
+    color: white;
+}
+
+QLabel[class="badge-warning"] {
+    background-color: #FFD317;
+    color: #1A1A1A;
+}
+
+QLabel[class="badge-error"] {
+    background-color: #EC4555;
+    color: white;
+}
+
+/* Dark theme tooltips */
+QToolTip {
+    background-color: #404040;
+    color: #FFFFFF;
+    border: 1px solid #555555;
+}
+
+/* Dark theme semantic colors */
+QLabel[class*="text-success"] {
+    color: #38B755;
+}
+
+QLabel[class*="text-warning"] {
+    color: #FFD317;
+}
+
+QLabel[class*="text-error"] {
+    color: #EC4555;
+}
+
+QLabel[class*="text-info"] {
+    color: #27B2C8;
+}

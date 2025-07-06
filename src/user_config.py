@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QComboBox, QPushButton, QVBoxLayout, QGridLayout, QInputDialog
+from PyQt5.QtWidgets import QWidget, QLabel, QComboBox, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, QInputDialog, QFrame
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QCursor, QFont, QFontDatabase
 import sqlite3
@@ -7,6 +7,8 @@ import os
 import random
 
 from language_config import LanguageConfigFrameQt
+from ui.components import ModernButton, ModernComboBox, ModernCard, NavigationHeader, Breadcrumb
+from ui.animations import animation_manager
 
 # Assuming LanguageConfigFrame is also converted to PyQt5
 # from language_config_qt import LanguageConfigFrameQt
@@ -17,74 +19,137 @@ class UserConfigFrameQt(QWidget):
         self.controller = parent
         self.create_user_config_frame()
         self.load_all_saved_users()
-        self.setFixedSize(300, 500)
 
     def showEvent(self, event):
         """Override the show event to refresh the dropdown each time the frame is shown."""
         super().showEvent(event)
-        self.controller.resize(300, 450)
+        self.load_all_saved_users()
         
     def create_user_config_frame(self):
-        layout = QVBoxLayout(self)
-        layout.setSpacing(10)  
-        self.controller.resize(300, 450)
+        """Create the modern user configuration frame"""
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(32, 32, 32, 32)
+        main_layout.setSpacing(24)
         
-        # Add custom font
+        # Create centered container
+        container = QFrame()
+        container.setMaximumWidth(400)
+        container.setProperty("class", "card")
+        container_layout = QVBoxLayout(container)
+        container_layout.setSpacing(24)
+        container_layout.setContentsMargins(32, 32, 32, 32)
+        
+        # Add custom font for title
         font_path = "assets/fonts/PlantinMTStd-Italic.otf"
         absolute_font_path = os.path.abspath(font_path)
-        font_id = QFontDatabase.addApplicationFont(absolute_font_path)
-        font_family = QFontDatabase.applicationFontFamilies(font_id)[0]
+        if os.path.exists(absolute_font_path):
+            font_id = QFontDatabase.addApplicationFont(absolute_font_path)
+            if font_id != -1:
+                font_families = QFontDatabase.applicationFontFamilies(font_id)
+                if font_families:
+                    font_family = font_families[0]
+                else:
+                    font_family = "Arial"
+            else:
+                font_family = "Arial"
+        else:
+            font_family = "Arial"
         
+        # App title
         app_title = QLabel("Spoonfed", self)
         app_title.setAlignment(Qt.AlignCenter)
-        font = QFont(font_family, 36) 
+        app_title.setProperty("class", "display accent")
+        font = QFont(font_family, 36)
         app_title.setFont(font)
-        layout.addWidget(app_title)
+        container_layout.addWidget(app_title)
         
-        # Grid for inputs and labels
-        grid_layout = QGridLayout()
-        layout.addLayout(grid_layout)
-
-        # Label and ComboBox for user profiles
-        self.anki_profile_label = QLabel("Anki Profile Name:", self)
-        grid_layout.addWidget(self.anki_profile_label, 0, 0)
-
-        self.saved_users_dropdown = QComboBox(self)
-        grid_layout.addWidget(self.saved_users_dropdown, 0, 1)
-
+        # Subtitle
+        subtitle = QLabel("AI-Powered Language Learning", self)
+        subtitle.setAlignment(Qt.AlignCenter)
+        subtitle.setProperty("class", "body text-secondary")
+        container_layout.addWidget(subtitle)
+        
+        # Form section
+        form_section = QFrame()
+        form_layout = QVBoxLayout(form_section)
+        form_layout.setSpacing(16)
+        
+        # Profile selection label
+        self.anki_profile_label = QLabel("Select Anki Profile:", self)
+        self.anki_profile_label.setProperty("class", "h3")
+        form_layout.addWidget(self.anki_profile_label)
+        
+        # Modern dropdown
+        self.saved_users_dropdown = ModernComboBox(self)
+        form_layout.addWidget(self.saved_users_dropdown)
+        
+        container_layout.addWidget(form_section)
+        
+        # Button section
+        button_section = QFrame()
+        button_layout = QVBoxLayout(button_section)
+        button_layout.setSpacing(12)
+        
         # Continue button
-        continue_button = QPushButton("Continue", self)
+        continue_button = ModernButton("Continue", variant="primary", parent=self)
         continue_button.clicked.connect(self.proceed_with_selected_user)
-        layout.addWidget(continue_button)
-
+        button_layout.addWidget(continue_button)
+        
         # Add new user button
-        add_user_button = QPushButton("Add New User", self)
+        add_user_button = ModernButton("Add New User", variant="secondary", parent=self)
         add_user_button.clicked.connect(self.add_new_user)
-        layout.addWidget(add_user_button)
+        button_layout.addWidget(add_user_button)
         
-        self.display_random_image()
+        container_layout.addWidget(button_section)
         
-        # Style the dropdown and label
-        self.anki_profile_label.setStyleSheet("QLabel { color: #555; }")
+        # Center the container
+        center_layout = QHBoxLayout()
+        center_layout.addStretch()
+        center_layout.addWidget(container)
+        center_layout.addStretch()
+        
+        main_layout.addStretch()
+        main_layout.addLayout(center_layout)
+        main_layout.addStretch()
+        
+        # Add background image
+        self.display_background_image()
 
     def load_all_saved_users(self):
+        """Load saved users into the dropdown"""
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
 
         c.execute("SELECT profile_name FROM users")
         user_profiles = [row[0] for row in c.fetchall()]
 
-        self.saved_users_dropdown.addItems(user_profiles)
+        # Clear existing items
+        self.saved_users_dropdown.clear()
+        
+        # Add items
         if user_profiles:
+            self.saved_users_dropdown.addItems(user_profiles)
             self.saved_users_dropdown.setCurrentIndex(0)
+        else:
+            self.saved_users_dropdown.addItem("No profiles found")
 
         conn.close()
 
     def add_new_user(self):
-        new_user, ok = QInputDialog.getText(self, "Input", "Enter new user profile name:")
-        if ok and new_user:
-            self.set_user_configuration(new_user)
+        """Add a new user profile"""
+        new_user, ok = QInputDialog.getText(
+            self, 
+            "Add New Profile", 
+            "Enter new user profile name:",
+            text=""
+        )
+        if ok and new_user.strip():
+            self.set_user_configuration(new_user.strip())
             self.load_all_saved_users()
+            # Set the new user as selected
+            index = self.saved_users_dropdown.findText(new_user.strip())
+            if index >= 0:
+                self.saved_users_dropdown.setCurrentIndex(index)
 
     def set_user_configuration(self, user_name):
         conn = sqlite3.connect('database.db')
@@ -102,23 +167,43 @@ class UserConfigFrameQt(QWidget):
         conn.close()
 
     def proceed_with_selected_user(self):
+        """Proceed with the selected user profile"""
         selected_user = self.saved_users_dropdown.currentText()
-        if selected_user:
+        if selected_user and selected_user != "No profiles found":
             self.set_user_configuration(selected_user)
             self.controller.show_frame(LanguageConfigFrameQt)
             
-    def display_random_image(self):
+    def display_background_image(self):
+        """Display a subtle background image"""
         image_folder = 'assets/images'
-        images = [img for img in os.listdir(image_folder) if img.endswith('.png')]
-        if images:
-            selected_image = random.choice(images)
-            pixmap = QPixmap(os.path.join(image_folder, selected_image))
-            image_label = ClickableLabel(self)
-            image_label.setPixmap(pixmap.scaled(300, 450)) # Adjust size as needed
-            image_label.clicked.connect(self.on_image_click)
-            self.layout().addWidget(image_label)
+        if os.path.exists(image_folder):
+            images = [img for img in os.listdir(image_folder) if img.endswith('.png')]
+            if images:
+                selected_image = random.choice(images)
+                pixmap = QPixmap(os.path.join(image_folder, selected_image))
+                
+                # Create a subtle background effect
+                self.setStyleSheet(f"""
+                    UserConfigFrameQt {{
+                        background-image: url({os.path.join(image_folder, selected_image)});
+                        background-repeat: no-repeat;
+                        background-position: center;
+                        background-attachment: fixed;
+                    }}
+                    UserConfigFrameQt:before {{
+                        content: "";
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background-color: rgba(248, 249, 250, 0.85);
+                        pointer-events: none;
+                    }}
+                """)
         
     def on_image_click(self):
+        """Open GitHub repository"""
         url = "https://github.com/alex-rand/spoonfed" 
         webbrowser.open(url)
 

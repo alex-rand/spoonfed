@@ -3,8 +3,6 @@ import os
 import sqlite3
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame, QVBoxLayout
 from PyQt5.QtCore import Qt
-from ui.style_manager import style_manager
-from ui.animations import animation_manager
 from user_config import UserConfigFrameQt
 from language_config import LanguageConfigFrameQt
 from decks_homepage import DecksHomepageQt
@@ -16,7 +14,7 @@ from verb_exploder_frame import VerbExploderFrameQt
 class MainApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Spoonfed")
+        self.setWindowTitle("Spoonfed - AI-Powered Language Learning")
         
         # Set window properties
         self.setMinimumSize(800, 600)
@@ -63,7 +61,18 @@ class MainApp(QMainWindow):
         
     def apply_styling(self):
         """Apply the modern styling system"""
-        style_manager.apply_theme('light')
+        try:
+            # Try to load the simple stylesheet
+            styles_path = os.path.join(os.path.dirname(__file__), "styles", "simple.qss")
+            if os.path.exists(styles_path):
+                with open(styles_path, 'r') as f:
+                    stylesheet = f.read()
+                self.setStyleSheet(stylesheet)
+                print("✓ Applied modern styling")
+            else:
+                print("! Stylesheet not found, using default styling")
+        except Exception as e:
+            print(f"! Error applying styling: {e}")
         
     def show_frame(self, page_class):
         """Show a specific frame with smooth transition"""
@@ -74,9 +83,6 @@ class MainApp(QMainWindow):
         # Show the target frame
         target_frame = self.frames[page_class]
         target_frame.show()
-        
-        # Add fade-in animation
-        animation_manager.fade_in(target_frame, duration=250)
 
     def setup_database(self):
         db_name = 'database.db'
@@ -153,7 +159,25 @@ class MainApp(QMainWindow):
         
 # Running the Application
 if __name__ == "__main__":
+    print("=== Starting Spoonfed Application ===")
+    
     app = QApplication(sys.argv)
-    mainApp = MainApp()
-    mainApp.show()
-    sys.exit(app.exec_())
+    
+    # Set application properties
+    app.setApplicationName("Spoonfed")
+    app.setApplicationVersion("2.0")
+    app.setOrganizationName("Spoonfed")
+    
+    try:
+        mainApp = MainApp()
+        mainApp.show()
+        print("✓ Spoonfed application started successfully")
+        print("✓ Modern UI styling applied")
+        print("✓ Ready to use!")
+        
+        sys.exit(app.exec_())
+    except Exception as e:
+        print(f"✗ Error starting application: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)

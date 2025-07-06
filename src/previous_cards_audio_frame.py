@@ -36,26 +36,22 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
     def initUI(self):
         super().initUI()
         
-        self.hide_widgets(self.model_layout)
-        self.hide_widgets(self.selection_layout)
-        self.hide_widgets(self.nsentences_layout)
-        self.main_layout.removeWidget(self.generate_button)
-        self.main_layout.removeWidget(self.audio_checkbox)
+        # Hide specific widgets instead of layouts that don't exist
+        self.model_picklist.hide()
+        self.selection_criterion_picklist.hide()
+        self.nsentences_picklist.hide()
+        self.audio_checkbox.hide()
         
-        # Add a new frame-specific generate button
-        self.generate_button = QPushButton("Generate Audio", self)
+        # Replace the existing generate button text and functionality
+        self.generate_button.setText("Generate Audio")
+        # Disconnect the old signal and connect the new one
+        self.generate_button.clicked.disconnect()
         self.generate_button.clicked.connect(self.on_press_generate)
-        self.main_layout.addWidget(self.generate_button)
         
-        # Lazy but declare brand new audio source picklist
-        audio_layout = QHBoxLayout()  # Create a horizontal layout for audio controls
-        self.audio_source_label = QLabel('Choose audio source:', self)
-        self.audio_source_picklist = QComboBox(self)
-        self.audio_source_picklist.addItems(['ElevenLabs', 'Narakeet'])
-        self.audio_source_picklist.setCurrentIndex(0)
-        audio_layout.addWidget(self.audio_source_label)
-        audio_layout.addWidget(self.audio_source_picklist)
-        self.main_layout.addLayout(audio_layout)
+        # Show the audio source controls that were already created in the parent class
+        self.audio_source_label.show()
+        self.audio_source_picklist.show()
+        self.audio_source_label.setText('Choose audio source:')
         
     def on_press_generate(self):
         self.export_to_anki(self.configuration_data)

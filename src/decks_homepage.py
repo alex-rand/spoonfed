@@ -1,8 +1,11 @@
 from PyQt5.QtWidgets import QComboBox, QWidget, QFrame, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QTreeWidget, QTreeWidgetItem, QMessageBox
+from PyQt5.QtCore import Qt
 import pandas as pd
 from utils.anki_connect_functions import *
 from iplusone import IPlusOneFrameQt
 from previous_cards_audio_frame import PreviousCardsAudioFrameQt
+from ui.components import ModernButton, ModernComboBox, ModernCard, NavigationHeader, ModernTreeWidget, Breadcrumb
+from ui.animations import animation_manager
 
 class DecksHomepageQt(QWidget):
     def __init__(self, parent=None):
@@ -33,82 +36,148 @@ class DecksHomepageQt(QWidget):
             self.insert_vocab_into_treeview(self.new_deck_treeview, self.controller.new_deck_tokens)
 
     def create_deck_display_frame(self):
+        """Create the modern deck display interface"""
         main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(24, 24, 24, 24)
+        main_layout.setSpacing(24)
         
-        # Back button 
-        top_layout = QHBoxLayout()
-        self.back_button = QPushButton("Back", self)
-        self.back_button.setFixedSize(100, 30)  # Example size, adjust as needed
-        self.back_button.setStyleSheet("QPushButton { font-size: 10pt; }")  # Example style, adjust as needed
-        self.back_button.clicked.connect(self.on_press_back)
-        top_layout.addWidget(self.back_button)
-        top_layout.addStretch()  # This will push the button to the left
-        main_layout.addLayout(top_layout)
-
-        # Frames for the treeviews and counts
-        upper_frame = QHBoxLayout()
-        main_layout.addLayout(upper_frame)
-
-        # Learned deck frame and treeview
-        self.learned_frame = QFrame()
-        self.learned_deck_treeview = QTreeWidget()
-        self.learned_deck_treeview.setHeaderLabels(["Learned Vocabulary"])
-        self.learned_deck_treeview.setColumnCount(1)
-
-        learned_layout = QVBoxLayout(self.learned_frame)
-        learned_layout.addWidget(self.learned_deck_treeview)
-
-        # New deck frame and treeview
-        self.new_frame = QFrame()
-        self.new_deck_treeview = QTreeWidget()
-        self.new_deck_treeview.setHeaderLabels(["New Vocabulary"])
-        self.new_deck_treeview.setColumnCount(1)
-
-        new_layout = QVBoxLayout(self.new_frame)
-        new_layout.addWidget(self.new_deck_treeview)
-
-        # Add frames to upper frame
-        upper_frame.addWidget(self.learned_frame)
-        upper_frame.addWidget(self.new_frame)
-
-        # Labels for item counts
-        self.learned_count_label = QLabel("Items: 0")
-        self.new_count_label = QLabel("Items: 0")
-        learned_layout.addWidget(self.learned_count_label)
-        new_layout.addWidget(self.new_count_label)
-
-        # Lower frame for buttons
-        lower_frame = QHBoxLayout()
-        main_layout.addLayout(lower_frame)
-
-        # Create Dropdown Menu (Picklist)
-        self.action_picklist = QComboBox(self)
-        self.action_picklist.addItems([
-            "'Verb Exploder'",
-            "Generate Audio for Existing Cards",
-            "Generate i+1",
+        # Navigation header with breadcrumb
+        self.nav_header = NavigationHeader("Vocabulary Dashboard", show_back=True)
+        self.nav_header.back_clicked.connect(self.on_press_back)
+        main_layout.addWidget(self.nav_header)
+        
+        # Breadcrumb
+        breadcrumb = Breadcrumb(["Profile", "Language", "Dashboard"])
+        main_layout.addWidget(breadcrumb)
+        
+        # Main content card
+        content_card = ModernCard(shadow=True)
+        content_layout = QVBoxLayout(content_card)
+        content_layout.setSpacing(24)
+        
+        # Vocabulary overview section
+        vocab_section = self.create_vocabulary_section()
+        content_layout.addWidget(vocab_section)
+        
+        # Actions section
+        actions_section = self.create_actions_section()
+        content_layout.addWidget(actions_section)
+        
+        main_layout.addWidget(content_card)
+        
+    def create_vocabulary_section(self):
+        """Create the vocabulary overview section"""
+        section = QFrame()
+        layout = QVBoxLayout(section)
+        
+        # Section title
+        title = QLabel("Vocabulary Overview")
+        title.setProperty("class", "h1")
+        layout.addWidget(title)
+        
+        # Dual-pane vocabulary display
+        vocab_panes = QHBoxLayout()
+        
+        # Learned vocabulary pane
+        learned_pane = self.create_vocab_pane("Learned Vocabulary", "learned")
+        vocab_panes.addWidget(learned_pane)
+        
+        # New vocabulary pane
+        new_pane = self.create_vocab_pane("New Vocabulary", "new")
+        vocab_panes.addWidget(new_pane)
+        
+        layout.addLayout(vocab_panes)
+        return section
+        
+    def create_vocab_pane(self, title, vocab_type):
+        """Create a vocabulary pane"""
+        pane = ModernCard()
+        layout = QVBoxLayout(pane)
+        
+        # Pane header
+        header_layout = QHBoxLayout()
+        
+        pane_title = QLabel(title)
+        pane_title.setProperty("class", "h2")
+        header_layout.addWidget(pane_title)
+        
+        # Count badge
+        count_label = QLabel("0")
+        count_label.setProperty("class", "badge")
+        header_layout.addWidget(count_label)
+        header_layout.addStretch()
+        
+        layout.addLayout(header_layout)
+        
+        # Tree widget
+        if vocab_type == "learned":
+            self.learned_deck_treeview = ModernTreeWidget()
+            self.learned_deck_treeview.setHeaderLabels(["Learned Words"])
+            self.learned_count_label = count_label
+            layout.addWidget(self.learned_deck_treeview)
+        else:
+            self.new_deck_treeview = ModernTreeWidget()
+            self.new_deck_treeview.setHeaderLabels(["New Words"])
+            self.new_count_label = count_label
+            layout.addWidget(self.new_deck_treeview)
+        
+        return pane
+        
+    def create_actions_section(self):
+        """Create the actions section"""
+        section = QFrame()
+        layout = QVBoxLayout(section)
+        
+        # Section title
+        title = QLabel("Available Actions")
+        title.setProperty("class", "h2")
+        layout.addWidget(title)
+        
+        # Action selection
+        action_layout = QHBoxLayout()
+        
+        action_label = QLabel("Choose an action:")
+        action_label.setProperty("class", "body")
+        action_layout.addWidget(action_label)
+        
+        self.action_dropdown = ModernComboBox()
+        action_layout.addWidget(self.action_dropdown, 2)
+        
+        # Continue button
+        continue_button = ModernButton("Continue", variant="primary", size="large")
+        continue_button.clicked.connect(self.on_press_continue)
+        action_layout.addWidget(continue_button)
+        
+        layout.addLayout(action_layout)
+        
+        # Populate action dropdown
+        self.action_dropdown.addItems([
+            "Generate i+1 Sentences",
+            "Verb Exploder",
+            "Add Audio to Existing Cards",
             "Generate Sentences for Selected Token"
         ])
-        lower_frame.addWidget(self.action_picklist)
-
-        # Create a Single Button
-        self.execute_action_button = QPushButton("Go", self)
-        self.execute_action_button.clicked.connect(self.execute_selected_action)
-        lower_frame.addWidget(self.execute_action_button)
         
-    # Implement the method to handle button press
-    def execute_selected_action(self):
-        selected_action = self.action_picklist.currentText()
-        if selected_action == "'Verb Exploder'":
+        return section
+        
+    def on_press_continue(self):
+        """Handle the continue button press"""
+        selected_action = self.action_dropdown.currentText()
+        self.execute_selected_action(selected_action)
+        
+    def execute_selected_action(self, action=None):
+        """Execute the selected action"""
+        if action is None:
+            action = self.action_dropdown.currentText()
+            
+        if action == "Verb Exploder":
             self.verb_exploder()
-        elif selected_action == "Generate i+1":
+        elif action == "Generate i+1 Sentences":
             self.generate_iplus1()
-        elif selected_action == "Generate Sentences for Selected Token":
+        elif action == "Generate Sentences for Selected Token":
             self.generate_sentences_for_selected_token()
-        elif selected_action == "Generate Audio for Existing Cards":
+        elif action == "Add Audio to Existing Cards":
             self.generate_audio_for_existing_cards()
-        elif selected_action == "Add Custom Sentence":
-            self.add_custom_sentence()
 
     def on_press_back(self):
         from language_config import LanguageConfigFrameQt
@@ -140,16 +209,24 @@ class DecksHomepageQt(QWidget):
         self.controller.show_frame(VerbExploderFrameQt)
     
     def insert_vocab_into_treeview(self, treeview, vocab_tokens):
+        """Insert vocabulary tokens into the treeview"""
         treeview.clear()
 
         for token in vocab_tokens:
             QTreeWidgetItem(treeview, [token])
         
         self.update_deck_counts()
+        
+        # Animation disabled to prevent QPainter conflicts
+        # animation_manager.fade_in(treeview, duration=300)
 
     def update_deck_counts(self):
-        self.learned_count_label.setText(f"Items: {self.learned_deck_treeview.topLevelItemCount()}")
-        self.new_count_label.setText(f"Items: {self.new_deck_treeview.topLevelItemCount()}")
+        """Update the count badges for vocabulary"""
+        learned_count = self.learned_deck_treeview.topLevelItemCount()
+        new_count = self.new_deck_treeview.topLevelItemCount()
+        
+        self.learned_count_label.setText(str(learned_count))
+        self.new_count_label.setText(str(new_count))
 
     ### Load the vocab data via ankiconnect using the selected language configuration. 
     def load_vocab_from_deck(self, deck, raw_config_data):

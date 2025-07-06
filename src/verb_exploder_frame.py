@@ -28,8 +28,10 @@ class VerbExploderFrameQt(GeneratingFrameQt):
     def initUI(self):
         super().initUI()
        
-        self.hide_widgets(self.selection_layout)
-        self.nsentences_label.setText("N sentences per conjugation")
+        # Hide the selection criterion picklist
+        self.selection_criterion_picklist.hide()
+        
+        # Update the sentences picklist
         self.nsentences_picklist.clear()
         self.nsentences_picklist.addItems(['1', '2', '3'])
         self.generate_button.setText("Generate cards")
@@ -56,8 +58,8 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         no_space_validator = QRegExpValidator(no_space_regexp, self.verb_input)
         self.verb_input.setValidator(no_space_validator)  # Apply the validator
        
-        # Insert the new layout into the main layout
-        self.main_layout.insertLayout(self.main_layout.indexOf(self.generate_button), verb_layout)
+        # Insert the new layout into the main layout before the content card
+        self.main_layout.insertLayout(2, verb_layout)
         
     def on_press_generate(self):
         

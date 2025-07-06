@@ -1,0 +1,256 @@
+/* Spoonfed Base Styles */
+
+/* Color Variables */
+* {
+    /* Primary Colors */
+    qproperty-primary: #4A90E2;
+    qproperty-primaryLight: #6BA4EA;
+    qproperty-primaryDark: #3A7BD5;
+    
+    /* Secondary Colors */
+    qproperty-secondary: #7ED321;
+    qproperty-secondaryLight: #95E942;
+    qproperty-secondaryDark: #6BC218;
+    
+    /* Neutral Colors */
+    qproperty-background: #F8F9FA;
+    qproperty-surface: #FFFFFF;
+    qproperty-surfaceDark: #F1F3F4;
+    qproperty-textPrimary: #212529;
+    qproperty-textSecondary: #6C757D;
+    qproperty-textMuted: #ADB5BD;
+    
+    /* Semantic Colors */
+    qproperty-success: #28A745;
+    qproperty-warning: #FFC107;
+    qproperty-error: #DC3545;
+    qproperty-info: #17A2B8;
+}
+
+/* Main Window */
+QMainWindow {
+    background-color: #F8F9FA;
+    font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+    font-size: 14px;
+    color: #212529;
+}
+
+/* Central Widget */
+QFrame {
+    background-color: #F8F9FA;
+    border: none;
+}
+
+/* Typography Base */
+QLabel {
+    color: #212529;
+    font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+QLabel[class="display"] {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+QLabel[class="h1"] {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+QLabel[class="h2"] {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+QLabel[class="h3"] {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.33;
+}
+
+QLabel[class="body"] {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.43;
+}
+
+QLabel[class="caption"] {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.33;
+    color: #6C757D;
+}
+
+QLabel[class="small"] {
+    font-size: 10px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: #6C757D;
+}
+
+/* Accent Font */
+QLabel[class="accent"] {
+    font-family: 'PlantinMTStd-Italic';
+    font-style: italic;
+}
+
+/* Text Color Variants */
+QLabel[class="text-primary"] {
+    color: #212529;
+}
+
+QLabel[class="text-secondary"] {
+    color: #6C757D;
+}
+
+QLabel[class="text-muted"] {
+    color: #ADB5BD;
+}
+
+QLabel[class="text-success"] {
+    color: #28A745;
+}
+
+QLabel[class="text-warning"] {
+    color: #FFC107;
+}
+
+QLabel[class="text-error"] {
+    color: #DC3545;
+}
+
+QLabel[class="text-info"] {
+    color: #17A2B8;
+}
+
+/* Layout Base */
+QVBoxLayout {
+    spacing: 16px;
+}
+
+QHBoxLayout {
+    spacing: 16px;
+}
+
+QGridLayout {
+    spacing: 16px;
+}
+
+/* Scrollable Areas */
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+QScrollBar:vertical {
+    background: #F1F3F4;
+    width: 8px;
+    border-radius: 4px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background: #ADB5BD;
+    border-radius: 4px;
+    min-height: 20px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #6C757D;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
+
+QScrollBar:horizontal {
+    background: #F1F3F4;
+    height: 8px;
+    border-radius: 4px;
+    margin: 0;
+}
+
+QScrollBar::handle:horizontal {
+    background: #ADB5BD;
+    border-radius: 4px;
+    min-width: 20px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #6C757D;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    width: 0;
+    subcontrol-position: left;
+    subcontrol-origin: margin;
+}
+
+/* Focus Outline */
+*:focus {
+    outline: 2px solid #4A90E2;
+    outline-offset: 2px;
+}
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.margin-top-sm {
+    margin-top: 8px;
+}
+
+.margin-top-md {
+    margin-top: 16px;
+}
+
+.margin-top-lg {
+    margin-top: 24px;
+}
+
+.margin-bottom-sm {
+    margin-bottom: 8px;
+}
+
+.margin-bottom-md {
+    margin-bottom: 16px;
+}
+
+.margin-bottom-lg {
+    margin-bottom: 24px;
+}
+
+.padding-sm {
+    padding: 8px;
+}
+
+.padding-md {
+    padding: 16px;
+}
+
+.padding-lg {
+    padding: 24px;
+}
+
+.padding-xl {
+    padding: 32px;
+}

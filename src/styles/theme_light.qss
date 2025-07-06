@@ -1,0 +1,228 @@
+/* Spoonfed Light Theme */
+
+/* Light theme inherits from base.qss and components.qss */
+/* This file contains light theme specific overrides */
+
+/* Light theme specific adjustments */
+QMainWindow {
+    background-color: #F8F9FA;
+}
+
+QFrame {
+    background-color: #F8F9FA;
+}
+
+/* Light theme cards with subtle shadows */
+QFrame[class="card-shadow"] {
+    background-color: white;
+    border: 1px solid #E9ECEF;
+    /* Note: QSS doesn't support box-shadow, handled in Python */
+}
+
+/* Light theme hover effects */
+QPushButton:hover {
+    transform: translateY(-1px);
+}
+
+QTreeWidget::item:hover {
+    background-color: #F8F9FA;
+}
+
+QComboBox QAbstractItemView::item:hover {
+    background-color: #F8F9FA;
+}
+
+/* Light theme focus states */
+QLineEdit:focus,
+QTextEdit:focus,
+QPlainTextEdit:focus,
+QComboBox:focus {
+    border: 2px solid #4A90E2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+/* Light theme selections */
+QTreeWidget::item:selected {
+    background-color: #4A90E2;
+    color: white;
+}
+
+QComboBox QAbstractItemView::item:selected {
+    background-color: #4A90E2;
+    color: white;
+}
+
+/* Light theme scrollbars */
+QScrollBar:vertical {
+    background: #F1F3F4;
+}
+
+QScrollBar::handle:vertical {
+    background: #ADB5BD;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: #6C757D;
+}
+
+QScrollBar:horizontal {
+    background: #F1F3F4;
+}
+
+QScrollBar::handle:horizontal {
+    background: #ADB5BD;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background: #6C757D;
+}
+
+/* Light theme tabs */
+QTabBar::tab {
+    background-color: #F1F3F4;
+    border: 1px solid #CED4DA;
+    color: #6C757D;
+}
+
+QTabBar::tab:hover {
+    background-color: #E9ECEF;
+    color: #212529;
+}
+
+QTabBar::tab:selected {
+    background-color: white;
+    color: #4A90E2;
+    border-bottom: 2px solid #4A90E2;
+}
+
+/* Light theme tooltips */
+QToolTip {
+    background-color: #212529;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+/* Light theme status indicators */
+QLabel[class="status-online"] {
+    color: #28A745;
+}
+
+QLabel[class="status-offline"] {
+    color: #DC3545;
+}
+
+QLabel[class="status-away"] {
+    color: #FFC107;
+}
+
+/* Light theme validation states */
+QLineEdit[class="valid"] {
+    border: 2px solid #28A745;
+    background-color: #F2FDF5;
+}
+
+QLineEdit[class="invalid"] {
+    border: 2px solid #DC3545;
+    background-color: #FDF2F2;
+}
+
+/* Light theme loading states */
+QFrame[class="loading"] {
+    background-color: rgba(248, 249, 250, 0.9);
+}
+
+/* Light theme disabled states */
+QLabel:disabled {
+    color: #ADB5BD;
+}
+
+QPushButton:disabled {
+    background-color: #ADB5BD;
+    color: #6C757D;
+    border-color: #ADB5BD;
+}
+
+QLineEdit:disabled,
+QTextEdit:disabled,
+QComboBox:disabled {
+    background-color: #F1F3F4;
+    color: #6C757D;
+    border-color: #ADB5BD;
+}
+
+/* Light theme emphasis */
+QLabel[class="emphasis"] {
+    font-weight: 600;
+    color: #495057;
+}
+
+QLabel[class="de-emphasis"] {
+    font-weight: 300;
+    color: #868E96;
+}
+
+/* Light theme interactive elements */
+QFrame[class="interactive"]:hover {
+    background-color: #F8F9FA;
+    cursor: pointer;
+}
+
+QFrame[class="clickable"] {
+    cursor: pointer;
+}
+
+QFrame[class="clickable"]:hover {
+    background-color: rgba(74, 144, 226, 0.05);
+}
+
+/* Light theme borders */
+QFrame[class="border-top"] {
+    border-top: 1px solid #E9ECEF;
+}
+
+QFrame[class="border-bottom"] {
+    border-bottom: 1px solid #E9ECEF;
+}
+
+QFrame[class="border-left"] {
+    border-left: 1px solid #E9ECEF;
+}
+
+QFrame[class="border-right"] {
+    border-right: 1px solid #E9ECEF;
+}
+
+/* Light theme rounded corners */
+QFrame[class="rounded-sm"] {
+    border-radius: 4px;
+}
+
+QFrame[class="rounded-md"] {
+    border-radius: 8px;
+}
+
+QFrame[class="rounded-lg"] {
+    border-radius: 12px;
+}
+
+QFrame[class="rounded-xl"] {
+    border-radius: 16px;
+}
+
+/* Light theme elevation/depth */
+QFrame[class="elevation-1"] {
+    /* Handled in Python with QGraphicsDropShadowEffect */
+    background-color: white;
+}
+
+QFrame[class="elevation-2"] {
+    /* Handled in Python with QGraphicsDropShadowEffect */
+    background-color: white;
+}
+
+QFrame[class="elevation-3"] {
+    /* Handled in Python with QGraphicsDropShadowEffect */
+    background-color: white;
+}

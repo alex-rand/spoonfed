@@ -1,0 +1,254 @@
+/* Spoonfed Animation Styles */
+
+/* Base Animation Properties */
+* {
+    /* Timing Functions */
+    qproperty-standardEasing: ease-in-out;
+    qproperty-fastDuration: 150ms;
+    qproperty-mediumDuration: 300ms;
+    qproperty-slowDuration: 500ms;
+}
+
+/* Button Animations */
+QPushButton {
+    transition: all 0.15s ease-in-out;
+}
+
+QPushButton:hover {
+    transform: translateY(-1px);
+}
+
+QPushButton:pressed {
+    transform: translateY(0px) scale(0.98);
+}
+
+/* Input Field Animations */
+QLineEdit, QTextEdit, QPlainTextEdit {
+    transition: border-color 0.15s ease-in-out;
+}
+
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus {
+    transition: border-color 0.15s ease-in-out;
+}
+
+/* Dropdown Animations */
+QComboBox {
+    transition: border-color 0.15s ease-in-out;
+}
+
+QComboBox:focus {
+    transition: border-color 0.15s ease-in-out;
+}
+
+QComboBox QAbstractItemView {
+    /* Dropdown opening animation will be handled in Python */
+}
+
+/* Hover Effects */
+QTreeWidget::item, QListWidget::item {
+    transition: background-color 0.15s ease-in-out;
+}
+
+QTreeWidget::item:hover, QListWidget::item:hover {
+    transition: background-color 0.15s ease-in-out;
+}
+
+/* Tab Animations */
+QTabBar::tab {
+    transition: all 0.15s ease-in-out;
+}
+
+QTabBar::tab:hover {
+    transition: all 0.15s ease-in-out;
+}
+
+/* Card Hover Effects */
+QFrame[class="card"]:hover {
+    /* Card elevation will be handled in Python */
+}
+
+/* Loading Spinner Keyframes */
+/* QSS doesn't support keyframes, will be handled in Python with QPropertyAnimation */
+
+/* Fade Animation Classes */
+QLabel[class="fade-in"] {
+    /* Fade in animation will be handled in Python */
+}
+
+QLabel[class="fade-out"] {
+    /* Fade out animation will be handled in Python */
+}
+
+/* Slide Animation Classes */
+QFrame[class="slide-in-left"] {
+    /* Slide in from left animation will be handled in Python */
+}
+
+QFrame[class="slide-in-right"] {
+    /* Slide in from right animation will be handled in Python */
+}
+
+QFrame[class="slide-in-up"] {
+    /* Slide in from bottom animation will be handled in Python */
+}
+
+QFrame[class="slide-in-down"] {
+    /* Slide in from top animation will be handled in Python */
+}
+
+/* Scale Animation Classes */
+QFrame[class="scale-in"] {
+    /* Scale in animation will be handled in Python */
+}
+
+QFrame[class="scale-out"] {
+    /* Scale out animation will be handled in Python */
+}
+
+/* Bounce Animation Classes */
+QFrame[class="bounce-in"] {
+    /* Bounce in animation will be handled in Python */
+}
+
+/* Shake Animation Classes */
+QFrame[class="shake"] {
+    /* Shake animation will be handled in Python */
+}
+
+/* Pulse Animation Classes */
+QFrame[class="pulse"] {
+    /* Pulse animation will be handled in Python */
+}
+
+/* Spin Animation Classes */
+QLabel[class="spin"] {
+    /* Spin animation will be handled in Python */
+}
+
+/* Progress Animation Classes */
+QProgressBar[class="animated"] {
+    /* Animated progress will be handled in Python */
+}
+
+/* Smooth Scrolling */
+QScrollArea {
+    /* Smooth scrolling will be handled in Python */
+}
+
+/* Focus Ring Animation */
+*:focus {
+    /* Focus ring animation will be handled in Python */
+}
+
+/* Disabled State Transitions */
+*:disabled {
+    transition: opacity 0.15s ease-in-out;
+}
+
+/* Selection Animation */
+*::selection {
+    background-color: #4A90E2;
+    color: white;
+}
+
+/* Placeholder Animation */
+QLineEdit::placeholder {
+    transition: color 0.15s ease-in-out;
+}
+
+QLineEdit:focus::placeholder {
+    color: transparent;
+}
+
+/* Custom Animation Properties for Python Integration */
+QFrame[class="animated"] {
+    /* Base class for Python-controlled animations */
+}
+
+QLabel[class="animated"] {
+    /* Base class for Python-controlled animations */
+}
+
+QPushButton[class="animated"] {
+    /* Base class for Python-controlled animations */
+}
+
+/* Page Transition Classes */
+QFrame[class="page-enter"] {
+    /* Page enter animation will be handled in Python */
+}
+
+QFrame[class="page-exit"] {
+    /* Page exit animation will be handled in Python */
+}
+
+QFrame[class="page-enter-active"] {
+    /* Page enter active animation will be handled in Python */
+}
+
+QFrame[class="page-exit-active"] {
+    /* Page exit active animation will be handled in Python */
+}
+
+/* Modal Animation Classes */
+QDialog[class="modal-enter"] {
+    /* Modal enter animation will be handled in Python */
+}
+
+QDialog[class="modal-exit"] {
+    /* Modal exit animation will be handled in Python */
+}
+
+/* Toast Animation Classes */
+QFrame[class="toast-enter"] {
+    /* Toast enter animation will be handled in Python */
+}
+
+QFrame[class="toast-exit"] {
+    /* Toast exit animation will be handled in Python */
+}
+
+/* Skeleton Loading Classes */
+QFrame[class="skeleton"] {
+    /* Skeleton loading animation will be handled in Python */
+}
+
+QLabel[class="skeleton"] {
+    /* Skeleton loading animation will be handled in Python */
+}
+
+/* Ripple Effect Classes */
+QPushButton[class="ripple"] {
+    /* Ripple effect will be handled in Python */
+}
+
+/* Smooth State Transitions */
+QPushButton:enabled {
+    transition: all 0.15s ease-in-out;
+}
+
+QPushButton:disabled {
+    transition: all 0.15s ease-in-out;
+}
+
+QLineEdit:enabled {
+    transition: all 0.15s ease-in-out;
+}
+
+QLineEdit:disabled {
+    transition: all 0.15s ease-in-out;
+}
+
+QComboBox:enabled {
+    transition: all 0.15s ease-in-out;
+}
+
+QComboBox:disabled {
+    transition: all 0.15s ease-in-out;
+}
+
+/* Responsive Animation Preferences */
+* {
+    /* Respect system preferences for reduced motion */
+    /* Will be handled in Python with QSettings */
+}

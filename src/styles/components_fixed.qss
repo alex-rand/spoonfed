@@ -1,0 +1,329 @@
+/* Spoonfed Component Styles - QSS Compatible */
+
+/* Buttons */
+QPushButton {
+    background-color: #4A90E2;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 12px 24px;
+    min-height: 40px;
+}
+
+QPushButton:hover {
+    background-color: #6BA4EA;
+}
+
+QPushButton:pressed {
+    background-color: #3A7BD5;
+}
+
+QPushButton:disabled {
+    background-color: #ADB5BD;
+    color: #6C757D;
+}
+
+/* Button Variants using object names */
+QPushButton[accessibleName="secondary"] {
+    background-color: white;
+    border: 1px solid #4A90E2;
+    color: #4A90E2;
+}
+
+QPushButton[accessibleName="secondary"]:hover {
+    background-color: #F8F9FA;
+    border-color: #6BA4EA;
+}
+
+QPushButton[accessibleName="secondary"]:pressed {
+    background-color: #E9ECEF;
+    border-color: #3A7BD5;
+}
+
+QPushButton[accessibleName="tertiary"] {
+    background-color: transparent;
+    border: none;
+    color: #4A90E2;
+}
+
+QPushButton[accessibleName="tertiary"]:hover {
+    color: #6BA4EA;
+    background-color: rgba(74, 144, 226, 20);
+}
+
+QPushButton[accessibleName="tertiary"]:pressed {
+    color: #3A7BD5;
+}
+
+QPushButton[accessibleName="danger"] {
+    background-color: #DC3545;
+}
+
+QPushButton[accessibleName="danger"]:hover {
+    background-color: #E55A6A;
+}
+
+QPushButton[accessibleName="danger"]:pressed {
+    background-color: #C82333;
+}
+
+QPushButton[accessibleName="success"] {
+    background-color: #28A745;
+}
+
+QPushButton[accessibleName="success"]:hover {
+    background-color: #48B962;
+}
+
+QPushButton[accessibleName="success"]:pressed {
+    background-color: #1E7E34;
+}
+
+/* Button Sizes */
+QPushButton[accessibleName="small"] {
+    font-size: 12px;
+    padding: 8px 16px;
+    min-height: 32px;
+}
+
+QPushButton[accessibleName="large"] {
+    font-size: 16px;
+    padding: 16px 32px;
+    min-height: 48px;
+}
+
+/* Input Fields */
+QLineEdit {
+    background-color: white;
+    border: 1px solid #CED4DA;
+    border-radius: 4px;
+    color: #212529;
+    font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    font-size: 14px;
+    padding: 12px 16px;
+    min-height: 40px;
+}
+
+QLineEdit:focus {
+    border: 2px solid #4A90E2;
+}
+
+QLineEdit:disabled {
+    background-color: #F1F3F4;
+    color: #6C757D;
+}
+
+/* Text Areas */
+QTextEdit {
+    background-color: white;
+    border: 1px solid #CED4DA;
+    border-radius: 4px;
+    color: #212529;
+    font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    font-size: 14px;
+    padding: 12px 16px;
+}
+
+QTextEdit:focus {
+    border: 2px solid #4A90E2;
+}
+
+QTextEdit:disabled {
+    background-color: #F1F3F4;
+    color: #6C757D;
+}
+
+QPlainTextEdit {
+    background-color: white;
+    border: 1px solid #CED4DA;
+    border-radius: 4px;
+    color: #212529;
+    font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    font-size: 14px;
+    padding: 12px 16px;
+}
+
+QPlainTextEdit:focus {
+    border: 2px solid #4A90E2;
+}
+
+/* Dropdown Menus */
+QComboBox {
+    background-color: white;
+    border: 1px solid #CED4DA;
+    border-radius: 4px;
+    color: #212529;
+    font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    font-size: 14px;
+    padding: 12px 16px;
+    min-height: 40px;
+}
+
+QComboBox:focus {
+    border: 2px solid #4A90E2;
+}
+
+QComboBox:disabled {
+    background-color: #F1F3F4;
+    color: #6C757D;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 24px;
+}
+
+QComboBox::down-arrow {
+    width: 12px;
+    height: 8px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: white;
+    border: 1px solid #CED4DA;
+    border-radius: 4px;
+    selection-background-color: #4A90E2;
+    selection-color: white;
+}
+
+QComboBox QAbstractItemView::item {
+    padding: 8px 16px;
+    min-height: 24px;
+}
+
+QComboBox QAbstractItemView::item:hover {
+    background-color: #F8F9FA;
+}
+
+QComboBox QAbstractItemView::item:selected {
+    background-color: #4A90E2;
+    color: white;
+}
+
+/* Checkboxes */
+QCheckBox {
+    color: #212529;
+    font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    font-size: 14px;
+    spacing: 8px;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #CED4DA;
+    border-radius: 2px;
+    background-color: white;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #4A90E2;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #4A90E2;
+    border-color: #4A90E2;
+}
+
+QCheckBox::indicator:disabled {
+    background-color: #F1F3F4;
+    border-color: #ADB5BD;
+}
+
+/* Radio Buttons */
+QRadioButton {
+    color: #212529;
+    font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    font-size: 14px;
+    spacing: 8px;
+}
+
+QRadioButton::indicator {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #CED4DA;
+    border-radius: 8px;
+    background-color: white;
+}
+
+QRadioButton::indicator:hover {
+    border-color: #4A90E2;
+}
+
+QRadioButton::indicator:checked {
+    background-color: #4A90E2;
+    border-color: #4A90E2;
+}
+
+/* Progress Bars */
+QProgressBar {
+    background-color: #F1F3F4;
+    border: none;
+    border-radius: 4px;
+    height: 8px;
+    text-align: center;
+}
+
+QProgressBar::chunk {
+    background-color: #4A90E2;
+    border-radius: 4px;
+}
+
+/* Tree and Table Views */
+QTreeWidget {
+    background-color: white;
+    border: 1px solid #CED4DA;
+    border-radius: 4px;
+    color: #212529;
+    font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    font-size: 14px;
+    selection-background-color: #4A90E2;
+    selection-color: white;
+    alternate-background-color: #F8F9FA;
+}
+
+QTreeWidget::item {
+    padding: 8px;
+    border-bottom: 1px solid #F1F3F4;
+}
+
+QTreeWidget::item:hover {
+    background-color: #F8F9FA;
+}
+
+QTreeWidget::item:selected {
+    background-color: #4A90E2;
+    color: white;
+}
+
+QHeaderView::section {
+    background-color: #F1F3F4;
+    border: 1px solid #CED4DA;
+    color: #6C757D;
+    font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 8px 16px;
+}
+
+/* Cards - using object names */
+QFrame[accessibleName="card"] {
+    background-color: white;
+    border: 1px solid #E9ECEF;
+    border-radius: 8px;
+    padding: 24px;
+}
+
+/* Tooltips */
+QToolTip {
+    background-color: #212529;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
+    font-size: 12px;
+    padding: 8px 12px;
+}

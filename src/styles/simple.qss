@@ -1,0 +1,158 @@
+/* Simple QSS stylesheet without unsupported properties */
+
+/* Main Window */
+QMainWindow {
+    background-color: #F8F9FA;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #212529;
+}
+
+/* Frame */
+QFrame {
+    background-color: #F8F9FA;
+    border: none;
+}
+
+/* Labels */
+QLabel {
+    color: #212529;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #4A90E2;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 10px 20px;
+    min-height: 30px;
+}
+
+QPushButton:hover {
+    background-color: #6BA4EA;
+}
+
+QPushButton:pressed {
+    background-color: #3A7BD5;
+}
+
+QPushButton:disabled {
+    background-color: #ADB5BD;
+    color: #6C757D;
+}
+
+/* Secondary buttons */
+QPushButton[accessibleName="secondary"] {
+    background-color: white;
+    border: 1px solid #4A90E2;
+    color: #4A90E2;
+}
+
+QPushButton[accessibleName="secondary"]:hover {
+    background-color: #F8F9FA;
+}
+
+/* Tertiary buttons */
+QPushButton[accessibleName="tertiary"] {
+    background-color: transparent;
+    border: none;
+    color: #4A90E2;
+}
+
+QPushButton[accessibleName="tertiary"]:hover {
+    background-color: #F8F9FA;
+}
+
+/* Danger buttons */
+QPushButton[accessibleName="danger"] {
+    background-color: #DC3545;
+}
+
+QPushButton[accessibleName="danger"]:hover {
+    background-color: #E55A6A;
+}
+
+/* Success buttons */
+QPushButton[accessibleName="success"] {
+    background-color: #28A745;
+}
+
+QPushButton[accessibleName="success"]:hover {
+    background-color: #48B962;
+}
+
+/* Input Fields */
+QLineEdit {
+    background-color: white;
+    border: 1px solid #CED4DA;
+    border-radius: 4px;
+    color: #212529;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    padding: 8px 12px;
+    min-height: 20px;
+}
+
+QLineEdit:focus {
+    border: 2px solid #4A90E2;
+}
+
+/* Combo Boxes */
+QComboBox {
+    background-color: white;
+    border: 1px solid #CED4DA;
+    border-radius: 4px;
+    color: #212529;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    padding: 8px 12px;
+    min-height: 20px;
+}
+
+QComboBox:focus {
+    border: 2px solid #4A90E2;
+}
+
+QComboBox QAbstractItemView {
+    background-color: white;
+    border: 1px solid #CED4DA;
+    selection-background-color: #4A90E2;
+    selection-color: white;
+}
+
+/* Tree Widgets */
+QTreeWidget {
+    background-color: white;
+    border: 1px solid #CED4DA;
+    border-radius: 4px;
+    color: #212529;
+    selection-background-color: #4A90E2;
+    selection-color: white;
+}
+
+QTreeWidget::item {
+    padding: 4px;
+}
+
+QTreeWidget::item:hover {
+    background-color: #F8F9FA;
+}
+
+QTreeWidget::item:selected {
+    background-color: #4A90E2;
+    color: white;
+}
+
+/* Cards */
+QFrame[accessibleName="card"] {
+    background-color: white;
+    border: 1px solid #E9ECEF;
+    border-radius: 8px;
+    padding: 16px;
+}
