@@ -5,6 +5,9 @@ import pandas as pd
 import sqlite3
 import csv
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 def generate_text(calling_frame):
 
