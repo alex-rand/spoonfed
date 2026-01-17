@@ -210,6 +210,13 @@ class DecksHomepageQt(QWidget):
                     all_words.append(words)
 
         # Combine all words and remove duplicates
+        if not all_words:
+            raise ValueError(
+                f"No vocabulary found for deck '{deck}'. "
+                f"Check that the deck exists and the configured card types {list(card_types_and_fields.keys())} "
+                f"with their fields are correct."
+            )
+
         combined = pd.concat(all_words, ignore_index=True).drop_duplicates(keep='first')
 
         return combined

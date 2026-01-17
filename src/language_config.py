@@ -192,7 +192,7 @@ class NewLanguageConfigurationWindow(QDialog):
         language_layout = QHBoxLayout()
         language_layout.addWidget(QLabel("Select Language:", self))
         self.language_combobox = QComboBox(self)
-        self.language_combobox.addItems(["Arabic", "French", "Hindi", "Mandarin"])
+        self.language_combobox.addItems(["Arabic", "French", "Hindi", "Mandarin", "Turkish"])
         language_layout.addWidget(self.language_combobox)
         layout.addLayout(language_layout)
 
