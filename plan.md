@@ -38,6 +38,29 @@ cards:
 
 **File naming convention:** `YYYY-MM-DD-<slug>.yaml` — the date and a short kebab-case topic name. Claude Code generates this automatically.
 
+### Math in cards: LaTeX in, Anki HTML out
+
+Cards will sometimes contain math. Rather than having Claude Code write Anki's native HTML math syntax (`\(...\)` / `\[...\]`), card files use **standard LaTeX delimiters**:
+
+- `$...$` for inline math
+- `$$...$$` for display/block math
+
+Example card in YAML:
+```yaml
+  - front: "What is the quadratic formula for solving $ax^2 + bx + c = 0$?"
+    back: "$$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$"
+```
+
+The **exporter** converts these to Anki's MathJax syntax at export time:
+- `$...$` → `\(...\)`
+- `$$...$$` → `\[...\]`
+
+This means:
+- **Claude Code writes familiar LaTeX** — well within its training data, low error rate
+- **Card files stay readable** — standard math notation, not Anki-specific HTML
+- **Conversion is deterministic** — a simple regex in the exporter, no LLM needed
+- **The linter validates math delimiters** — checks that `$` and `$$` are balanced and not nested incorrectly
+
 ### Card model: Anki's built-in "Basic"
 
 No custom model needed. The built-in "Basic" model has `Front` and `Back` fields, which maps 1:1 to the YAML. This means zero Anki setup — the deck and model just work.
@@ -124,6 +147,9 @@ A CLI command that validates card files. Checks:
 | `tags` is a list of strings | Error | If present, `tags` must be a string list |
 | `source` is a string | Error | If present, `source` must be a string |
 | No extra top-level keys | Warning | Catch typos in field names |
+| Math delimiters balanced | Error | Every `$` has a closing `$`; every `$$` has a closing `$$` |
+| No nested math delimiters | Error | No `$$` inside `$...$` or vice versa |
+| No raw Anki math syntax | Warning | Catch `\(`, `\)`, `\[`, `\]` — should use `$`/`$$` instead |
 
 Usage:
 ```bash
@@ -150,6 +176,7 @@ Steps:
 3. Connect to AnkiConnect at `http://127.0.0.1:8765` — abort with clear message if Anki isn't running
 4. Ensure the "Knowledge Adventure" deck exists (create via `createDeck` if not)
 5. For each file, for each card:
+   - Convert LaTeX math delimiters to Anki MathJax syntax (`$...$` → `\(...\)`, `$$...$$` → `\[...\]`)
    - Call `addNote` with `deckName: "Knowledge Adventure"`, `modelName: "Basic"`, `fields: {Front: ..., Back: ...}`, `tags: [ankify, ...file_tags]`
 6. Move the file from `cards/pending/` to `cards/processed/`
 7. Print summary: `✓ 3 files processed, 12 cards created`
