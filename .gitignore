@@ -24,3 +24,5 @@ src/utils/delete.py
 parsed-csv.csv
 test-payload.csv
 src/utils/test-delete.py
+*.egg-info/
+.pytest_cache/
