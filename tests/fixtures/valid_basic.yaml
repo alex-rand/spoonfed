@@ -1,0 +1,9 @@
+source: "Wikipedia article on photosynthesis"
+tags:
+  - biology
+  - plants
+cards:
+  - front: "What is the primary pigment used in photosynthesis?"
+    back: "Chlorophyll — it absorbs light primarily in blue and red wavelengths."
+  - front: "In which cellular organelle does photosynthesis take place?"
+    back: "Chloroplasts."

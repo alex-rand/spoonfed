@@ -1,0 +1,4 @@
+cards:
+  - front: "unclosed quote
+    back: oops
+  this is not: valid yaml: at all: [

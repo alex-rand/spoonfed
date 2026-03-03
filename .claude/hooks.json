@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "afterWrite": [
+      {
+        "match": "cards/pending/*.yaml",
+        "command": "ankify-lint $FILE"
+      }
+    ]
+  }
+}

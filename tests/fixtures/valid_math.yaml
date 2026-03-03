@@ -1,0 +1,7 @@
+tags:
+  - math
+cards:
+  - front: "What is the quadratic formula for solving $ax^2 + bx + c = 0$?"
+    back: "$$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$"
+  - front: "What does $e^{i\\pi} + 1$ equal?"
+    back: "0 — this is Euler's identity."

@@ -1,0 +1,7 @@
+source:
+  - this
+  - should
+  - be a string
+cards:
+  - front: "What is source?"
+    back: "A string."
