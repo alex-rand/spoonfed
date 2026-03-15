@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from ankify.exporter import convert_math, export_all
+from ankify.exporter import convert_math, format_for_anki, export_all
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -67,6 +67,31 @@ class TestConvertMath:
     def test_empty_inline_math(self):
         """$$ alone should not become inline math."""
         assert convert_math("$$") == "$$"
+
+
+# --- Paragraph formatting ---
+
+
+class TestFormatForAnki:
+    def test_double_newline_becomes_br(self):
+        text = "First paragraph.\n\nSecond paragraph."
+        assert format_for_anki(text) == "First paragraph.<br><br>Second paragraph."
+
+    def test_triple_newline_becomes_single_br_pair(self):
+        text = "First.\n\n\nSecond."
+        assert format_for_anki(text) == "First.<br><br>Second."
+
+    def test_single_newline_preserved(self):
+        text = "Line one.\nLine two."
+        assert format_for_anki(text) == "Line one.\nLine two."
+
+    def test_strips_surrounding_whitespace(self):
+        text = "\n\n  Hello world.  \n\n"
+        assert format_for_anki(text) == "Hello world."
+
+    def test_no_paragraphs(self):
+        text = "Just one paragraph."
+        assert format_for_anki(text) == "Just one paragraph."
 
 
 # --- Export pipeline ---

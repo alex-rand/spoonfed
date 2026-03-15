@@ -15,6 +15,17 @@ PENDING_DIR = Path("cards/pending")
 PROCESSED_DIR = Path("cards/processed")
 
 
+def format_for_anki(text: str) -> str:
+    """Convert plain text formatting to Anki HTML.
+
+    Converts double newlines (paragraph breaks) to <br><br> since Anki
+    renders HTML and ignores bare newlines.
+    """
+    text = text.strip()
+    text = re.sub(r"\n\n+", "<br><br>", text)
+    return text
+
+
 def convert_math(text: str) -> str:
     """Convert LaTeX math delimiters to Anki MathJax syntax.
 
@@ -76,8 +87,8 @@ def export_all(
         file_tags = ["ankify"] + data.get("tags", [])
 
         for card in data["cards"]:
-            front = convert_math(card["front"])
-            back = convert_math(card["back"])
+            front = format_for_anki(convert_math(card["front"]))
+            back = format_for_anki(convert_math(card["back"]))
 
             if not dry_run:
                 anki_connect.add_note(

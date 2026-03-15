@@ -26,8 +26,8 @@ Read this before writing any Anki cards. Follow these guidelines strictly.
 - Write in a **conversational, first-person tone** — "I think the basic thing is", "the thing to notice is", "See?", "we've already shown". The cards are for the user, not a textbook.
 - Lead with the core answer, then elaborate as needed
 - Use an em dash (—) to separate the core answer from elaboration
-- **Quotes and attributions** are welcome when they add value
-- **When working from source text or images**, you can include a paragraph of quotes that saliently illustrate the point, connecting important sentences with ellipses where needed.
+- **Quotes and attributions** are welcome when they add value. If a quote is included, it should always be the **final paragraph** of the answer — wrapped in `<i>` tags, in its own paragraph, never integrated into the surrounding text.
+- **When working from source text or images**, you can include a closing paragraph of quotes that saliently illustrate the point, connecting important sentences with ellipses where needed.
 - **Reference prior knowledge** freely — "we've seen how...", "recall that..."
 - For programming cards, include a short code snippet when it clarifies
 - For math, use LaTeX: `$...$` for inline, `$$...$$` for display
