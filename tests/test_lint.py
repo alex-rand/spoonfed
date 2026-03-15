@@ -115,3 +115,83 @@ def test_warning_raw_anki_math():
     result = lint_file(FIXTURES / "warning_raw_anki_math.yaml")
     assert result.has_warnings
     assert any("raw Anki math" in m.message for m in result.messages)
+
+
+# --- Inline YAML tests (tmp_path) ---
+
+
+def _write_yaml(tmp_path, content):
+    """Helper to write YAML content to a temp file and return its path."""
+    p = tmp_path / "test.yaml"
+    p.write_text(content)
+    return p
+
+
+def test_invalid_whitespace_front(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, 'cards:\n  - front: "   "\n    back: "Answer"'))
+    assert result.has_errors
+    assert any("`front`" in m.message for m in result.messages)
+
+
+def test_invalid_empty_string_front(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, 'cards:\n  - front: ""\n    back: "Answer"'))
+    assert result.has_errors
+    assert any("`front`" in m.message for m in result.messages)
+
+
+def test_invalid_null_front(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, 'cards:\n  - front:\n    back: "Answer"'))
+    assert result.has_errors
+    assert any("`front`" in m.message for m in result.messages)
+
+
+def test_invalid_whitespace_back(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, 'cards:\n  - front: "Question?"\n    back: "\\n\\n"'))
+    assert result.has_errors
+    assert any("`back`" in m.message for m in result.messages)
+
+
+def test_invalid_numeric_front(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, 'cards:\n  - front: 123\n    back: "Answer"'))
+    assert result.has_errors
+    assert any("`front`" in m.message for m in result.messages)
+
+
+def test_invalid_boolean_back(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, 'cards:\n  - front: "Question?"\n    back: true'))
+    assert result.has_errors
+    assert any("`back`" in m.message for m in result.messages)
+
+
+def test_invalid_non_dict_card(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, 'cards:\n  - "just a string"'))
+    assert result.has_errors
+    assert any("mapping" in m.message for m in result.messages)
+
+
+def test_invalid_cards_not_list(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, 'cards: "hello"'))
+    assert result.has_errors
+    assert any("non-empty list" in m.message for m in result.messages)
+
+
+def test_invalid_top_level_list(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, '- front: "Q?"\n  back: "A"'))
+    assert result.has_errors
+    assert any("mapping" in m.message.lower() or "top level" in m.message.lower() for m in result.messages)
+
+
+def test_invalid_empty_file(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, ''))
+    assert result.has_errors
+
+
+def test_valid_empty_tags(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, 'tags: []\ncards:\n  - front: "Question?"\n    back: "Answer"'))
+    assert not result.has_errors
+
+
+def test_invalid_non_string_tags(tmp_path):
+    result = lint_file(_write_yaml(tmp_path, 'tags: [1, 2]\ncards:\n  - front: "Question?"\n    back: "Answer"'))
+    assert result.has_errors
+    assert any("`tags`" in m.message for m in result.messages)

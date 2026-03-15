@@ -37,6 +37,37 @@ class TestConvertMath:
         result = convert_math("$$\\frac{1}{2}$$")
         assert result == r"\[\frac{1}{2}\]"
 
+    def test_escaped_dollars_not_converted(self):
+        """Escaped \\$ should not trigger math mode. Documents known bug if fails."""
+        text = r"Price is \$5"
+        result = convert_math(text)
+        assert result == text, (
+            "BUG: convert_math treats escaped \\$ as math delimiter. "
+            "Regex should use negative lookbehind for backslash."
+        )
+
+    def test_literal_dollar_signs(self):
+        """Casual dollar amounts like $5 trigger math mode — documents known limitation."""
+        text = "$5 per $10"
+        result = convert_math(text)
+        # This converts "5 per " into inline math — documenting the limitation
+        assert "\\(" in result, (
+            "Expected $5 per $10 to be (incorrectly) converted to math mode. "
+            "If this fails, the regex was improved to handle non-math dollars."
+        )
+
+    def test_empty_display_math(self):
+        """$$$$ ideally stays unchanged, but inline regex eats part of it — known bug."""
+        result = convert_math("$$$$")
+        # BUG: display regex doesn't match (no content between $$ $$),
+        # then inline regex matches $<content>$ on the first 3 chars.
+        # Ideal behavior would be unchanged, but we document actual behavior:
+        assert result == r"\($\)$"
+
+    def test_empty_inline_math(self):
+        """$$ alone should not become inline math."""
+        assert convert_math("$$") == "$$"
+
 
 # --- Export pipeline ---
 
@@ -167,3 +198,69 @@ class TestExportAll:
             export_all(
                 pending_dir=self.pending, processed_dir=self.processed
             )
+
+    def test_export_no_tags_gets_ankify(self):
+        """File with no tags should still get the 'ankify' tag."""
+        shutil.copy(FIXTURES / "valid_minimal.yaml", self.pending / "test.yaml")
+
+        with patch("ankify.exporter.anki_connect") as mock_ac:
+            mock_ac.deck_names.return_value = ["Knowledge Adventure"]
+            mock_ac.add_note.return_value = 12345
+
+            export_all(
+                pending_dir=self.pending, processed_dir=self.processed
+            )
+
+        call_args = mock_ac.add_note.call_args_list
+        for call in call_args:
+            assert call.kwargs["tags"] == ["ankify"]
+
+    def test_multiple_files_exported(self):
+        """Two files should both be processed with correct card counts."""
+        shutil.copy(FIXTURES / "valid_basic.yaml", self.pending / "a.yaml")
+        shutil.copy(FIXTURES / "valid_minimal.yaml", self.pending / "b.yaml")
+
+        with patch("ankify.exporter.anki_connect") as mock_ac:
+            mock_ac.deck_names.return_value = ["Knowledge Adventure"]
+            mock_ac.add_note.return_value = 12345
+
+            files, cards = export_all(
+                pending_dir=self.pending, processed_dir=self.processed
+            )
+
+        assert files == 2
+        assert cards == 3  # valid_basic has 2, valid_minimal has 1
+
+    def test_export_anki_connect_failure(self):
+        """AnkiConnectError from deck_names should propagate."""
+        from ankify.anki_connect import AnkiConnectError
+
+        shutil.copy(FIXTURES / "valid_basic.yaml", self.pending / "test.yaml")
+
+        with patch("ankify.exporter.anki_connect") as mock_ac:
+            mock_ac.AnkiConnectError = AnkiConnectError
+            mock_ac.deck_names.side_effect = AnkiConnectError("Connection refused")
+
+            with pytest.raises(AnkiConnectError, match="Connection refused"):
+                export_all(
+                    pending_dir=self.pending, processed_dir=self.processed
+                )
+
+    def test_export_partial_note_failure(self):
+        """If add_note fails on 2nd card, exception propagates and file stays in pending."""
+        from ankify.anki_connect import AnkiConnectError
+
+        shutil.copy(FIXTURES / "valid_basic.yaml", self.pending / "test.yaml")
+
+        with patch("ankify.exporter.anki_connect") as mock_ac:
+            mock_ac.AnkiConnectError = AnkiConnectError
+            mock_ac.deck_names.return_value = ["Knowledge Adventure"]
+            mock_ac.add_note.side_effect = [12345, AnkiConnectError("Duplicate")]
+
+            with pytest.raises(AnkiConnectError, match="Duplicate"):
+                export_all(
+                    pending_dir=self.pending, processed_dir=self.processed
+                )
+
+        # File should still be in pending since export failed mid-way
+        assert (self.pending / "test.yaml").exists()
