@@ -22,11 +22,12 @@ Read this before writing any Anki cards. Follow these guidelines strictly.
 
 ## Answer style
 
-- **No length limit** — answers can be as long as they need to be. Short and punchy is fine; walking through a full proof or derivation step-by-step is also fine. Match the complexity of the material.
+- **Structure answers as 3 short paragraphs or fewer.** Each paragraph should concisely express one and only one key idea in the narrative, and have a maximum of 3 sentences. (The existing example cards predate this rule and may be longer — for new cards, follow this structure.)
 - Write in a **conversational, first-person tone** — "I think the basic thing is", "the thing to notice is", "See?", "we've already shown". The cards are for the user, not a textbook.
 - Lead with the core answer, then elaborate as needed
 - Use an em dash (—) to separate the core answer from elaboration
 - **Quotes and attributions** are welcome when they add value
+- **When working from source text or images**, you can include a paragraph of quotes that saliently illustrate the point, connecting important sentences with ellipses where needed.
 - **Reference prior knowledge** freely — "we've seen how...", "recall that..."
 - For programming cards, include a short code snippet when it clarifies
 - For math, use LaTeX: `$...$` for inline, `$$...$$` for display
