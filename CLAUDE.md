@@ -8,7 +8,7 @@ When the user shares something they want to learn or remember, you should:
 
 1. **Read `style-guide.md`** before writing any cards — follow it strictly
 2. **Read example cards in `cards/examples/`** to match the user's preferred tone, formatting, and level of detail — these are the gold standard
-3. **Distill** the information into clear Q&A pairs. Write in a conversational, first-person tone. Answers can be long — walk through reasoning, include quotes, reference prior knowledge.
+3. **Distill** the information into clear Q&A pairs. Write in a conversational, first-person tone. Answers can be long — walk through reasoning, reference prior knowledge. If you include a quote from the source, it should always be the **final paragraph** of the answer, wrapped in `<i>` tags.
 4. **Add multilingual flavor** — cards should be primarily in English, but naturally incorporate a sentence or phrase from one or more of: French, Spanish, Mandarin, or Hindi, where it fits. Keep it conversational; don't force it.
 5. **Write a YAML card file** to `cards/pending/` following the schema below
 6. **Run `ankify-lint`** to validate your file
@@ -38,6 +38,15 @@ cards:
 - `cards` (required): array of 1+ cards, each with `front` and `back` strings
 - `source` (optional): where the user learned this — for their own reference
 - `tags` (optional): become Anki tags on the created cards
+
+### Formatting
+
+Card text is rendered as HTML in Anki. Use HTML tags for formatting:
+
+- `<i>...</i>` for italics (especially quotes)
+- `<b>...</b>` for bold
+
+Use YAML block scalars (`|`) for multi-paragraph answers with blank lines between paragraphs. The exporter converts paragraph breaks to `<br><br>` for Anki automatically. **Do not** use markdown formatting (`*`, `**`) — it renders literally in Anki.
 
 ### Math notation
 
