@@ -1,0 +1,9 @@
+# Example card — Canadian geography, conversational, builds on prior knowledge
+cards:
+  - front: "How did Statcan decide how to draw its CSDs?"
+    back: |
+      We've seen how CDs map to each province's highest-level sub-provincial geographical unit, except for a few exceptions like Newfoundland, which doesn't actually have any sub-provincial geographical units.
+
+      Well CSDs do the same, but they map to each province's concept of <i>municipality.</i> What is a municipality? It is just a level-2 provincial sub-unit defined by provincial law to have certain responsibilities, its own elected officials, etc.
+
+      So for example in Ontario this would be a 'lower-tier municipality', as opposed to 'upper-tier municipalities' like Counties and Regions which are composed of lower-tier municipalities. See?

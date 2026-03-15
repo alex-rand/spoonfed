@@ -1,0 +1,11 @@
+# Example card — causal inference / experiment design, concise with a quote
+tags:
+  - regression-and-other-stories
+cards:
+  - front: "Why do people like to do 'blocking' when designing an RCT, in addition to just plain-old randomization?"
+    back: |
+      The value of blocking is that it guarantees certain traits will be balanced between treatment and control, no matter what. It is no longer purely up to chance.
+
+      <i>"given that there are equal numbers of control and treated units within each block, each treated unit in the block gets to act as the perfect comparison for the control unit and vice versa."</i>
+
+      And also because, if the blocking variables predict the outcome then we'll have smaller residual variance in each block after estimating the treatment effect, so we'll have smaller standard errors around the treatment effect.

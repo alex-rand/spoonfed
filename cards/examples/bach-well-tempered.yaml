@@ -1,0 +1,9 @@
+# Example card — music history, no math, uses italics and quotes
+cards:
+  - front: "What did Bach mean by 'Well-Tempered' Clavier?"
+    back: |
+      Bach did <i>not</i> mean equal temperament.
+
+      Rather, he was referring to irregular temperaments in general. There were a lot of these floating around at the time, and they were exciting because they let you play in all keys with no terrible 'wolfs', and where each system was such that the different keys had different flavours.
+
+      <i>"This creates a tremendous diversity in the way different keys sound...and that was one of the things that musicians of the time liked about them."</i>

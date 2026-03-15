@@ -7,10 +7,12 @@ This repo lets you capture things you learn as Anki flashcards via YAML files. Y
 When the user shares something they want to learn or remember, you should:
 
 1. **Read `style-guide.md`** before writing any cards — follow it strictly
-2. **Distill** the information into clear Q&A pairs
-3. **Write a YAML card file** to `cards/pending/` following the schema below
-4. **Run `ankify-lint`** to validate your file
-5. **Commit** the file
+2. **Read example cards in `cards/examples/`** to match the user's preferred tone, formatting, and level of detail — these are the gold standard
+3. **Distill** the information into clear Q&A pairs. Write in a conversational, first-person tone. Answers can be long — walk through reasoning, include quotes, reference prior knowledge.
+4. **Add multilingual flavor** — cards should be primarily in English, but naturally incorporate a sentence or phrase from one or more of: French, Spanish, Mandarin, or Hindi, where it fits. Keep it conversational; don't force it.
+5. **Write a YAML card file** to `cards/pending/` following the schema below
+6. **Run `ankify-lint`** to validate your file
+7. **Commit** the file
 
 **Never run `ankify-all`** — that's for the user to do manually when Anki is open.
 

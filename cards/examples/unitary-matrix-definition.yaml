@@ -1,0 +1,8 @@
+# Example card — linear algebra, conversational proof-style answer with math
+source: "Linear Algebra Done Right or similar"
+cards:
+  - front: "Give the formal definition of a unitary matrix. How does this relate to unitary operators?"
+    back: |
+      Suppose $Q$ is a square $n \times n$ matrix whose columns form an orthonormal list in $\mathbf{F}^n$. Then people call $Q$ a 'unitary' matrix.
+
+      The connection to unitary operators is: we've already shown an operator $S \in \mathcal{L}(V)$ is unitary iff its columns form an orthonormal basis of $\mathbf{F}^n$. So if $S$ is a unitary operator then $Q = \mathcal{M}(S, e_{1:n})$ is a unitary matrix, and $Q$ being a unitary matrix implies that it corresponds to the matrix of a unitary operator wrt an orthonormal basis $e_{1:n}$.

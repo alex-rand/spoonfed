@@ -1,0 +1,16 @@
+# Example card — full proof, step-by-step aligned equations
+cards:
+  - front: "Prove that eigenvectors of distinct eigenvalues of a normal operator are orthogonal."
+    back: |
+      Suppose $T \in \mathcal{L}(V)$, where $\alpha, \beta$ are distinct eigenvalues of $T$, with eigenvectors $u, v$ such that $Tu = \alpha u$, $Tv = \beta v$. Now notice:
+
+      $$\begin{align}
+      \langle u, v \rangle(a - b) &= (a\langle u, v \rangle - b\langle u, v \rangle) \\
+      &= (\langle au, v \rangle  - \langle u, \bar bv \rangle) \\
+      &= (\langle Tu, v \rangle  - \langle u, T^*v \rangle) \\
+      &= 0
+      \end{align}$$
+
+      Where the 3rd step is by the thing we proved where if $T$ is normal then $T^*$ has all the same eigenvalues, just their complex conjugate versions. The final thing is just by the basic definition of an adjoint.
+
+      So $\langle u, v \rangle(a - b) = 0$, and since $a, b$ are distinct eigenvalues, it can't be true that $(a - b) = 0$. So $\langle u, v \rangle = 0$. $\square$

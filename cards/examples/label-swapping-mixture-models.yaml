@@ -1,0 +1,13 @@
+# Example card — statistics, conversational with quotes, personal notes
+cards:
+  - front: "What is 'label swapping' in mixture models, and how is it related to identifiability?"
+    back: |
+      I think the basic thing is that a mixture model doesn't care which mixture component is which. I.E. you could fit the model a bunch of times and get identical, correctly-identified maximum-likelihood estimates for all model parameters including the mixture weights, but like the <i>index</i> of the cluster associated with a particular mixture weight could be different each time you fit the model.
+
+      This is only bad if we care about giving non-statistical interpretations to the different clusters. Which I think I always do. Like in an HMM, if I'm asserting there are 3 latent profiles and I want to do some story-time about them.
+
+      Gelman gets into this in BDA3 and proposes some solutions:
+
+      <i>"In general, one can permute the labels on the different mixture components without having any impact on the likelihood... [so] it makes an important difference in conducting the analysis and defining priors whether there is interest in inferences on mixture component-specific parameters and clustering."</i>
+
+      I'd like to take a note on the subsequent section in BDA3 where he talks about 'Unspecified number of mixture components'.

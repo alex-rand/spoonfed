@@ -1,0 +1,13 @@
+# Example card — music theory + math, long exploratory answer
+# (original card also had an embedded image, omitted here)
+tags:
+  - makam
+  - tuning-systems
+cards:
+  - front: "In music theory, what is the distinction between a 'regular' vs 'irregular' tempered tuning? Give an example of each."
+    back: |
+      A 'tempered' tuning is just one where you modify the Pythagorean algorithm such that $N_i \leq N_0\left(\frac{3}{2}\right)^i$, rather than being strictly $= N_0\left(\frac{3}{2}\right)^i$. For example, 12-TET reduces $N_i$ by $\frac{1}{12}$ of the Pythagorean comma, while Quarter-Comma Meantone reduces $N_i$ by $\frac{1}{4}$ of the syntonic comma (except for $N_{11}$ the wolf). These are both examples of 'tempering'.
+
+      In the above examples, we always apply the same exact modification to each tempered note (i.e. a fraction of a pre-specified comma), so those systems get the name 'regular temperament'. But we could also tweak different $N_i$ by different amounts. And indeed music theory people have been doing this for centuries.
+
+      Why bother with this? People have been drawn to 'irregular' temperaments because regular temperaments like QCMT always leave you with an ugly wolf, i.e. there are certain keys that sound really really bad. But if you have the flexibility to sprinkle the comma adjustments a volonte, then you can come up with all kinds of systems, even some that sound <i>pretty good</i> in <i>all</i> keys, albeit each key sounds a bit different.

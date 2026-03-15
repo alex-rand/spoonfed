@@ -1,0 +1,9 @@
+# Example card — ML, conversational and opinionated, builds intuition
+cards:
+  - front: "What is the main principle that distinguishes 'bagging' from 'boosting' in ML world?"
+    back: |
+      So we have this idea of 'Bagging' to combine many models in hopes of not being misled by any given overfit model. Then some people improved on it with the idea of a 'Random Forest' to make the models we're combining be more different from each other, since less correlation = more information.
+
+      Some smart folks have developed a different approach to improve on trees, using some cool tricks. We're deep in AI world now, so all the methods are gonna have sleek names. The name of this general approach is <b>Boosting</b>: the idea sort of similar to 'bagging', in that we want to fit a lot of really dumb models and somehow combine them to create a less dumb model. But in ESL they say the similarity to bagging is only conceptual/superficial.
+
+      I think the main thing that is special about Boosting is that it is based around the idea that <i>the way each dumb little model fits to the data should be informed by all the dumb little models that came before it</i>. There are lots of different types of 'Boosting', but I think the way you implement this one core idea is the main thing that differentiates these different 'types'.

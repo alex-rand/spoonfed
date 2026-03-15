@@ -1,0 +1,17 @@
+# Example card — linear algebra, long step-by-step derivation with block math
+cards:
+  - front: "Say I have $X \in \mathbf{F}^{n \\times n}$ with L-ind columns, and $y \\in \\mathbf{F}^n$. I want to find the vector $\\beta \\in \\mathbf{F}^n$ that solves the system of equations $X\\beta = y$. Show how the $QR$ factorization makes this really easy."
+    back: |
+      Since $X$ is a square matrix with L-ind columns, we can factor it into $X = QR$, where $Q$ is unitary and $R$ is upper-triangular with strictly positive diagonal elements. So now our problem is $QR \beta = y$
+
+      By the properties of unitary operators, we know $Q^{-1}$ exists and $Q^* = Q^{-1}$. So:
+
+      $$\begin{align}
+      X \beta &= y \\
+      QR\beta &= y \\
+      R \beta &= Q^*y \\
+      \end{align}$$
+
+      (or, if we're in $\mathbf{R}$, $R \beta = Q^Ty$)
+
+      And the thing to notice is that $Q^*y$ is really easy to compute because $Q$ is known and transposing a matrix is easy and fast, and because $R$ is upper-triangular, solving for the unknown vector $\beta$ is also easy and fast: the final unknown is given to us for free as $\beta_n = \frac{(Q^*y)_n}{R_{n, n}}$, then just feed it up and up (people call this 'back-substitution').
