@@ -1,4 +1,6 @@
 .venv
+.env
+cards
 credentials.json
 token.json
 test.csv
