@@ -20,6 +20,8 @@ class DecksHomepageQt(QWidget):
         configuration_data = fetch_user_configuration(self, self.controller.selected_user_id, self.controller.configuration_name)
         
         if configuration_data:
+            self.controller.learned_deck = configuration_data['learned_deck']
+            self.controller.new_deck = configuration_data['new_deck']
             self.controller.learned_deck_tokens = self.load_vocab_from_deck('learned_deck', configuration_data)
             if self.controller.learned_deck_tokens.isnull().all():
                 return self.controller.show_frame(LanguageConfigFrameQt)
@@ -217,6 +219,6 @@ class DecksHomepageQt(QWidget):
                 f"with their fields are correct."
             )
 
-        combined = pd.concat(all_words, ignore_index=True).drop_duplicates(keep='first')
+        combined = pd.concat(all_words, ignore_index=True).dropna().drop_duplicates(keep='first')
 
         return combined

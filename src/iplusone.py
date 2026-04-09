@@ -135,8 +135,9 @@ class IPlusOneFrameQt(GeneratingFrameQt):
     
         # Create the cards in Anki
         result = export_df.apply(lambda row: create_new_card(
-            gpt_model=self.model_picklist.currentText(), 
-            audio_provider=self.audio_source_picklist.currentText(), 
+            deck_name=self.controller.new_deck,
+            gpt_model=self.model_picklist.currentText(),
+            audio_provider=self.audio_source_picklist.currentText(),
             anki_model="Basic-10b04",
             functionality = "i+1",
             fields={

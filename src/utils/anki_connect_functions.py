@@ -26,14 +26,14 @@ def ankiconnect_invoke(calling_frame, action, **params):
         raise Exception(response['error'])
     return response['result']
 
-def create_new_card(gpt_model, audio_provider, anki_model, fields, functionality):
-    
-    # The AnkiConnect API needs a particular nested structure to create a new note, 
-    # as documented under 'addNote' here: https://github.com/FooSoft/anki-connect 
+def create_new_card(deck_name, gpt_model, audio_provider, anki_model, fields, functionality):
+
+    # The AnkiConnect API needs a particular nested structure to create a new note,
+    # as documented under 'addNote' here: https://github.com/FooSoft/anki-connect
 
     # Structure the note according to AnkiConnect's requirements
     note = {
-        'deckName': "देवनागरी::मैंने सीखा",
+        'deckName': deck_name,
         'modelName': anki_model,
         'fields': fields,
         'tags': ["spoonfed", gpt_model, audio_provider, functionality]
@@ -148,6 +148,8 @@ def remove_non_language_tokens(text, language):
 def strip_html_and_cloze(text):
     # Remove HTML tags
     text = re.sub(r'<[^>]+>', '', text)
+    # Remove Anki sound tags (e.g., "[sound:filename.mp3]")
+    text = re.sub(r'\[sound:[^\]]+\]', '', text)
     # Remove Anki Cloze notation, keeping the visible text part (e.g., "{{c1::दे दो::…देना…}}" -> "दे दो देना")
     text = re.sub(r'\{\{c\d+::([^:]+)::[^}]+\}\}', r'\1', text)
     return text
