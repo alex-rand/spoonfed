@@ -101,15 +101,22 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
     
     # Create an inner function to call on each returned sentence one at a time
     def count_word_types(sentence):
-        
+
         # Unnest the sentence into a set
         sentence_words = set(sentence.split())
-        
+
         # Count various word types
         n_words = len(sentence.split())
-        n_known_words = len(sentence_words.intersection(known_vocab_set)) 
-        n_new_words = len(sentence_words.intersection(new_vocab_set))
-        n_rogue_words = len(sentence_words) - n_known_words - n_new_words
+        n_known_words = len(sentence_words.intersection(known_vocab_set))
+
+        if new_vocab_set:
+            # New deck has tokens: distinguish new vs rogue
+            n_new_words = len(sentence_words.intersection(new_vocab_set))
+            n_rogue_words = len(sentence_words) - n_known_words - n_new_words
+        else:
+            # No new deck: all non-known words are "new" (Claude chose them)
+            n_new_words = len(sentence_words) - n_known_words
+            n_rogue_words = 0
 
         return pd.Series([n_words, n_known_words, n_new_words, n_rogue_words])
 

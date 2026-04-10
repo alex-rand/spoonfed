@@ -6,10 +6,12 @@ prompt: |
   Today the student is trying to learn all the conjugations of a certain verb, which we can call the 'Target Verb':
   {verb_input}
 
+  {vocab_instruction}
+
   Based on the above information, you must create a new sentence for all possible conjugations of the Target Verb, and return them as a .csv file. {tense_list}
   Each sentence must meet all of the following criteria:
   - Each sentence includes _exactly one_ possible conjugation of the Target Verb;
-  - Each sentence must include a unique, interesting situational context to help motivate the conjugation. Try to use a unique situational context that is different for each of the sentences, while remembering to only use words from the above 'learned words';
+  - Each sentence must include a unique, interesting situational context to help motivate the conjugation. Try to use a unique situational context that is different for each of the sentences;
   - The sentences should each follow normal punctuation, but the Target Verb word should be encased in Anki Cloze notation, where the clue is the infinitive of the target verb, with ellipses '...' on either side of it to help indicate that it is the infinitive. {cloze_example}
   - The Target Verb Word, i.e. the full cloze including its curly braces, MUST be encased in an HTML <span> tag of class target_verb. The entire cloze for the Target Verb word must be inside this tag. This is very important!
   Please use correct grammar and formal sentence structure when writing the sentences. {grammar_instruction}
@@ -29,3 +31,4 @@ cloze_example: ""
 grammar_instruction: ""
 tense_list: "Remember to include sentences in the first, second, and third person, for each of the past, present, future, imperative, and conditional tenses."
 conjugation_extra: ""
+vocab_instruction: ""

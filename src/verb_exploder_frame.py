@@ -89,7 +89,15 @@ class VerbExploderFrameQt(GeneratingFrameQt):
        
         # Insert the new layout into the main layout
         self.main_layout.insertLayout(self.main_layout.indexOf(self.generate_button), verb_layout)
-        
+
+        # Known vocab injection toggle
+        vocab_layout = QHBoxLayout()
+        self.vocab_checkbox = QCheckBox('Use known vocabulary in sentences', self)
+        self.vocab_checkbox.setChecked(True)
+        vocab_layout.addWidget(self.vocab_checkbox)
+        vocab_layout.setContentsMargins(0, 4, 0, 0)
+        self.main_layout.insertLayout(self.main_layout.indexOf(self.generate_button), vocab_layout)
+
     def on_press_generate(self):
         
         # Make sure the verb input field is not empty
@@ -100,13 +108,32 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         self.generate_button.setEnabled(False)
        # self.animation.start()
         
+        # Build vocab instruction if checkbox is checked
+        vocab_instruction = ""
+        if self.vocab_checkbox.isChecked():
+            VOCAB_SAMPLE_SIZE = 150
+            learned = self.controller.learned_deck_tokens
+            if len(learned) > VOCAB_SAMPLE_SIZE:
+                sampled = learned.sample(n=VOCAB_SAMPLE_SIZE, replace=False)
+            else:
+                sampled = learned
+            vocab_instruction = (
+                "The student already knows the following vocabulary words:\n"
+                f"{', '.join(sampled)}\n\n"
+                "When constructing sentences, prefer using words from this list for "
+                "non-verb vocabulary (subjects, objects, adverbs, etc.). This is a "
+                "soft preference — if a word outside this list makes the sentence "
+                "more natural, that is acceptable."
+            )
+
         # Declare the prompt
         self.prompt = load_prompt(
             "verb_exploder",
             self.controller.selected_language,
             language=self.controller.selected_language,
             verb_input=self.verb_input.text(),
-        ) 
+            vocab_instruction=vocab_instruction,
+        )
         
         try:
 

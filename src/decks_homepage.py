@@ -25,10 +25,12 @@ class DecksHomepageQt(QWidget):
             self.controller.learned_deck_tokens = self.load_vocab_from_deck('learned_deck', configuration_data)
             if self.controller.learned_deck_tokens.isnull().all():
                 return self.controller.show_frame(LanguageConfigFrameQt)
-            self.controller.new_deck_tokens = self.load_vocab_from_deck('new_deck', configuration_data)
-            
-            # Remove 'new' tokens that actually already occur in the learned tokens
-            self.controller.new_deck_tokens = self.controller.new_deck_tokens[~self.controller.new_deck_tokens.isin(self.controller.learned_deck_tokens)]
+            try:
+                self.controller.new_deck_tokens = self.load_vocab_from_deck('new_deck', configuration_data)
+                # Remove 'new' tokens that actually already occur in the learned tokens
+                self.controller.new_deck_tokens = self.controller.new_deck_tokens[~self.controller.new_deck_tokens.isin(self.controller.learned_deck_tokens)]
+            except ValueError:
+                self.controller.new_deck_tokens = pd.Series(dtype=str)
             
             # Update the tables
             self.insert_vocab_into_treeview(self.learned_deck_treeview, self.controller.learned_deck_tokens)

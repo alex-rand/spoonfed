@@ -44,14 +44,36 @@ class IPlusOneFrameQt(GeneratingFrameQt):
            
     def on_press_generate(self):
         n_sentences = int(self.nsentences_picklist.currentText())
-        
+
+        # Build new-words instruction depending on whether the new deck has tokens
+        NEW_DECK_THRESHOLD = 5
+        new_deck = self.controller.new_deck_tokens
+
+        if len(new_deck) >= NEW_DECK_THRESHOLD:
+            sampled_new = new_deck.sample(
+                n=min(n_sentences, len(new_deck)), replace=False
+            )
+            new_words_instruction = (
+                "Today the student is trying to learn the following words, "
+                "which we can call the 'new words':\n"
+                f"{', '.join(sampled_new)}\n\n"
+                "Each sentence must include _exactly one_ of these 'new words'."
+            )
+        else:
+            new_words_instruction = (
+                "For each sentence, introduce exactly one new word that the "
+                "student has NOT learned yet. Choose common, high-frequency "
+                "nouns or adjectives appropriate for an intermediate learner. "
+                "Try to pick a different new word for each sentence."
+            )
+
         # Declare the prompt
         self.prompt = load_prompt(
             "iplusone",
             self.controller.selected_language,
             language=self.controller.selected_language,
             learned_tokens=", ".join(self.controller.learned_deck_tokens),
-            new_tokens=", ".join(self.controller.learned_deck_tokens.sample(n=min(n_sentences, len(self.controller.learned_deck_tokens)), replace=False)),
+            new_words_instruction=new_words_instruction,
             n_sentences=n_sentences,
         )
     
