@@ -1,6 +1,9 @@
 import sys
 import os
 import sqlite3
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFrame, QVBoxLayout
 from user_config import UserConfigFrameQt
 from language_config import LanguageConfigFrameQt

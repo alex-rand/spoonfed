@@ -1,0 +1,7 @@
+cloze_example: "For example, if the target verb were होना and the generated sentence were जब हम त्योहार में जाएँगे, तब हम खुश, the sentence would be written as जब हम त्योहार में जाएँगे, तब हम खुश <span class=target_verb>{{{{c1::होंगे::…होना…}}}}</span>"
+
+grammar_instruction: "Always respect Hindi's standard subject-object-verb structure."
+
+tense_list: "Remember to include sentences in the first, second, and third person, for each of the past, present, future, imperative, and conditional tenses, and with each gender."
+
+conjugation_extra: " and the gender the sentence is demonstrating"

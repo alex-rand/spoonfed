@@ -1,0 +1,31 @@
+prompt: |
+  Create a .csv file containing new {language} sentences following Anki Cloze formatting and with a single HTML tag according to a structure I will show you.
+  Your output must be only a .csv file, with no other content.
+  You are a {language} teacher, helping an intermediate {language} student by creating sentences that are idiomatic and grammatically correct.
+
+  Today the student is trying to learn all the conjugations of a certain verb, which we can call the 'Target Verb':
+  {verb_input}
+
+  Based on the above information, you must create a new sentence for all possible conjugations of the Target Verb, and return them as a .csv file. {tense_list}
+  Each sentence must meet all of the following criteria:
+  - Each sentence includes _exactly one_ possible conjugation of the Target Verb;
+  - Each sentence must include a unique, interesting situational context to help motivate the conjugation. Try to use a unique situational context that is different for each of the sentences, while remembering to only use words from the above 'learned words';
+  - The sentences should each follow normal punctuation, but the Target Verb word should be encased in Anki Cloze notation, where the clue is the infinitive of the target verb, with ellipses '...' on either side of it to help indicate that it is the infinitive. {cloze_example}
+  - The Target Verb Word, i.e. the full cloze including its curly braces, MUST be encased in an HTML <span> tag of class target_verb. The entire cloze for the Target Verb word must be inside this tag. This is very important!
+  Please use correct grammar and formal sentence structure when writing the sentences. {grammar_instruction}
+  The output format of the new sentences you generate should be a .csv with EXACTLY four columns, no more and no less:
+  1. a column called 'sentence' containing each full {language} sentence;
+  2. a column called 'translation' containing the English translation for each sentence;
+  3. a column called 'target_verb' specifying the infinitive of the target verb,
+  4. a single column called 'conjugation' containing both the technical name of the conjugation{conjugation_extra}.
+  Be sure to declare the csv without row names -- the first column 'sentence' should be a column, not the row names.
+  Remember: try to keep the sentences diverse and different from each other.
+  Be careful to declare the HTML class properly in the span: it should be simply `class="target_verb"`, and you should NEVER include extra characters such as &quot; or / in this class declaration.
+  The output MUST be a .csv file with columns exactly as specified above, with sentences that are idiomatic and grammatically correct.
+  Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
+
+# Defaults (used when no language-specific override exists)
+cloze_example: ""
+grammar_instruction: ""
+tense_list: "Remember to include sentences in the first, second, and third person, for each of the past, present, future, imperative, and conditional tenses."
+conjugation_extra: ""

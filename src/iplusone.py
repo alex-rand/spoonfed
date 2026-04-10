@@ -8,6 +8,25 @@ sys.path.append("../utils/")
 from utils.text_generating_functions import generate_text
 from utils.audio_generating_functions import generate_audio
 from utils.anki_connect_functions import create_new_card
+from utils.prompt_loader import load_prompt
+
+EXPORT_CONFIG = {
+    'Hindi': {
+        'anki_model': 'Basic-10b04',
+        'fields': lambda row: {
+            'Front': row['sentence'],
+            'Back': row['translation'],
+            'Definition': row.get('audio', ' '),
+        },
+    },
+    'Turkish': {
+        'anki_model': 'turkish-back',
+        'fields': lambda row: {
+            'Front': row['translation'],
+            'Back': row['sentence'] + ' ' + row.get('audio', ''),
+        },
+    },
+}
 
 class IPlusOneFrameQt(GeneratingFrameQt):
     update_ui_signal = pyqtSignal(object)
@@ -27,37 +46,21 @@ class IPlusOneFrameQt(GeneratingFrameQt):
         n_sentences = int(self.nsentences_picklist.currentText())
         
         # Declare the prompt
-        self.prompt = f""" 
-            I need your help to output a .csv file containing new {self.controller.selected_language} sentences based on a student's existing vocabulary.
-            Your output must be only a .csv file, with no other content.  
-            Imagine you are a {self.controller.selected_language} teacher, helping a native English speaker who has just started learning {self.controller.selected_language}. 
-            So far the student has learned the following words, which we can call the 'learned words', and are as follows: 
-            {", ".join(self.controller.learned_deck_tokens)} 
-            \n
-            Today the student is trying to learn the following words, which we can call the 'new words', and are as follows:
-            {", ".join(self.controller.new_deck_tokens.sample(n=min(n_sentences, len(self.controller.new_deck_tokens)), replace=False))} 
-            \n
-            Based on the above information, please generate {n_sentences} new {self.controller.selected_language} sentences and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
-            - Each sentence includes _exactly one_ of the 'new words' -- you are NOT ALLOWED to include more than one word from the list of 'new words';
-            - All of the other words in each sentence (besides the exactly one 'new word') must already appear in the list of 'learned words';
-            - Each sentence must include a subject, a verb, and an object. 
-            Please use correct grammar and formal sentence structure when writing the sentences.
-            Include as many of the words from the list of 'learned words' as you can in each sentence while still respecting the rules I mentioned above.
-            Try to include a different 'new word' in each sentence.
-            {"Always respect Hindi's standard subject-object-verb structure." if self.controller.selected_language == "Hindi" else ""}  
-            The output format of the new sentences you generate should be a .csv with a column for the {self.controller.selected_language} sentence, 
-            a column for the English translation called 'translation', and a column called 'new_word' specifying which of the new words you've included in that sentence.  
-            Remember: you must include exactly _one_ of the 'new words' in each sentence, and the rest of the words must all already be present in the 'learned words', except for the exceptions I mentioned above.
-            The output MUST be a .csv file with columns exactly as specified above. 
-            Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
-            """
+        self.prompt = load_prompt(
+            "iplusone",
+            self.controller.selected_language,
+            language=self.controller.selected_language,
+            learned_tokens=", ".join(self.controller.learned_deck_tokens),
+            new_tokens=", ".join(self.controller.learned_deck_tokens.sample(n=min(n_sentences, len(self.controller.learned_deck_tokens)), replace=False)),
+            n_sentences=n_sentences,
+        )
     
         self.loading_label.show()
         self.generate_button.setEnabled(False)
         self.animation.start()
-        
+
         try:
-            # Generate sentences 
+            # Generate sentences
             generated_sentences = generate_text(self)
 
             # Update the UI after generation
@@ -130,21 +133,20 @@ class IPlusOneFrameQt(GeneratingFrameQt):
         export_df = pd.DataFrame(export_data)
         
         # If the 'audio' checkbox is checked then generate the audio files and pack them into Anki's media folder
-        if self.audio_checkbox.isChecked(): 
+        if self.audio_checkbox.isChecked():
             export_df = generate_audio(export_df, self.controller.selected_language, self.controller.selected_profile_name, self.audio_source_picklist.currentText())
-    
+        else:
+            export_df['audio'] = ' '
+
         # Create the cards in Anki
+        config = EXPORT_CONFIG.get(self.controller.selected_language, EXPORT_CONFIG['Hindi'])
         result = export_df.apply(lambda row: create_new_card(
-            deck_name=self.controller.new_deck,
+            deck_name=self.controller.learned_deck,
             gpt_model=self.model_picklist.currentText(),
             audio_provider=self.audio_source_picklist.currentText(),
-            anki_model="Basic-10b04",
-            functionality = "i+1",
-            fields={
-                'Front': row['sentence'], 
-                'Back': row['translation'], 
-                'Definition': row['audio']
-            }
+            anki_model=config['anki_model'],
+            functionality="i+1",
+            fields=config['fields'](row),
         ), axis=1)
         
         if result.eq("success").all():

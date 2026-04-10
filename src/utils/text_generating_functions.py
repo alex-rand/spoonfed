@@ -1,13 +1,13 @@
 import os
 import io
-import openai
+import subprocess
+import json
+import re as _re
 import pandas as pd
 import sqlite3
 import csv
 from datetime import datetime
-from dotenv import load_dotenv
-
-load_dotenv(override=True)
+from utils.prompt_loader import load_system_prompt
 
 def generate_text(calling_frame):
 
@@ -16,7 +16,7 @@ def generate_text(calling_frame):
     new_deck_tokens = calling_frame.controller.new_deck_tokens
     
     # Generate sentences
-    gpt_payload = gpt__generate_new_sentences(calling_frame)
+    gpt_payload = _call_claude_cli(calling_frame.prompt, calling_frame.model_picklist.currentText())
     
     # Quality control and examine the generated sentences
     gpt_payload_enhanced = evaluate_gpt_response(gpt_payload, learned_deck_tokens, new_deck_tokens)
@@ -32,53 +32,46 @@ def generate_text(calling_frame):
     
     return(gpt_payload_enhanced)
    
-# Call OpenAI API
-def gpt__generate_new_sentences(calling_frame):
-    openai.api_key = os.getenv("OPENAI_API_KEY") 
+# Call Claude Code CLI
+def _call_claude_cli(prompt, model_text):
 
-    # Define the prompt for GPT 
-    prompt = calling_frame.prompt
-    
+    # Build the full prompt by folding in the system instruction
+    full_prompt = load_system_prompt() + "\n\n" + prompt
 
-    
-    # o1 can't take a system prompt, but other models take both system and user prompts
-    if calling_frame.model_picklist.currentText() in ['o1-preview', 'o1-mini']:
-        messages = [
-            {"role": "user", "content": prompt},
-        ]
-    else:
-        messages = [
-            {"role": "system", "content": "You are a CSV generator to assist with creating tables for language learning. Your response must be in .CSV format with exactly 4 columns."},
-            {"role": "user", "content": prompt},
-        ]
-    
-    ### For debugging purposes, load a cached CSV so we don't call OpenAI a zillion times
-  #  with open('test-payload.txt', 'r') as f:
-  #      generated_text = f.read()
- #
-  #  return(generated_text)
-  
-    response = openai.ChatCompletion.create(
-      model=calling_frame.model_picklist.currentText(),
-      messages=messages,
-      temperature=1,
-      top_p=1.0,
-      frequency_penalty=0.0,
-      presence_penalty=0.0
+    # Map UI picklist values to Claude model identifiers
+    model_map = {
+        "sonnet": "sonnet",
+        "opus": "opus",
+        "haiku": "haiku",
+    }
+    model_id = model_map.get(model_text, "sonnet")
+
+    result = subprocess.run(
+        ["claude", "-p", "--model", model_id, "--output-format", "json", "--tools", ""],
+        input=full_prompt,
+        capture_output=True,
+        text=True,
     )
-   
-    generated_text = [
-      choice.message["content"].strip() for choice in response["choices"]
-    ]
 
- #  # Export it for debugging purposes
+    if result.returncode != 0:
+        raise ValueError(f"Claude CLI error: {result.stderr.strip()}")
+
+    try:
+        response_json = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        raise ValueError("Failed to parse Claude CLI JSON response.")
+
+    generated_text = response_json["result"].strip()
+
+    # Strip markdown fences if Claude wraps the CSV despite the prompt instructions
+    generated_text = _re.sub(r'^```(?:csv)?\n', '', generated_text)
+    generated_text = _re.sub(r'\n```$', '', generated_text)
+
+    # Export for debugging purposes
     with open('test-payload.csv', 'w', encoding='utf-8') as f:
-        # Write the CSV data to the file
-        f.write(generated_text[0])
-    
- #  # print(generated_text[0])
-   
-    return generated_text
+        f.write(generated_text)
+
+    return [generated_text]
  
 # This function quality-checks the GPT payload, then it generates some diagnostics about the content of each sentence
 def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):

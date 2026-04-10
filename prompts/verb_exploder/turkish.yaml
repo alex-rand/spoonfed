@@ -1,0 +1,88 @@
+cloze_example: >-
+  For example, if the target verb were gelmek and the generated sentence were
+  Dün akşam eve geç geldim, the sentence would be written as
+  Dün akşam eve geç <span class="target_verb">{{{{c1::geldim::…gelmek…}}}}</span>
+
+grammar_instruction: >-
+  Always respect Turkish's standard SOV (subject-object-verb) word order.
+  All conjugations must strictly obey vowel harmony rules — suffixes must
+  harmonize with the verb stem's vowels.
+  Turkish has no grammatical gender.
+  The conjugated verb form is always a single agglutinated word — never split
+  the verb across multiple words.
+  CRITICAL: Turkish is a pro-drop language, so pronouns are often omitted in
+  natural speech. You must write each sentence so that the intended person,
+  tense, and polarity are unambiguous from context alone — without relying on
+  an explicit pronoun. Use temporal adverbs (dün, şimdi, yarın, her gün, etc.),
+  named or described subjects (annesi, çocuklar, arkadaşlarımız, etc.),
+  dialogue framing, or surrounding clauses to make it clear which conjugation
+  the student must produce. Include the pronoun only when emphasis or contrast
+  makes it natural and idiomatic. A student seeing only the sentence with the
+  verb hidden should be able to determine the correct person, tense, and
+  polarity from the surrounding words.
+
+tense_list: >-
+  You must generate EXACTLY 78 sentences — one for each specific combination
+  of tense, person, and polarity listed below. No more, no fewer.
+
+  The 6 persons in Turkish are: ben (1st person singular), sen (2nd person
+  singular), o (3rd person singular), biz (1st person plural), siz (2nd person
+  plural), onlar (3rd person plural).
+
+
+  TIER 1 — Generate BOTH affirmative and negative forms for all 6 persons
+  (12 sentences per tense, 36 sentences total):
+
+  Present continuous (-yor): all 6 persons × affirmative, then all 6 persons
+  × negative = 12 sentences.
+
+  Past definite / di-past (-di): all 6 persons × affirmative, then all 6
+  persons × negative = 12 sentences.
+
+  Future (-ecek / -acak): all 6 persons × affirmative, then all 6 persons
+  × negative = 12 sentences.
+
+
+  TIER 2 — Generate AFFIRMATIVE ONLY for all 6 persons
+  (6 sentences per tense, 30 sentences total):
+
+  Aorist / simple present (-r / -ir / -er): all 6 persons × affirmative
+  = 6 sentences.
+
+  Past narrative / evidential / miş-past (-miş): all 6 persons × affirmative
+  = 6 sentences.
+
+  Necessitative (-meli / -malı): all 6 persons × affirmative = 6 sentences.
+
+  Ability (-ebilir / -abilir): all 6 persons × affirmative = 6 sentences.
+
+  Conditional (-se / -sa): all 6 persons × affirmative = 6 sentences.
+
+
+  TIER 2b — Ability NEGATIVE only, all 6 persons (6 sentences total):
+
+  The negative of ability in Turkish is IRREGULAR — it uses the suffix
+  -eme- / -ama- (e.g. gelemem, gelemezsin), NOT the regular -ebil-/-abil-
+  with a negation marker. Generate all 6 persons × negative = 6 sentences.
+
+
+  TIER 3 — Imperative, 3 persons only, both affirmative and negative
+  (6 sentences total):
+
+  Generate imperative forms for ONLY these 3 persons: sen (2nd person
+  singular), siz (2nd person plural), and 3rd person singular (the -sin form,
+  e.g. gelsin). For each, generate one affirmative and one negative sentence
+  = 6 sentences.
+
+
+  TOTAL: 36 + 30 + 6 + 6 = 78 sentences. You must output exactly 78 rows
+  of data (plus the header row).
+
+conjugation_extra: >-
+  , the person (e.g. '1st person singular' or '2nd person plural'),
+  and the polarity ('affirmative' or 'negative').
+  For example: 'present continuous, 1st person singular, affirmative' or
+  'ability, 3rd person plural, negative'.
+  Use exactly these tense names: 'present continuous', 'past definite',
+  'future', 'aorist', 'past narrative', 'necessitative', 'ability',
+  'conditional', 'imperative'. Always include the polarity as the last term.

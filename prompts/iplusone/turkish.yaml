@@ -1,0 +1,6 @@
+grammar_instruction: >-
+  Always respect Turkish's standard SOV (subject-object-verb) word order.
+  All words must obey Turkish vowel harmony rules.
+  Turkish has no grammatical gender.
+  Turkish is agglutinative — suffixes attach to word stems to form single words.
+  Do not split agglutinated forms across multiple words.

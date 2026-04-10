@@ -1,10 +1,11 @@
 import os
+import subprocess
+import tempfile
 import requests
 import random
 import string
 import logging
 import pandas as pd
-import random
 
 def generate_audio(df, language, anki_profile_name, tts_api):
     
@@ -107,7 +108,22 @@ def call_narakeet_api(text, voice, language, anki_profile_name):
         logging.error(f"An error occurred in call_narakeet_api: {str(e)}")
         return None
     
-def call_elevenlabs_api(text, language, anki_profile_name):
+def slow_down_audio(file_path, factor=0.75):
+    """Slow down an MP3 file using ffmpeg's atempo filter. Factor < 1.0 = slower."""
+    tmp_fd, tmp_path = tempfile.mkstemp(suffix=".mp3")
+    os.close(tmp_fd)
+    try:
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", file_path, "-filter:a", f"atempo={factor}", tmp_path],
+            capture_output=True, check=True,
+        )
+        os.replace(tmp_path, file_path)
+    except Exception as e:
+        logging.error(f"ffmpeg slowdown failed: {e}")
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+def call_elevenlabs_api(text, language, anki_profile_name, slowdown=0.75):
     
     # Check if text is None or empty
     if not text:
@@ -175,7 +191,7 @@ def call_elevenlabs_api(text, language, anki_profile_name):
             audio_data = response.content
             
 
-        # Get the save path from 
+        # Get the save path from
         directory_path = get_anki_media_path(anki_profile_name)
 
         # Use the first 10 characters of the text for the filename,
@@ -187,16 +203,20 @@ def call_elevenlabs_api(text, language, anki_profile_name):
             filename = f"{random_string}.mp3"
 
         # Join them to get the full save path
-        save_path = os.path.join(directory_path, filename)  
+        save_path = os.path.join(directory_path, filename)
 
         # Save the audio data to the specified path
         with open(save_path, 'wb') as f:
             f.write(audio_data)
 
+        # Slow down the audio using ffmpeg
+        if slowdown and slowdown != 1.0:
+            slow_down_audio(save_path, factor=slowdown)
+
         # Return the filename
         return filename
 
     except Exception as e:
-        logging.error(f"An error occurred in call_narakeet_api: {str(e)}")
+        logging.error(f"An error occurred in call_elevenlabs_api: {str(e)}")
         return None
 

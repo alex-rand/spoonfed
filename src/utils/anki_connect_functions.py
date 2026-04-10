@@ -181,7 +181,7 @@ def add_audio_flag(df):
         return False
 
     # Apply the function across all text columns and check if any returns True
-    df['no_audio'] = df.applymap(contains_audio_string).any(axis=1)
+    df['no_audio'] = df.map(contains_audio_string).any(axis=1)
     
     # Inverting the boolean value as we need 'True' for 'no_audio'
     df['no_audio'] = ~df['no_audio']
