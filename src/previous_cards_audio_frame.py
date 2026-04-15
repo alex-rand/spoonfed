@@ -223,15 +223,22 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         # Remove HTML headers, which Anki sometimes adds automatically and which confuse Narakeet
         df['sentence'] = df['sentence'].str.replace(r'<[^>]+>', '')
                     
-        # Need to get the 'final' field name for each card type and store it as a column, to be called later.
+        # Determine which field should receive audio for each card type.
+        # Pick the last model field that is NOT used for vocabulary extraction,
+        # so audio lands on the non-shown (reveal) side of the card.
         card_types_and_fields = raw_config_data.get('card_types_and_fields', {})
-        last_fields = {card_type: fields[-1] for card_type, fields in card_types_and_fields.items()}
+        audio_target_fields = {}
+        for card_type, fields in card_types_and_fields.items():
+            configured = set(fields)
+            model_fields = ankiconnect_invoke(self, 'modelFieldNames', modelName=card_type)
+            non_configured = [f for f in model_fields if f not in configured]
+            audio_target_fields[card_type] = non_configured[-1] if non_configured else model_fields[-1]
 
         # Generate the new audio file             
         df = generate_audio(df, self.controller.selected_language, self.controller.selected_profile_name, self.audio_source_picklist.currentText())
     
         # Append the name of the generated audio file to the final field (can we do this non-destructively?)
-        result = append_audio_file_to_notes(df, last_fields)
+        result = append_audio_file_to_notes(df, audio_target_fields)
 
         if result['success_count'] > 0 and not result['errors']:
             QMessageBox.information(self, "Success", f"Cards successfully created in Anki. Total: {result['success_count']}")
