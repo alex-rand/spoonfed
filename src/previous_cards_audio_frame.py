@@ -223,16 +223,12 @@ class PreviousCardsAudioFrameQt(GeneratingFrameQt):
         # Remove HTML headers, which Anki sometimes adds automatically and which confuse Narakeet
         df['sentence'] = df['sentence'].str.replace(r'<[^>]+>', '')
                     
-        # Determine which field should receive audio for each card type.
-        # Pick the last model field that is NOT used for vocabulary extraction,
-        # so audio lands on the non-shown (reveal) side of the card.
-        card_types_and_fields = raw_config_data.get('card_types_and_fields', {})
+        # Audio always goes on the model's final field, so it plays only
+        # after the user answers.
         audio_target_fields = {}
-        for card_type, fields in card_types_and_fields.items():
-            configured = set(fields)
+        for card_type in raw_config_data.get('card_types_and_fields', {}):
             model_fields = ankiconnect_invoke(self, 'modelFieldNames', modelName=card_type)
-            non_configured = [f for f in model_fields if f not in configured]
-            audio_target_fields[card_type] = non_configured[-1] if non_configured else model_fields[-1]
+            audio_target_fields[card_type] = model_fields[-1]
 
         # Generate the new audio file             
         df = generate_audio(df, self.controller.selected_language, self.controller.selected_profile_name, self.audio_source_picklist.currentText())
