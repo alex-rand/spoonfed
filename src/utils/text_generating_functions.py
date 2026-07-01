@@ -83,9 +83,20 @@ def evaluate_gpt_response(gpt_payload, known_vocab, new_vocab):
         for row in reader:
             data.append(row)
 
-        # Convert the list of lists into a DataFrame
-        gpt_payload = pd.DataFrame(data[1:], columns=data[0])
-        
+        # Detect missing header row: if row 0 looks like data (contains cloze/HTML markers)
+        # then synthesize the expected headers based on column count
+        first_row_looks_like_data = any('<span' in cell or '{{c' in cell for cell in data[0])
+        if first_row_looks_like_data:
+            if len(data[0]) == 4:
+                headers = ['sentence', 'translation', 'target_verb', 'conjugation']
+            elif len(data[0]) == 3:
+                headers = ['sentence', 'translation', 'new_word']
+            else:
+                raise ValueError(f"Unexpected column count in LLM response: {len(data[0])}")
+            gpt_payload = pd.DataFrame(data, columns=headers)
+        else:
+            gpt_payload = pd.DataFrame(data[1:], columns=data[0])
+
     except pd.errors.ParserError:
         raise ValueError("The GPT response string does not match the format of a CSV file.")
       
