@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QMessageBox,  QLabel, QCheckBox, QTreeWidgetItem
+from PyQt5.QtWidgets import QMessageBox, QLabel, QCheckBox, QTreeWidgetItem, QLineEdit, QHBoxLayout
 from PyQt5.QtCore import pyqtSignal, pyqtProperty
 from PyQt5.QtGui import QPalette
 import pandas as pd
@@ -7,7 +7,7 @@ import sys
 sys.path.append("../utils/")
 from utils.text_generating_functions import generate_text
 from utils.audio_generating_functions import generate_audio
-from utils.anki_connect_functions import create_new_card
+from utils.anki_connect_functions import create_new_card, load_known_verbs
 from utils.prompt_loader import load_prompt
 
 EXPORT_CONFIG = {
@@ -41,7 +41,27 @@ class IPlusOneFrameQt(GeneratingFrameQt):
 
     def initUI(self):
         super().initUI()
-           
+
+        # Theme input (optional topic to focus generated sentences on)
+        theme_layout = QHBoxLayout()
+        self.theme_label = QLabel('Theme (optional):', self)
+        self.theme_input = QLineEdit(self)
+        self.theme_input.setPlaceholderText('e.g. cooking, travel, work')
+        self.theme_input.setMaximumWidth(250)
+        theme_layout.addWidget(self.theme_label)
+        theme_layout.addWidget(self.theme_input)
+        theme_layout.addStretch()
+        theme_layout.setContentsMargins(0, 4, 0, 0)
+        self.main_layout.insertLayout(self.main_layout.indexOf(self.generate_button), theme_layout)
+
+        # Restrict verbs to those drilled (and exported) via the verb exploder
+        verb_restrict_layout = QHBoxLayout()
+        self.known_verbs_checkbox = QCheckBox('Restrict verbs to verb-exploder verbs', self)
+        self.known_verbs_checkbox.setChecked(True)
+        verb_restrict_layout.addWidget(self.known_verbs_checkbox)
+        verb_restrict_layout.setContentsMargins(0, 4, 0, 0)
+        self.main_layout.insertLayout(self.main_layout.indexOf(self.generate_button), verb_restrict_layout)
+
     def on_press_generate(self):
         n_sentences = int(self.nsentences_picklist.currentText())
 
@@ -67,6 +87,41 @@ class IPlusOneFrameQt(GeneratingFrameQt):
                 "Try to pick a different new word for each sentence."
             )
 
+        # Build theme instruction if user provided one
+        theme = self.theme_input.text().strip()
+        if theme:
+            theme_instruction = (
+                f"The sentences should use situational contexts related to the theme of: {theme}. "
+                f"Draw on scenarios, settings, and vocabulary natural to this topic when building each sentence."
+            )
+        else:
+            theme_instruction = ""
+
+        # Build known-verbs constraint: restrict sentences to verbs the student
+        # has drilled (and exported) via the verb exploder. The collection is
+        # read live from Anki and is scoped per learner and language.
+        known_verbs_instruction = ""
+        if self.known_verbs_checkbox.isChecked():
+            known_verbs = load_known_verbs(self.controller.learned_deck)
+            if known_verbs:
+                known_verbs_instruction = (
+                    "The ONLY verbs you are allowed to use are verbs whose dictionary "
+                    "(infinitive) form appears in the following list of 'known verbs'. "
+                    "You may conjugate them into any tense, person, or aspect required, "
+                    "but you must NOT use any verb whose infinitive is not in this list:\n"
+                    f"{', '.join(known_verbs)}\n\n"
+                    "The single 'new word' you introduce in each sentence must NOT be a "
+                    "verb — it must be a noun, adjective, or adverb. Every verb appearing "
+                    "in every sentence must come from the 'known verbs' list above."
+                )
+            else:
+                QMessageBox.information(
+                    self, "No known verbs found",
+                    "No verb-exploder verbs were found for this deck, so the verb "
+                    "restriction will be skipped. Run the verb exploder and export "
+                    "some verbs first to build up your 'known verbs'."
+                )
+
         # Declare the prompt
         self.prompt = load_prompt(
             "iplusone",
@@ -75,6 +130,8 @@ class IPlusOneFrameQt(GeneratingFrameQt):
             learned_tokens=", ".join(self.controller.learned_deck_tokens),
             new_words_instruction=new_words_instruction,
             n_sentences=n_sentences,
+            theme_instruction=theme_instruction,
+            known_verbs_instruction=known_verbs_instruction,
         )
     
         self.loading_label.show()

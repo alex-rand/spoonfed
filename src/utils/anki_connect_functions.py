@@ -26,17 +26,67 @@ def ankiconnect_invoke(calling_frame, action, **params):
         raise Exception(response['error'])
     return response['result']
 
-def create_new_card(deck_name, gpt_model, audio_provider, anki_model, fields, functionality):
+# Tag namespace used to record which verb lemma a verb-exploder card belongs to.
+# Known verbs (for the i+1 feature) are derived live from these tags.
+KNOWN_VERB_TAG_PREFIX = "verb::"
+
+
+def verb_to_tag(verb):
+    """Build the Anki tag that records a verb-exploded lemma.
+
+    Anki uses spaces to separate tags, so any whitespace in the lemma is
+    collapsed to underscores (reversed when the tag is read back).
+    """
+    return f"{KNOWN_VERB_TAG_PREFIX}{verb.strip().replace(' ', '_')}"
+
+
+def load_known_verbs(deck_name):
+    """Return the distinct verb lemmas already processed and exported via
+    verb-exploder, read live from the 'Spoonfed Verb Exploder' cards in the
+    given (language-specific) learned deck.
+
+    Verbs are identified by the 'verb::<lemma>' tag written at export time.
+    Because the deck is language- and user-specific (per the active
+    configuration), the returned set is automatically scoped to that learner
+    and language. Returns a sorted list (empty if none / Anki unreachable).
+    """
+    query = f'"deck:{deck_name}" "note:Spoonfed Verb Exploder"'
+    note_ids = ankiconnect_invoke(None, 'findNotes', query=query)
+    if not isinstance(note_ids, list) or not note_ids:
+        return []
+
+    notes_info = ankiconnect_invoke(None, 'notesInfo', notes=note_ids)
+    if not isinstance(notes_info, list):
+        return []
+
+    # Case-insensitive dedup: collapse spelling variants (e.g. 'Gelmek' /
+    # 'gelmek') under a casefolded key while keeping the first-seen spelling for
+    # display. The stored tag is never altered, so Turkish 'İ' is not mangled.
+    by_key = {}
+    for info in notes_info:
+        for tag in info.get('tags', []):
+            if tag.startswith(KNOWN_VERB_TAG_PREFIX):
+                lemma = tag[len(KNOWN_VERB_TAG_PREFIX):].replace('_', ' ').strip()
+                if lemma:
+                    by_key.setdefault(lemma.casefold(), lemma)
+    return sorted(by_key.values(), key=str.casefold)
+
+
+def create_new_card(deck_name, gpt_model, audio_provider, anki_model, fields, functionality, extra_tags=None):
 
     # The AnkiConnect API needs a particular nested structure to create a new note,
     # as documented under 'addNote' here: https://github.com/FooSoft/anki-connect
+
+    tags = ["spoonfed", gpt_model, audio_provider, functionality]
+    if extra_tags:
+        tags.extend(extra_tags)
 
     # Structure the note according to AnkiConnect's requirements
     note = {
         'deckName': deck_name,
         'modelName': anki_model,
         'fields': fields,
-        'tags': ["spoonfed", gpt_model, audio_provider, functionality]
+        'tags': tags
     }
  
     # Call

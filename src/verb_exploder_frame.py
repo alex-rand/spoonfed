@@ -41,6 +41,35 @@ def add_tense_emojis(sentence, conjugation):
     return f"{tense_emoji} {sentence} {tense_emoji}"
 
 
+PERSON_MAP = {
+    '1st person singular': '1sg',
+    '2nd person singular': '2sg',
+    '3rd person singular': '3sg',
+    '1st person plural': '1pl',
+    '2nd person plural': '2pl',
+    '3rd person plural': '3pl',
+}
+
+
+def conjugation_to_tags(conjugation):
+    """Parse a Turkish conjugation label into a list of Anki nested tags."""
+    conj_lower = conjugation.lower()
+    tags = []
+    for tense_name in TENSE_EMOJI:
+        if tense_name in conj_lower:
+            tags.append(f"tense::{tense_name.replace(' ', '-')}")
+            break
+    for person_label, short in PERSON_MAP.items():
+        if person_label in conj_lower:
+            tags.append(f"person::{short}")
+            break
+    if 'negative' in conj_lower:
+        tags.append('polarity::negative')
+    elif 'affirmative' in conj_lower:
+        tags.append('polarity::affirmative')
+    return tags
+
+
 class VerbExploderFrameQt(GeneratingFrameQt):
     update_ui_signal = pyqtSignal(object)
     
@@ -236,6 +265,12 @@ class VerbExploderFrameQt(GeneratingFrameQt):
         else: export_df['audio'] = ' '
         
         # Create the cards in Anki
+        is_turkish = self.controller.selected_language == "Turkish"
+
+        # Record which verb these cards belong to so the i+1 feature can later
+        # treat it as a 'known verb' (read back from this tag).
+        verb_tag = verb_to_tag(self.verb_input.text())
+
         result = export_df.apply(lambda row: create_new_card(
             deck_name=self.controller.learned_deck,
             gpt_model=self.model_picklist.currentText(),
@@ -243,10 +278,11 @@ class VerbExploderFrameQt(GeneratingFrameQt):
             anki_model="Spoonfed Verb Exploder",
             functionality="verb-exploder",
             fields={
-                'Text': row['sentence'], 
-                'Translation': row['translation'], 
+                'Text': row['sentence'],
+                'Translation': row['translation'],
                 'Audio': row['audio']
-            }
+            },
+            extra_tags=(conjugation_to_tags(row['conjugation']) if is_turkish else []) + [verb_tag],
         ), axis=1)
 
         if result.eq("success").all():

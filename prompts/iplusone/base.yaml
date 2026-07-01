@@ -7,6 +7,8 @@ prompt: |
 
   {new_words_instruction}
 
+  {known_verbs_instruction}
+
   Based on the above information, please generate {n_sentences} new {language} sentences and return them as a .csv file with a column titled 'sentence'. Each sentence must meet all of the following criteria:
   - Each sentence includes _exactly one_ 'new word' -- you are NOT ALLOWED to include more than one new word;
   - All of the other words in each sentence (besides the exactly one 'new word') must already appear in the list of 'learned words';
@@ -14,6 +16,7 @@ prompt: |
   Please use correct grammar and formal sentence structure when writing the sentences.
   Include as many of the words from the list of 'learned words' as you can in each sentence while still respecting the rules I mentioned above.
   Try to include a different 'new word' in each sentence.
+  {theme_instruction}
   {grammar_instruction}
   The output format of the new sentences you generate should be a .csv with a column for the {language} sentence,
   a column for the English translation called 'translation', and a column called 'new_word' specifying which new word you've included in that sentence.
@@ -24,3 +27,5 @@ prompt: |
 # Defaults
 grammar_instruction: ""
 new_words_instruction: ""
+theme_instruction: ""
+known_verbs_instruction: ""
