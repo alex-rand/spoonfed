@@ -24,3 +24,8 @@ src/utils/delete.py
 parsed-csv.csv
 test-payload.csv
 src/utils/test-delete.py
+.env
+*.egg-info/
+cards/
+.claude/settings.local.json
+.claude/worktrees/
