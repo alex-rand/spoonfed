@@ -1,7 +1,7 @@
 prompt: |
   Create a .csv file containing new {language} sentences following Anki Cloze formatting and with a single HTML tag according to a structure I will show you.
   Your output must be only a .csv file, with no other content.
-  You are a {language} teacher, helping an intermediate {language} student by creating sentences that are idiomatic and grammatically correct.
+  You are a {language} teacher, helping a beginner {language} student by creating sentences that are idiomatic and grammatically correct.
 
   Today the student is trying to learn all the conjugations of a certain verb, which we can call the 'Target Verb':
   {verb_input}
@@ -10,6 +10,7 @@ prompt: |
 
   Based on the above information, you must create a new sentence for all possible conjugations of the Target Verb, and return them as a .csv file. {tense_list}
   Each sentence must meet all of the following criteria:
+  - Each sentence should be short and use very simple vocabulary suitable for a beginner;
   - Each sentence includes _exactly one_ possible conjugation of the Target Verb;
   - Each sentence must include a unique, interesting situational context to help motivate the conjugation. Try to use a unique situational context that is different for each of the sentences;
   - The sentences should each follow normal punctuation, but the Target Verb word should be encased in Anki Cloze notation, where the clue is the infinitive of the target verb, with ellipses '...' on either side of it to help indicate that it is the infinitive. {cloze_example}
@@ -24,7 +25,7 @@ prompt: |
   Remember: try to keep the sentences diverse and different from each other.
   Be careful to declare the HTML class properly in the span: it should be simply `class="target_verb"`, and you should NEVER include extra characters such as &quot; or / in this class declaration.
   The output MUST be a .csv file with columns exactly as specified above, with sentences that are idiomatic and grammatically correct.
-  Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text.
+  Do NOT say anything else, just output the raw .csv file and say nothing else. Do not wrap in ```, just output the raw .csv text. Keep the vocabulary very very simple. 
 
 # Defaults (used when no language-specific override exists)
 cloze_example: ""

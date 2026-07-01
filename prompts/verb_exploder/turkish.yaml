@@ -1,7 +1,7 @@
 cloze_example: >-
   For example, if the target verb were gelmek and the generated sentence were
   Dün akşam eve geç geldim, the sentence would be written as
-  Dün akşam eve geç <span class="target_verb">{{{{c1::geldim::…gelmek…}}}}</span>
+  Dün akşam eve geç <span class="target_verb">{{c1::geldim::…gelmek…}}</span>
 
 grammar_instruction: >-
   Always respect Turkish's standard SOV (subject-object-verb) word order.
