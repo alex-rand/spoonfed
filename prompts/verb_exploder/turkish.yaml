@@ -22,7 +22,7 @@ grammar_instruction: >-
   polarity from the surrounding words.
 
 tense_list: >-
-  You must generate EXACTLY 78 sentences — one for each specific combination
+  You must generate EXACTLY 88 sentences — one for each specific combination
   of tense, person, and polarity listed below. No more, no fewer.
 
   The 6 persons in Turkish are: ben (1st person singular), sen (2nd person
@@ -31,7 +31,7 @@ tense_list: >-
 
 
   TIER 1 — Generate BOTH affirmative and negative forms for all 6 persons
-  (12 sentences per tense, 36 sentences total):
+  (12 sentences per tense, 48 sentences total):
 
   Present continuous (-yor): all 6 persons × affirmative, then all 6 persons
   × negative = 12 sentences.
@@ -42,12 +42,15 @@ tense_list: >-
   Future (-ecek / -acak): all 6 persons × affirmative, then all 6 persons
   × negative = 12 sentences.
 
+  Aorist / simple present (-r / -ir / -er): all 6 persons × affirmative,
+  then all 6 persons × negative = 12 sentences. NOTE: the negative aorist
+  is IRREGULAR — it uses the suffix -mez / -maz, except in the 1st person
+  where the z drops entirely. For gelmek the full negative paradigm is:
+  gelmem, gelmezsin, gelmez, gelmeyiz, gelmezsiniz, gelmezler.
+
 
   TIER 2 — Generate AFFIRMATIVE ONLY for all 6 persons
-  (6 sentences per tense, 30 sentences total):
-
-  Aorist / simple present (-r / -ir / -er): all 6 persons × affirmative
-  = 6 sentences.
+  (6 sentences per tense, 24 sentences total):
 
   Past narrative / evidential / miş-past (-miş): all 6 persons × affirmative
   = 6 sentences.
@@ -75,7 +78,20 @@ tense_list: >-
   = 6 sentences.
 
 
-  TOTAL: 36 + 30 + 6 + 6 = 78 sentences. You must output exactly 78 rows
+  TIER 3b — Optative / 1st-person volitional (-eyim / -elim), both affirmative
+  and negative (4 sentences total):
+
+  The imperative has no 1st-person forms; the optative fills those slots and
+  expresses "let me …" / "let's …". Generate ONLY the two 1st persons: ben
+  (1st person singular, -eyim / -ayım, e.g. geleyim = "let me come") and biz
+  (1st person plural, -elim / -alım, e.g. gelelim = "let's come"). For each,
+  generate one affirmative and one negative sentence = 4 sentences. The
+  negative inserts the -me / -ma marker before the ending: gelmeyeyim ("let me
+  not come"), gelmeyelim ("let's not come"). Label these with the tense name
+  'optative' (NOT 'imperative').
+
+
+  TOTAL: 48 + 24 + 6 + 6 + 4 = 88 sentences. You must output exactly 88 rows
   of data (plus the header row).
 
 conjugation_extra: >-
@@ -85,4 +101,5 @@ conjugation_extra: >-
   'ability, 3rd person plural, negative'.
   Use exactly these tense names: 'present continuous', 'past definite',
   'future', 'aorist', 'past narrative', 'necessitative', 'ability',
-  'conditional', 'imperative'. Always include the polarity as the last term.
+  'conditional', 'imperative', 'optative'. Always include the polarity as the
+  last term.

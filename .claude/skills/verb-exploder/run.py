@@ -33,6 +33,9 @@ TENSE_EMOJI = {
     'present continuous': '🔔', 'aorist': '⬇️', 'future': '➡️',
     'past definite': '⬅️', 'past narrative': '👂', 'necessitative': '⚠️',
     'ability': '🔑', 'conditional': '🔀', 'imperative': '🙏',
+    # Optative (-eyim/-elim) completes the 1st-person slots the imperative
+    # paradigm lacks; same volitional family, so it reuses the imperative icon.
+    'optative': '🙏',
 }
 NEGATION_EMOJI = '🚫'
 PERSON_MAP = {

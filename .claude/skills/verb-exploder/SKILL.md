@@ -1,6 +1,6 @@
 ---
 name: verb-exploder
-description: Generate the full conjugation grid (78 sentences for Turkish) of a target verb via the verb-exploder pipeline, with ElevenLabs audio, and push to Anki using the 'Spoonfed Verb Exploder' cloze model. CLI equivalent of the GUI verb-exploder frame. Use when the user wants to drill all conjugations of a specific verb.
+description: Generate the full conjugation grid (88 sentences for Turkish) of a target verb via the verb-exploder pipeline, with ElevenLabs audio, and push to Anki using the 'Spoonfed Verb Exploder' cloze model. CLI equivalent of the GUI verb-exploder frame. Use when the user wants to drill all conjugations of a specific verb.
 allowed-tools: Bash Read
 argument-hint: <verb> [--language Turkish] [--model sonnet]
 ---
@@ -10,7 +10,7 @@ argument-hint: <verb> [--language Turkish] [--model sonnet]
 Replicates the verb-exploder GUI flow (`src/verb_exploder_frame.py`) without the GUI:
 
 1. Loads `prompts/verb_exploder/base.yaml` + the language override
-2. Calls Claude CLI with the verb to generate the full conjugation grid (78 sentences for Turkish)
+2. Calls Claude CLI with the verb to generate the full conjugation grid (88 sentences for Turkish)
 3. Adds tense/polarity emojis to each sentence (Turkish only)
 4. Generates ElevenLabs audio (slowed 0.75x)
 5. Pushes cards to Anki via AnkiConnect into the language's `learned_deck` (looked up from `database.db`), using the `Spoonfed Verb Exploder` cloze model. Each card is tagged with `tense::*`, `person::*`, and `polarity::*` derived from the conjugation label.
@@ -36,7 +36,7 @@ The script accepts:
 - `--profile` (default `Alex`) — Anki profile name, used by the audio function
 - `--no-vocab` — skip the known-vocab injection (default behavior is to sample ~150 known words from the learned deck and prefer them in generated sentences, mirroring the GUI's checkbox)
 
-Expected runtime: ~2-4 minutes total (Claude generation ~1-2 min, then ElevenLabs audio for 78 sentences ~1-2 min).
+Expected runtime: ~2-4 minutes total (Claude generation ~1-2 min, then ElevenLabs audio for 84 sentences ~1-2 min).
 
 ## After the run
 

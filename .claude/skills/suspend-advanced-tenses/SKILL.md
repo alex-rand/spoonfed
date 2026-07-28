@@ -1,6 +1,6 @@
 ---
 name: suspend-advanced-tenses
-description: Suspend Anki cards tagged with unwanted tenses (conditional, imperative, necessitative, past-narrative). Use after generating cards via verb-exploder or any flow that may produce these tense tags. Optional space-separated tag arguments suspend additional tags.
+description: Suspend Anki cards tagged with unwanted tenses (conditional, necessitative, past-narrative). Use after generating cards via verb-exploder or any flow that may produce these tense tags. Optional space-separated tag arguments suspend additional tags.
 allowed-tools: Bash
 argument-hint: [optional extra tag(s)]
 ---
@@ -10,7 +10,6 @@ argument-hint: [optional extra tag(s)]
 Suspends every unsuspended Anki card whose tag is in the skip list via AnkiConnect. Default skip tags:
 
 - `tense::conditional`
-- `tense::imperative`
 - `tense::necessitative`
 - `tense::past-narrative`
 
@@ -26,7 +25,6 @@ import json, sys, urllib.request
 
 DEFAULT_TAGS = [
     "tense::conditional",
-    "tense::imperative",
     "tense::necessitative",
     "tense::past-narrative",
 ]
